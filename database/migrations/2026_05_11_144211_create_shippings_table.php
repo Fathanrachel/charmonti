@@ -16,8 +16,9 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->string('courier');
             $table->decimal('shipping_cost', 12, 2);
+            $table->string('tracking_number')->nullable();
             $table->dateTime('estimated_arrival')->nullable();
-            $table->string('status');
+            $table->enum('status', ['pending', 'dikirim', 'sampai'])->default('pending');
             $table->timestamps();
         });
 

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('category');
             $table->text('message');
-            $table->string('status');
+            $table->enum('status', ['open', 'diproses', 'selesai'])->default('open');
             $table->timestamps();
         });
 

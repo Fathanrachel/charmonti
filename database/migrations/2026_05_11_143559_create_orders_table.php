@@ -10,9 +10,9 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->dateTime('order_date')->useCurrent();
-            $table->string('status');
+            $table->enum('status', ['pending', 'diproses', 'selesai', 'batal'])->default('pending');
             $table->decimal('total_price', 12, 2);
-            $table->string('payment_method');
+            $table->enum('payment_method', ['transfer', 'QRIS', 'midtrans'])->nullable();
             $table->text('shipping_address');
             $table->timestamps();
         });

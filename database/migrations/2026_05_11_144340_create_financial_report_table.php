@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('financial_report', function (Blueprint $table) {
+        Schema::create('financial_reports', function (Blueprint $table) {
             $table->id();
             $table->date('date');
             $table->decimal('income', 12, 2);
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('financial_report');
+        Schema::dropIfExists('financial_reports');
     }
 };
