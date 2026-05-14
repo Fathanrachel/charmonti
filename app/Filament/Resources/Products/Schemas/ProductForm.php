@@ -14,15 +14,25 @@ class ProductForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->required(),
+                    ->label('Nama Produk')
+                    ->required()
+                    ->maxLength(255),
+
                 Textarea::make('description')
+                    ->label('Deskripsi')
+                    ->nullable()
+                    ->rows(3)
                     ->columnSpanFull(),
+
                 TextInput::make('price')
+                    ->label('Harga')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
+                    ->prefix('Rp'),
+
                 Toggle::make('is_custom')
-                    ->required(),
+                    ->label('Produk Custom?')
+                    ->default(false),
             ]);
     }
 }

@@ -15,20 +15,28 @@ class MaterialsTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nama Material')
                     ->searchable(),
+
                 TextColumn::make('stock')
+                    ->label('Stok')
                     ->numeric()
                     ->sortable(),
+
                 TextColumn::make('unit')
+                    ->label('Satuan')
                     ->searchable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat')
+                    ->dateTime(' d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    
+                // TextColumn::make('updated_at')
+                //     ->dateTime()
+                //     ->sortable()
+                //     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

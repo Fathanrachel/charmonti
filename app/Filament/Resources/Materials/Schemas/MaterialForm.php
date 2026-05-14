@@ -12,12 +12,20 @@ class MaterialForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->required(),
-                TextInput::make('stock')
+                    ->label('Nama Material')
                     ->required()
-                    ->numeric(),
+                    ->maxLength(255),
+
+                TextInput::make('stock')
+                    ->label('Stok saat ini')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0),
+
                 TextInput::make('unit')
-                    ->required(),
+                    ->label('Satuan')
+                    ->required()
+                    ->placeholder('Contoh: pcs, meter, gram'),
             ]);
     }
 }
