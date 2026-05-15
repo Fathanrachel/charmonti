@@ -1,20 +1,8 @@
 <?php
 
+use App\Http\Controllers\CustomerController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn() => view('welcome'));
-
-// Admin routes
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', fn() => view('admin.dashboard'));
-});
-
-// Owner routes
-Route::middleware(['auth', 'role:owner'])->group(function () {
-    Route::get('/owner/dashboard', fn() => view('owner.dashboard'));
-});
-
-// Customer routes
-Route::middleware(['auth', 'role:customer'])->group(function () {
-    Route::get('/customer/dashboard', fn() => view('customer.dashboard'));
-});
+// Halaman utama - bisa diakses semua orang
+Route::get('/', [CustomerController::class, 'index'])->name('home');
+Route::get('/produk/{product}', [CustomerController::class, 'show'])->name('produk.show');
