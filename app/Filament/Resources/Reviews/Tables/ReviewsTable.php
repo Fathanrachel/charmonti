@@ -14,30 +14,34 @@ class ReviewsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order_id')
-                    ->numeric()
+                TextColumn::make('order.id')
+                    ->label('Order #')
                     ->sortable(),
-                TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('product_id')
-                    ->numeric()
-                    ->sortable(),
+
+                TextColumn::make('user.name')
+                    ->label('Customer')
+                    ->searchable(),
+
+                TextColumn::make('product.name')
+                    ->label('Produk')
+                    ->searchable(),
+
                 TextColumn::make('rating')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Rating')
+                    ->sortable()
+                    ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state)),
+
+                TextColumn::make('comment')
+                    ->label('Komentar')
+                    ->limit(50)
+                    ->toggleable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Tanggal')
+                    ->dateTime('d M Y')
+                    ->sortable(),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make(),
             ])
