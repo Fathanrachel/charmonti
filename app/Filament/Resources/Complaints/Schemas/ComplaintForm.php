@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Complaints\Schemas;
 
-use Filament\Forms\Components\TextInput;
+use App\Models\Order;
+use App\Models\User;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
@@ -12,20 +14,43 @@ class ComplaintForm
     {
         return $schema
             ->components([
-                TextInput::make('order_id')
+                Select::make('order_id')
+                    ->label('Order')
+                    ->options(Order::all()->pluck('id', 'id')->map(fn($id) => 'Order #' . $id))
                     ->required()
-                    ->numeric(),
-                TextInput::make('user_id')
+                    ->searchable(),
+
+                Select::make('user_id')
+                    ->label('Customer')
+                    ->options(User::where('role', 'customer')->pluck('name', 'id'))
                     ->required()
-                    ->numeric(),
-                TextInput::make('category')
+                    ->searchable(),
+
+                Select::make('category')
+                    ->label('Kategori')
+                    ->options([
+                        'produk'    => 'Masalah Produk',
+                        'pengiriman'=> 'Masalah Pengiriman',
+                        'pembayaran'=> 'Masalah Pembayaran',
+                        'lainnya'   => 'Lainnya',
+                    ])
                     ->required(),
+
                 Textarea::make('message')
+                    ->label('Pesan Komplain')
                     ->required()
+                    ->rows(4)
                     ->columnSpanFull(),
-                TextInput::make('status')
-                    ->required()
-                    ->default('open'),
+
+                Select::make('status')
+                    ->label('Status')
+                    ->options([
+                        'open'     => 'Open',
+                        'diproses' => 'Diproses',
+                        'selesai'  => 'Selesai',
+                    ])
+                    ->default('open')
+                    ->required(),
             ]);
     }
 }

@@ -14,28 +14,44 @@ class ComplaintsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order_id')
-                    ->numeric()
+                TextColumn::make('order.id')
+                    ->label('Order #')
                     ->sortable(),
-                TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
+
+                TextColumn::make('user.name')
+                    ->label('Customer')
+                    ->searchable(),
+
                 TextColumn::make('category')
-                    ->searchable(),
+                    ->label('Kategori')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'produk'     => 'danger',
+                        'pengiriman' => 'warning',
+                        'pembayaran' => 'info',
+                        'lainnya'    => 'gray',
+                    }),
+
+                TextColumn::make('message')
+                    ->label('Pesan')
+                    ->limit(50)
+                    ->toggleable(),
+
                 TextColumn::make('status')
-                    ->searchable(),
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'open'     => 'danger',
+                        'diproses' => 'warning',
+                        'selesai'  => 'success',
+                    }),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Tanggal')
+                    ->dateTime('d M Y')
+                    ->sortable(),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make(),
             ])

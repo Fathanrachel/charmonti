@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Shippings\Schemas;
 
+use App\Models\Order;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -12,20 +14,41 @@ class ShippingForm
     {
         return $schema
             ->components([
-                TextInput::make('order_id')
+                Select::make('order_id')
+                    ->label('Order')
+                    ->options(Order::all()->pluck('id', 'id')->map(fn($id) => 'Order #' . $id))
                     ->required()
-                    ->numeric(),
+                    ->searchable(),
+
                 TextInput::make('courier')
-                    ->required(),
+                    ->label('Kurir')
+                    ->required()
+                    ->placeholder('contoh: JNE, J&T, SiCepat'),
+
                 TextInput::make('shipping_cost')
+                    ->label('Ongkos Kirim')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
-                TextInput::make('tracking_number'),
-                DateTimePicker::make('estimated_arrival'),
-                TextInput::make('status')
-                    ->required()
-                    ->default('pending'),
+                    ->prefix('Rp'),
+
+                TextInput::make('tracking_number')
+                    ->label('Nomor Resi')
+                    ->nullable()
+                    ->placeholder('Isi setelah paket dikirim'),
+
+                DateTimePicker::make('estimated_arrival')
+                    ->label('Estimasi Tiba')
+                    ->nullable(),
+
+                Select::make('status')
+                    ->label('Status')
+                    ->options([
+                        'pending'  => 'Pending',
+                        'dikirim'  => 'Dikirim',
+                        'sampai'   => 'Sampai',
+                    ])
+                    ->default('pending')
+                    ->required(),
             ]);
     }
 }
