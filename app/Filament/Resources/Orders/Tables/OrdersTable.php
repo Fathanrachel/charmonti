@@ -5,8 +5,10 @@ namespace App\Filament\Resources\Orders\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Select;
 
 class OrdersTable
 {
@@ -50,6 +52,26 @@ class OrdersTable
             ->filters([])
             ->recordActions([
                 EditAction::make(),
+
+                Action::make('ubahStatus')
+                    ->label('Ubah Status')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->form([
+                        Select::make('status')
+                            ->label('Status Baru')
+                            ->options([
+                                'pending'  => 'Pending',
+                                'diproses' => 'Diproses',
+                                'selesai'  => 'Selesai',
+                                'batal'    => 'Batal',
+                            ])
+                            ->required(),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update(['status' => $data['status']]);
+                    })
+                    ->successNotificationTitle('Status order berhasil diubah!'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

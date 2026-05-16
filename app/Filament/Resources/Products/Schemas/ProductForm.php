@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
@@ -13,6 +15,13 @@ class ProductForm
     {
         return $schema
             ->components([
+                FileUpload::make('image')
+                    ->label('Foto Produk')
+                    ->image()
+                    ->directory('products')
+                    ->imagePreviewHeight('200')
+                    ->columnSpanFull(),
+
                 TextInput::make('name')
                     ->label('Nama Produk')
                     ->required()
@@ -29,6 +38,16 @@ class ProductForm
                     ->required()
                     ->numeric()
                     ->prefix('Rp'),
+
+                Select::make('category')
+                    ->label('Kategori Produk')
+                    ->options([
+                        'gelang_custom' => 'Gelang Custom (Charm)',
+                        'gelang_jadi'   => 'Gelang Jadi',
+                        'cincin'        => 'Cincin',
+                    ])
+                    ->required()
+                    ->default('gelang_jadi'),
 
                 Toggle::make('is_custom')
                     ->label('Produk Custom?')

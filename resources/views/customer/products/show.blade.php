@@ -11,7 +11,23 @@
     {{-- Navbar --}}
     <nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
         <h1 class="text-xl font-bold text-amber-500">Charm.onti</h1>
-        <a href="/" class="text-sm text-gray-600 hover:text-amber-500">← Kembali</a>
+        <div class="flex gap-4 text-sm items-center">
+            <a href="/" class="text-gray-600 hover:text-amber-500">← Kembali</a>
+
+            @auth
+                <span class="text-gray-600">Halo, {{ Auth::user()->name }}</span>
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="text-red-400 hover:text-red-600">Logout</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="text-gray-600 hover:text-amber-500">Login</a>
+                <a href="{{ route('register') }}"
+                class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-lg transition">
+                Daftar
+                </a>
+            @endauth
+        </div>
     </nav>
 
     {{-- Detail Produk --}}
@@ -19,8 +35,14 @@
         <div class="bg-white rounded-xl shadow p-6 flex flex-col md:flex-row gap-8">
 
             {{-- Gambar placeholder --}}
-            <div class="bg-amber-100 rounded-xl h-60 w-full md:w-64 flex items-center justify-center shrink-0">
-                <span class="text-6xl">📿</span>
+            <div class="bg-amber-100 rounded-xl h-60 w-full md:w-64 flex items-center justify-center shrink-0 overflow-hidden">
+                @if($product->image)
+                    <img src="{{ Storage::url($product->image) }}"
+                        alt="{{ $product->name }}"
+                        class="w-full h-full object-cover rounded-xl">
+                @else
+                    <span class="text-6xl">📿</span>
+                @endif
             </div>
 
             {{-- Info Produk --}}
@@ -41,9 +63,10 @@
                     {{ $product->description ?? 'Tidak ada deskripsi.' }}
                 </p>
 
-                <button class="mt-6 w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition">
-                    Pesan Sekarang
-                </button>
+                <a href="{{ route('checkout', $product) }}"
+                    class="mt-6 block w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition text-center">
+                        Pesan Sekarang
+                </a>
             </div>
         </div>
     </div>
