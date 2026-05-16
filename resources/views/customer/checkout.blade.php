@@ -18,7 +18,7 @@
 
         {{-- Info Produk --}}
         <div class="bg-white rounded-xl shadow p-5 mb-6 flex gap-4 items-center">
-            <div class="bg-amber-100 rounded-lg h-16 w-16 flex items-center justify-center text-2xl flex-shrink-0">
+            <div class="bg-amber-100 rounded-lg h-16 w-16 flex items-center justify-center text-2xl shrink-0">
                 📿
             </div>
             <div>
