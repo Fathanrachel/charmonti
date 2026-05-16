@@ -11,9 +11,22 @@
     {{-- Navbar --}}
     <nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
         <h1 class="text-xl font-bold text-amber-500">Charm.onti</h1>
-        <div class="flex gap-4 text-sm">
+        <div class="flex gap-4 text-sm items-center">
             <a href="/" class="text-gray-600 hover:text-amber-500">Produk</a>
-            <a href="#" class="text-gray-600 hover:text-amber-500">Login</a>
+
+            @auth
+                <span class="text-gray-600">Halo, {{ Auth::user()->name }}</span>
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="text-red-400 hover:text-red-600">Logout</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="text-gray-600 hover:text-amber-500">Login</a>
+                <a href="{{ route('register') }}"
+                class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-lg transition">
+                Daftar
+                </a>
+            @endauth
         </div>
     </nav>
 
@@ -34,8 +47,14 @@
                 @foreach($products as $product)
                 <a href="{{ route('produk.show', $product) }}"
                    class="bg-white rounded-xl shadow hover:shadow-md transition p-4 block">
-                    <div class="bg-amber-100 rounded-lg h-40 flex items-center justify-center mb-3">
-                        <span class="text-4xl">📿</span>
+                    <div class="bg-amber-100 rounded-lg h-40 flex items-center justify-center mb-3 overflow-hidden">
+                        @if($product->image)
+                            <img src="{{ Storage::url($product->image) }}"
+                                alt="{{ $product->name }}"
+                                class="w-full h-full object-cover rounded-lg">
+                        @else
+                            <span class="text-4xl">📿</span>
+                        @endif
                     </div>
                     <h4 class="font-semibold text-gray-800 text-sm">{{ $product->name }}</h4>
                     <p class="text-amber-500 font-bold text-sm mt-1">
@@ -50,6 +69,16 @@
                 @endforeach
             </div>
         @endif
+    </div>
+
+    {{-- Tombol Custom Order --}}
+    <div class="mt-10 bg-amber-100 rounded-2xl p-8 text-center">
+        <h3 class="text-xl font-bold text-gray-800 mb-2">Mau Gelang Custom?</h3>
+        <p class="text-gray-500 text-sm mb-4">Pilih charm favoritmu dan buat gelang unikmu sendiri!</p>
+        <a href="{{ route('custom.order') }}"
+        class="inline-block bg-amber-500 hover:bg-amber-600 text-white font-semibold px-8 py-3 rounded-xl transition">
+            Buat Gelang Custom ✨
+        </a>
     </div>
 
 </body>
