@@ -42,16 +42,20 @@ class ProductForm
                 Select::make('category')
                     ->label('Kategori Produk')
                     ->options([
-                        'gelang_custom' => 'Gelang Custom (Charm)',
-                        'gelang_jadi'   => 'Gelang Jadi',
-                        'cincin'        => 'Cincin',
+                        'charm'       => 'Charm',
+                        'strap'       => 'Strap',
+                        'gelang_jadi' => 'Gelang Jadi',
+                        'cincin'      => 'Cincin',
                     ])
                     ->required()
                     ->default('gelang_jadi'),
-
-                Toggle::make('is_custom')
-                    ->label('Produk Custom?')
-                    ->default(false),
+                
+                TextInput::make('stock')
+                    ->label('Stok')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0),
             ]);
     }
 }

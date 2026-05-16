@@ -20,7 +20,7 @@ class ProductsTable
                     ->label('Foto')
                     ->circular()
                     ->defaultImageUrl(asset('images/no-image.png')),
-                    
+
                 TextColumn::make('name')
                     ->label('Nama Produk')
                     ->searchable(),
@@ -30,29 +30,40 @@ class ProductsTable
                     ->money('IDR')
                     ->sortable(),
 
-                IconColumn::make('is_custom')
-                    ->label('Custom?')
-                    ->boolean(),
+                TextColumn::make('stock')
+                    ->label('Stok')
+                    ->numeric()
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (int $state): string => match(true) {
+                        $state <= 0  => 'danger',
+                        $state <= 5  => 'warning',
+                        default      => 'success',
+                    }),
+
+                TextColumn::make('category')
+                    ->label('Kategori')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'charm'       => 'warning',
+                        'strap'       => 'info',
+                        'gelang_jadi' => 'success',
+                        'cincin'      => 'danger',
+                        default       => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'charm'       => 'Charm',
+                        'strap'       => 'Strap',
+                        'gelang_jadi' => 'Gelang Jadi',
+                        'cincin'      => 'Cincin',
+                        default       => $state,
+                    }),
 
                 TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('category')
-                    ->label('Kategori')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'gelang_custom' => 'warning',
-                        'gelang_jadi'   => 'success',
-                        'cincin'        => 'info',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'gelang_custom' => 'Gelang Custom',
-                        'gelang_jadi'   => 'Gelang Jadi',
-                        'cincin'        => 'Cincin',
-                    }),
             ])
             ->filters([])
             ->recordActions([
