@@ -16,6 +16,7 @@
 
             @auth
                 <span class="text-gray-600">Halo, {{ Auth::user()->name }}</span>
+
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
                     <button type="submit" class="text-red-400 hover:text-red-600">Logout</button>

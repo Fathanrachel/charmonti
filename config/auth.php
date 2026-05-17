@@ -43,8 +43,12 @@ return [
             'provider' => 'users',
         ],
 
-        // Tambahkan ini
         'admin' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+        
+        'owner' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
