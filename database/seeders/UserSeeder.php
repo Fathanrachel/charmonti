@@ -18,9 +18,9 @@ class UserSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'Business Owner',
+            'name' => 'Owner Charm Onti',
             'email' => 'owner@charmonti.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Owner123!'),
             'role' => 'owner',
         ]);
 
