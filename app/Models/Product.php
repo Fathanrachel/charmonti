@@ -10,21 +10,14 @@ class Product extends Model
         'name',
         'description',
         'price',
-        'is_custom',
         'category',
+        'stock',
         'image',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'is_custom' => 'boolean',
     ];
-
-    public function materials()
-    {
-        return $this->belongsToMany(Material::class, 'product_material')
-                    ->withPivot('quantity_needed');
-    }
 
     public function orderItems()
     {
