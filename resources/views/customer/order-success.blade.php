@@ -31,6 +31,11 @@
             </div>
         </div>
 
+        <a href="{{ route('payment.show', $order->id) }}"
+            class="block w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition mb-3 text-center">
+                Bayar Sekarang 💳
+        </a>
+
         <a href="/"
            class="block w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition">
             Kembali ke Beranda
