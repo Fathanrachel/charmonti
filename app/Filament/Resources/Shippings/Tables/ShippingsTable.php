@@ -24,7 +24,7 @@ class ShippingsTable
 
                 TextColumn::make('shipping_cost')
                     ->label('Ongkos Kirim')
-                    ->money('IDR')
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
 
                 TextColumn::make('tracking_number')
