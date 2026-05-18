@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\Auth\CustomerAuthController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 // Halaman publik
@@ -27,4 +28,15 @@ Route::middleware('auth')->group(function () {
     // Custom Order
     Route::get('/custom-order', [CustomerController::class, 'customOrder'])->name('custom.order');
     Route::post('/custom-order', [CustomerController::class, 'storeCustomOrder'])->name('custom.order.store');
+
+    // Riwayat Pesanan
+    Route::get('/orders', [CustomerController::class, 'orders'])->name('customer.orders');
+    Route::post('/orders/{order}/cancel', [CustomerController::class, 'cancel'])->name('customer.order.cancel');
+
+    // Payment routes
+    Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');
+    Route::get('/payment/{order}/success', [PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/payment/{order}/check-status', [PaymentController::class, 'checkStatus'])->name('payment.check-status');
 });
+
+Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
