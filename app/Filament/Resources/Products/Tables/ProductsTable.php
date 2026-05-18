@@ -27,7 +27,7 @@ class ProductsTable
 
                 TextColumn::make('price')
                     ->label('Harga')
-                    ->money('IDR')
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
 
                 TextColumn::make('stock')

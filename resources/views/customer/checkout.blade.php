@@ -9,17 +9,27 @@
 <body class="bg-amber-50 min-h-screen">
 
     <nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-amber-500">Charm.onti</h1>
+        <h1 class="text-xl font-bold">
+            <a href="/" class="flex items-center gap-2.5 hover:opacity-95 transition">
+                <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-9 w-9 rounded-full object-cover border border-amber-200/50 shadow-sm">
+                <span class="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">CharmOnTi</span>
+            </a>
+        </h1>
         <a href="/" class="text-sm text-gray-600 hover:text-amber-500">← Kembali</a>
     </nav>
 
     <div class="max-w-2xl mx-auto px-6 py-10">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Checkout</h2>
 
-        {{-- Info Produk --}}
         <div class="bg-white rounded-xl shadow p-5 mb-6 flex gap-4 items-center">
-            <div class="bg-amber-100 rounded-lg h-16 w-16 flex items-center justify-center text-2xl shrink-0">
-                📿
+            <div class="bg-amber-100 rounded-lg h-16 w-16 flex items-center justify-center shrink-0 overflow-hidden border border-amber-200/40">
+                @if($product->image)
+                    <img src="{{ Storage::url($product->image) }}"
+                        alt="{{ $product->name }}"
+                        class="w-full h-full object-cover rounded-lg">
+                @else
+                    <span class="text-2xl">📿</span>
+                @endif
             </div>
             <div>
                 <h3 class="font-semibold text-gray-800">{{ $product->name }}</h3>

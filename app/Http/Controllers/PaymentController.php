@@ -38,6 +38,13 @@ class PaymentController extends Controller
     {
         $orderId = 'ORDER-' . $order->id . '-' . time();
 
+        // Simpan orderId ke database payment agar gampang diakses
+        $payment = Payment::firstOrNew(['order_id' => $order->id]);
+        $payment->transaction_id = $orderId;
+        $payment->payment_status = 'pending';
+        $payment->payment_type = 'midtrans';
+        $payment->save();
+
         // Simpan order_id ke session supaya bisa dipakai checkStatus
         session(['midtrans_order_id_' . $order->id => $orderId]);
 
@@ -88,14 +95,13 @@ class PaymentController extends Controller
 
         $payment = Payment::firstOrNew(['order_id' => $order->id]);
         $payment->payment_type   = $request->payment_type ?? 'midtrans';
-        $payment->transaction_id = $request->transaction_id ?? null;
+        $payment->transaction_id = $request->transaction_id ?? $request->order_id;
 
         $transactionStatus = $request->transaction_status ?? 'pending';
 
         if (in_array($transactionStatus, ['capture', 'settlement'])) {
             $payment->payment_status = 'paid';
             $payment->payment_date   = now();
-            $order->update(['status' => 'diproses']);
 
         } elseif ($transactionStatus === 'pending') {
             $payment->payment_status = 'pending';
@@ -113,26 +119,40 @@ class PaymentController extends Controller
     public function checkStatus(Order $order)
     {
         try {
-            // Ambil order_id Midtrans dari session
-            $orderId = session('midtrans_order_id_' . $order->id);
+            // Ambil orderId dari database pembayaran, fallback ke session
+            $paymentRecord = Payment::where('order_id', $order->id)->first();
+            $orderId = $paymentRecord?->transaction_id ?? session('midtrans_order_id_' . $order->id);
 
             if (!$orderId) {
                 return redirect()->route('payment.show', $order->id)
-                    ->with('error', 'Session expired. Silakan bayar ulang.');
+                    ->with('error', 'Transaksi tidak ditemukan. Silakan bayar ulang.');
+            }
+
+            // Jika transaction_id di DB sudah berubah menjadi UUID Midtrans karena callback berhasil mendahului
+            if (strpos($orderId, 'ORDER-') !== 0) {
+                $sessionOrderId = session('midtrans_order_id_' . $order->id);
+                if ($sessionOrderId) {
+                    $orderId = $sessionOrderId;
+                } else {
+                    if ($paymentRecord && $paymentRecord->payment_status === 'paid') {
+                        return redirect()->route('payment.success', $order->id);
+                    }
+                    return redirect()->route('payment.show', $order->id)
+                        ->with('error', 'Tidak dapat memverifikasi status pembayaran. Silakan hubungi admin.');
+                }
             }
 
             $status  = \Midtrans\Transaction::status($orderId);
 
             $payment = Payment::firstOrNew(['order_id' => $order->id]);
             $payment->payment_type   = $status->payment_type ?? 'midtrans';
-            $payment->transaction_id = $status->transaction_id ?? null;
+            $payment->transaction_id = $status->transaction_id ?? $orderId;
 
             $transactionStatus = $status->transaction_status ?? 'pending';
 
             if (in_array($transactionStatus, ['capture', 'settlement'])) {
                 $payment->payment_status = 'paid';
                 $payment->payment_date   = now();
-                $order->update(['status' => 'diproses']);
 
             } elseif ($transactionStatus === 'pending') {
                 $payment->payment_status = 'pending';

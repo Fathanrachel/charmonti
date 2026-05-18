@@ -63,8 +63,7 @@ class CustomerController extends Controller
             return redirect()->route('login')->with('info', 'Login dulu untuk memesan.');
         }
 
-        // Ambil semua charm yang tersedia (kategori gelang_custom)
-        $charms = Product::where('category', 'gelang_custom')->get();
+        $charms = Product::where('category', 'charm')->get();
 
         return view('customer.custom-order', compact('charms'));
     }
@@ -76,13 +75,12 @@ class CustomerController extends Controller
             'charms'             => 'required|array|min:1|max:15',
             'charms.*'           => 'exists:products,id',
             'request_note'       => 'nullable|string|max:500',
+            'shipping_address'   => 'required|string',
         ]);
 
-        // Hitung total harga dari charm yang dipilih
         $selectedCharms = Product::whereIn('id', $request->charms)->get();
         $totalPrice = $selectedCharms->sum('price');
 
-        // Buat Order
         $order = Order::create([
             'user_id'          => Auth::id(),
             'order_date'       => now(),
@@ -116,5 +114,46 @@ class CustomerController extends Controller
     public function orderSuccess(Order $order)
     {
         return view('customer.order-success', compact('order'));
+    }
+
+    public function orders()
+    {
+        // 1. Otomatisasi 1x24 Jam: Batalkan pesanan pending yang berumur lebih dari 24 jam
+        $expiredOrders = Order::where('status', 'pending')
+            ->where('order_date', '<', now()->subDay())
+            ->get();
+
+        foreach ($expiredOrders as $expiredOrder) {
+            $expiredOrder->update(['status' => 'batal']);
+            if ($expiredOrder->payment) {
+                $expiredOrder->payment->update(['payment_status' => 'failed']);
+            }
+        }
+
+        // 2. Ambil semua pesanan milik user saat ini
+        $orders = Order::where('user_id', Auth::id())
+            ->with(['payment', 'shipping', 'orderItems.product'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('customer.orders', compact('orders'));
+    }
+
+    public function cancel(Order $order)
+    {
+        // Pastikan hanya pemilik pesanan yang sah yang bisa membatalkan
+        abort_if($order->user_id !== Auth::id(), 403);
+
+        // Hanya boleh dibatalkan jika status pesanan pending dan status pembayaran belum lunas (pending)
+        $payStatus = $order->payment?->payment_status ?? 'pending';
+        if ($order->status === 'pending' && $payStatus === 'pending') {
+            $order->update(['status' => 'batal']);
+            if ($order->payment) {
+                $order->payment->update(['payment_status' => 'failed']);
+            }
+            return redirect()->back()->with('success', 'Pesanan Anda berhasil dibatalkan.');
+        }
+
+        return redirect()->back()->with('error', 'Pesanan ini sudah diproses atau dibayar, tidak dapat dibatalkan.');
     }
 }

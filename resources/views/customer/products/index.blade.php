@@ -10,11 +10,17 @@
 
     {{-- Navbar --}}
     <nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-amber-500">Charm.onti</h1>
+        <h1 class="text-xl font-bold">
+            <a href="/" class="flex items-center gap-2.5 hover:opacity-95 transition">
+                <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-9 w-9 rounded-full object-cover border border-amber-200/50 shadow-sm">
+                <span class="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">CharmOnTi</span>
+            </a>
+        </h1>
         <div class="flex gap-4 text-sm items-center">
             <a href="/" class="text-gray-600 hover:text-amber-500">Produk</a>
 
             @auth
+                <a href="{{ route('customer.orders') }}" class="text-gray-600 hover:text-amber-500">Pesanan Saya</a>
                 <span class="text-gray-600">Halo, {{ Auth::user()->name }}</span>
 
                 <form method="POST" action="{{ route('logout') }}" class="inline">
