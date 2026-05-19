@@ -2,11 +2,9 @@
 
 namespace App\Filament\Resources\Reviews\Schemas;
 
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class ReviewForm
@@ -16,38 +14,32 @@ class ReviewForm
         return $schema
             ->components([
                 Select::make('order_id')
-                    ->label('Order')
-                    ->options(Order::all()->pluck('id', 'id')->map(fn($id) => 'Order #' . $id))
-                    ->required()
-                    ->searchable(),
+                    ->relationship('order', 'id')
+                    ->label('Pesanan #')
+                    ->disabled()
+                    ->required(),
 
                 Select::make('user_id')
-                    ->label('Customer')
-                    ->options(User::where('role', 'customer')->pluck('name', 'id'))
-                    ->required()
-                    ->searchable(),
+                    ->relationship('user', 'name')
+                    ->label('Pelanggan')
+                    ->disabled()
+                    ->required(),
 
                 Select::make('product_id')
+                    ->relationship('product', 'name')
                     ->label('Produk')
-                    ->options(Product::all()->pluck('name', 'id'))
-                    ->required()
-                    ->searchable(),
+                    ->disabled()
+                    ->required(),
 
-                Select::make('rating')
-                    ->label('Rating')
-                    ->options([
-                        1 => '⭐ 1 - Sangat Buruk',
-                        2 => '⭐⭐ 2 - Buruk',
-                        3 => '⭐⭐⭐ 3 - Cukup',
-                        4 => '⭐⭐⭐⭐ 4 - Bagus',
-                        5 => '⭐⭐⭐⭐⭐ 5 - Sangat Bagus',
-                    ])
+                TextInput::make('rating')
+                    ->numeric()
+                    ->label('Rating (Bintang)')
+                    ->disabled()
                     ->required(),
 
                 Textarea::make('comment')
-                    ->label('Komentar')
-                    ->nullable()
-                    ->rows(3)
+                    ->label('Komentar Ulasan')
+                    ->disabled()
                     ->columnSpanFull(),
             ]);
     }

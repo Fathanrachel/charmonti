@@ -12,13 +12,13 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-amber-50/60 to-orange-100/30 min-h-screen">
+<body class="bg-linear-to-br from-amber-50/60 to-orange-100/30 min-h-screen">
 
     {{-- Navbar --}}
     <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 px-6 py-4 flex justify-between items-center shadow-sm">
         <a href="/" class="flex items-center gap-2.5 hover:opacity-95 transition">
             <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-9 w-9 rounded-full object-cover border border-amber-200/50 shadow-sm">
-            <span class="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent font-bold">CharmOnTi</span>
+            <span class="text-2xl font-bold bg-linear-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">CharmOnTi</span>
         </a>
         <div class="flex gap-6 text-sm font-medium items-center">
             <a href="/" class="text-gray-600 hover:text-amber-500 transition">Produk</a>
@@ -60,7 +60,7 @@
                 <div class="text-6xl mb-4">🛍️</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Belum ada pesanan</h3>
                 <p class="text-gray-500 text-sm mb-6 max-w-sm mx-auto">Kamu belum melakukan pemesanan apa pun. Yuk, buat gelang impianmu sekarang!</p>
-                <a href="/" class="inline-block bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition shadow-md">
+                <a href="/" class="inline-block bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition shadow-md">
                     Cari Produk ✨
                 </a>
             </div>
@@ -226,6 +226,39 @@
                                 </div>
                             </div>
 
+                            @if($order->complaints->isNotEmpty())
+                                <div class="bg-red-50/40 border border-red-100 rounded-2xl p-4 mb-4">
+                                    <h6 class="text-xs font-bold text-red-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                                        <span>⚠️</span> Riwayat Komplain Pesanan:
+                                    </h6>
+                                    <div class="space-y-3">
+                                        @foreach($order->complaints as $complaint)
+                                            <div class="flex justify-between items-start gap-4 text-xs border-b border-red-100/50 last:border-0 pb-2 last:pb-0">
+                                                <div class="text-gray-600">
+                                                    <span class="font-bold text-gray-800 capitalize bg-red-50 px-2 py-0.5 rounded border border-red-100 mr-1.5">{{ $complaint->category }}</span>
+                                                    <span class="italic">"{{ $complaint->message }}"</span>
+                                                </div>
+                                                @php
+                                                    $compColors = [
+                                                        'open' => 'bg-red-100 text-red-700 border-red-200',
+                                                        'diproses' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                                        'selesai' => 'bg-green-100 text-green-700 border-green-200',
+                                                    ];
+                                                    $compLabels = [
+                                                        'open' => 'Baru / Menunggu',
+                                                        'diproses' => 'Diproses Toko',
+                                                        'selesai' => 'Selesai / Teratasi',
+                                                    ];
+                                                @endphp
+                                                <span class="px-2.5 py-0.5 rounded-full border text-[10px] font-bold shrink-0 {{ $compColors[$complaint->status] ?? 'bg-gray-100 text-gray-700' }}">
+                                                    {{ $compLabels[$complaint->status] ?? $complaint->status }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
                             {{-- Footer Summary / Action --}}
                             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
                                 <div>
@@ -243,7 +276,7 @@
                                             </button>
                                         </form>
                                         <a href="{{ route('payment.show', $order->id) }}"
-                                           class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl text-center transition shadow-sm hover:shadow transform hover:-translate-y-0.5 text-sm flex items-center justify-center gap-1.5">
+                                           class="bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl text-center transition shadow-sm hover:shadow transform hover:-translate-y-0.5 text-sm flex items-center justify-center gap-1.5">
                                             Bayar Sekarang 💳
                                         </a>
                                     </div>
@@ -252,9 +285,39 @@
                                         Pembayaran Lunas, Menunggu Konfirmasi Toko
                                     </span>
                                 @elseif($orderStatus === 'diproses')
-                                    <span class="text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl self-start sm:self-center">
-                                        Penjual sedang mempersiapkan gelang unikmu 💖
-                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        @if($payStatus === 'paid')
+                                            <a href="{{ route('customer.order.complaint', $order->id) }}"
+                                               class="border border-red-200 hover:bg-red-50 text-red-500 font-semibold px-4 py-2 rounded-xl text-xs transition">
+                                                Ajukan Komplain ⚠️
+                                            </a>
+                                        @endif
+                                        <span class="text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl self-start sm:self-center">
+                                            Penjual sedang mempersiapkan gelang unikmu 💖
+                                        </span>
+                                    </div>
+                                @elseif($orderStatus === 'selesai')
+                                    @php
+                                        $hasReviewed = \App\Models\Review::where('order_id', $order->id)->where('user_id', Auth::id())->exists();
+                                    @endphp
+                                    <div class="flex items-center gap-2.5">
+                                        @if($payStatus === 'paid')
+                                            <a href="{{ route('customer.order.complaint', $order->id) }}"
+                                               class="border border-red-200 hover:bg-red-50 text-red-500 font-semibold px-4 py-2 rounded-xl text-xs transition">
+                                                Ajukan Komplain ⚠️
+                                            </a>
+                                        @endif
+                                        @if($hasReviewed)
+                                            <span class="text-xs font-semibold text-gray-500 bg-gray-100 border border-gray-200 px-4 py-2 rounded-xl">
+                                                Ulasan Dikirim ✓
+                                            </span>
+                                        @else
+                                            <a href="{{ route('customer.order.review', $order->id) }}"
+                                               class="bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm">
+                                                Beri Ulasan ⭐
+                                            </a>
+                                        @endif
+                                    </div>
                                 @endif
                             </div>
                         </div>

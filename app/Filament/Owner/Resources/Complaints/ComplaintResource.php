@@ -2,11 +2,10 @@
 
 namespace App\Filament\Owner\Resources\Complaints;
 
-use App\Filament\Owner\Resources\Complaints\Pages\CreateComplaint;
 use App\Filament\Owner\Resources\Complaints\Pages\EditComplaint;
 use App\Filament\Owner\Resources\Complaints\Pages\ListComplaints;
-use App\Filament\Owner\Resources\Complaints\Schemas\ComplaintForm;
-use App\Filament\Owner\Resources\Complaints\Tables\ComplaintsTable;
+use App\Filament\Resources\Complaints\Schemas\ComplaintForm;
+use App\Filament\Resources\Complaints\Tables\ComplaintsTable;
 use App\Models\Complaint;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -18,9 +17,13 @@ class ComplaintResource extends Resource
 {
     protected static ?string $model = Complaint::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;
 
-    protected static ?string $recordTitleAttribute = 'message';
+    protected static ?string $navigationLabel = 'Komplain';
+    protected static ?string $modelLabel = 'Komplain';
+    protected static ?string $pluralModelLabel = 'Komplain';
+
+    protected static ?int $navigationSort = 7;
 
     public static function form(Schema $schema): Schema
     {
@@ -34,16 +37,13 @@ class ComplaintResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListComplaints::route('/'),
-            'create' => CreateComplaint::route('/create'),
             'edit' => EditComplaint::route('/{record}/edit'),
         ];
     }

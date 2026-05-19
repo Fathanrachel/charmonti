@@ -13,7 +13,7 @@
         <h1 class="text-xl font-bold">
             <a href="/" class="flex items-center gap-2.5 hover:opacity-95 transition">
                 <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-9 w-9 rounded-full object-cover border border-amber-200/50 shadow-sm">
-                <span class="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">CharmOnTi</span>
+                <span class="bg-linear-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">CharmOnTi</span>
             </a>
         </h1>
         <div class="flex gap-4 text-sm items-center">

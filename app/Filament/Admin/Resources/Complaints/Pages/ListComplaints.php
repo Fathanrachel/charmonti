@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources\Complaints\Pages;
 
 use App\Filament\Admin\Resources\Complaints\ComplaintResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListComplaints extends ListRecords
@@ -12,8 +11,6 @@ class ListComplaints extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

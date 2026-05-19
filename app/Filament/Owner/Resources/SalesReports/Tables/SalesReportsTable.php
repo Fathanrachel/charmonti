@@ -21,7 +21,7 @@ class SalesReportsTable
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('total_revenue')
-                    ->numeric()
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

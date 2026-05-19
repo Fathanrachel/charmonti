@@ -18,13 +18,13 @@ class FinancialReportsTable
                     ->date()
                     ->sortable(),
                 TextColumn::make('income')
-                    ->numeric()
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('expense')
-                    ->numeric()
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('profit')
-                    ->numeric()
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
