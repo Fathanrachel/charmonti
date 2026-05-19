@@ -2,11 +2,10 @@
 
 namespace App\Filament\Admin\Resources\Reviews;
 
-use App\Filament\Admin\Resources\Reviews\Pages\CreateReview;
 use App\Filament\Admin\Resources\Reviews\Pages\EditReview;
 use App\Filament\Admin\Resources\Reviews\Pages\ListReviews;
-use App\Filament\Admin\Resources\Reviews\Schemas\ReviewForm;
-use App\Filament\Admin\Resources\Reviews\Tables\ReviewsTable;
+use App\Filament\Resources\Reviews\Schemas\ReviewForm;
+use App\Filament\Resources\Reviews\Tables\ReviewsTable;
 use App\Models\Review;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -18,9 +17,13 @@ class ReviewResource extends Resource
 {
     protected static ?string $model = Review::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedStar;
 
-    protected static ?string $recordTitleAttribute = 'comment';
+    protected static ?string $navigationLabel = 'Ulasan';
+    protected static ?string $modelLabel = 'Ulasan';
+    protected static ?string $pluralModelLabel = 'Ulasan';
+
+    protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema
     {
@@ -34,16 +37,13 @@ class ReviewResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListReviews::route('/'),
-            'create' => CreateReview::route('/create'),
             'edit' => EditReview::route('/{record}/edit'),
         ];
     }

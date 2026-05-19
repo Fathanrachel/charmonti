@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\CustomOrder;
 use App\Models\Product;
+use App\Models\Review;
+use App\Models\Complaint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,15 +37,32 @@ class CustomerController extends Controller
         $request->validate([
             'quantity'         => 'required|integer|min:1',
             'shipping_address' => 'required|string',
+            'courier'          => 'required|string|in:JNE,J&T,SiCepat',
         ]);
 
-        $total = $product->price * $request->quantity;
+        $itemTotal = $product->price * $request->quantity;
+
+        // Map shipping cost and estimated arrival
+        $shippingCosts = [
+            'J&T' => 10000,
+            'JNE' => 12000,
+            'SiCepat' => 8000,
+        ];
+        
+        $shippingArrivals = [
+            'J&T' => now()->addDays(3),
+            'JNE' => now()->addDays(2),
+            'SiCepat' => now()->addDays(5),
+        ];
+
+        $shippingCost = $shippingCosts[$request->courier] ?? 10000;
+        $totalPrice = $itemTotal + $shippingCost;
 
         $order = Order::create([
             'user_id'          => Auth::id(),
             'order_date'       => now(),
             'status'           => 'pending',
-            'total_price'      => $total,
+            'total_price'      => $totalPrice,
             'shipping_address' => $request->shipping_address,
         ]);
 
@@ -52,6 +71,15 @@ class CustomerController extends Controller
             'product_id' => $product->id,
             'quantity'   => $request->quantity,
             'price'      => $product->price,
+        ]);
+
+        // Automate creating the shipping record!
+        \App\Models\Shipping::create([
+            'order_id' => $order->id,
+            'courier' => $request->courier,
+            'shipping_cost' => $shippingCost,
+            'estimated_arrival' => $shippingArrivals[$request->courier] ?? now()->addDays(3),
+            'status' => 'pending',
         ]);
 
         return redirect()->route('order.success', $order->id);
@@ -76,10 +104,27 @@ class CustomerController extends Controller
             'charms.*'           => 'exists:products,id',
             'request_note'       => 'nullable|string|max:500',
             'shipping_address'   => 'required|string',
+            'courier'            => 'required|string|in:JNE,J&T,SiCepat',
         ]);
 
         $selectedCharms = Product::whereIn('id', $request->charms)->get();
-        $totalPrice = $selectedCharms->sum('price');
+        $itemTotal = $selectedCharms->sum('price');
+
+        // Map shipping cost and estimated arrival
+        $shippingCosts = [
+            'J&T' => 10000,
+            'JNE' => 12000,
+            'SiCepat' => 8000,
+        ];
+        
+        $shippingArrivals = [
+            'J&T' => now()->addDays(3),
+            'JNE' => now()->addDays(2),
+            'SiCepat' => now()->addDays(5),
+        ];
+
+        $shippingCost = $shippingCosts[$request->courier] ?? 10000;
+        $totalPrice = $itemTotal + $shippingCost;
 
         $order = Order::create([
             'user_id'          => Auth::id(),
@@ -106,6 +151,15 @@ class CustomerController extends Controller
             'request_note'       => $request->request_note,
             'tambahan_aksesoris' => implode(', ', $selectedCharms->pluck('name')->toArray()),
             'status'             => 'pending',
+        ]);
+
+        // Automate creating the shipping record!
+        \App\Models\Shipping::create([
+            'order_id' => $order->id,
+            'courier' => $request->courier,
+            'shipping_cost' => $shippingCost,
+            'estimated_arrival' => $shippingArrivals[$request->courier] ?? now()->addDays(3),
+            'status' => 'pending',
         ]);
 
         return redirect()->route('order.success', $order->id);
@@ -155,5 +209,81 @@ class CustomerController extends Controller
         }
 
         return redirect()->back()->with('error', 'Pesanan ini sudah diproses atau dibayar, tidak dapat dibatalkan.');
+    }
+
+    public function createReview(Order $order)
+    {
+        // Pastikan kepemilikan pesanan
+        abort_if($order->user_id !== Auth::id(), 403);
+        // Hanya pesanan yang selesai yang bisa diulas
+        abort_if($order->status !== 'selesai', 403);
+
+        return view('customer.review', compact('order'));
+    }
+
+    public function storeReview(Request $request, Order $order)
+    {
+        abort_if($order->user_id !== Auth::id(), 403);
+        abort_if($order->status !== 'selesai', 403);
+
+        $request->validate([
+            'ratings' => 'required|array',
+            'ratings.*' => 'required|integer|min:1|max:5',
+            'comments' => 'nullable|array',
+            'comments.*' => 'nullable|string|max:1000',
+        ]);
+
+        foreach ($request->ratings as $productId => $rating) {
+            // Pastikan produk tersebut ada di pesanan ini
+            if ($order->orderItems()->where('product_id', $productId)->exists()) {
+                Review::updateOrCreate(
+                    [
+                        'order_id' => $order->id,
+                        'user_id' => Auth::id(),
+                        'product_id' => $productId,
+                    ],
+                    [
+                        'rating' => $rating,
+                        'comment' => $request->comments[$productId] ?? null,
+                    ]
+                );
+            }
+        }
+
+        return redirect()->route('customer.orders')->with('success', 'Terima kasih atas ulasan produk Anda! ❤️');
+    }
+
+    public function createComplaint(Order $order)
+    {
+        abort_if($order->user_id !== Auth::id(), 403);
+        
+        // Komplain hanya boleh untuk pesanan yang sudah dibayar/selesai
+        $payStatus = $order->payment?->payment_status ?? 'pending';
+        abort_if($payStatus !== 'paid' && $order->status !== 'selesai', 403);
+
+        return view('customer.complaint', compact('order'));
+    }
+
+    public function storeComplaint(Request $request, Order $order)
+    {
+        abort_if($order->user_id !== Auth::id(), 403);
+        
+        $payStatus = $order->payment?->payment_status ?? 'pending';
+        abort_if($payStatus !== 'paid' && $order->status !== 'selesai', 403);
+
+        $request->validate([
+            'category' => 'required|string|max:255',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        Complaint::create([
+            'order_id' => $order->id,
+            'user_id' => Auth::id(),
+            'category' => $request->category,
+            'message' => $request->message,
+            'status' => 'open',
+        ]);
+
+        return redirect()->route('customer.orders')->with('success', 'Komplain Anda berhasil terkirim dan akan segera ditinjau oleh Admin. ⚠️');
     }
 }

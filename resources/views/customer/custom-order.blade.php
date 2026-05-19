@@ -94,6 +94,43 @@
                         placeholder="Masukkan alamat lengkap...">{{ old('shipping_address') }}</textarea>
                 </div>
 
+                {{-- Pilihan Kurir Pengiriman --}}
+                <div>
+                    <label class="text-sm font-semibold text-gray-700 block mb-2">Pilih Kurir & Layanan Pengiriman</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="courier" value="J&T" class="hidden peer" required checked>
+                            <div class="border-2 border-gray-200 peer-checked:border-amber-500 peer-checked:bg-amber-50/50 rounded-xl p-3.5 transition hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
+                                <div>
+                                    <span class="font-bold text-gray-800 text-sm block">J&T Express</span>
+                                    <span class="text-xs text-gray-400 block mt-0.5">Estimasi: 2 - 3 Hari</span>
+                                </div>
+                                <span class="font-extrabold text-amber-600 text-sm mt-3 block">Rp 10.000</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="courier" value="JNE" class="hidden peer">
+                            <div class="border-2 border-gray-200 peer-checked:border-amber-500 peer-checked:bg-amber-50/50 rounded-xl p-3.5 transition hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
+                                <div>
+                                    <span class="font-bold text-gray-800 text-sm block">JNE Reguler</span>
+                                    <span class="text-xs text-gray-400 block mt-0.5">Estimasi: 1 - 2 Hari</span>
+                                </div>
+                                <span class="font-extrabold text-amber-600 text-sm mt-3 block">Rp 12.000</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="courier" value="SiCepat" class="hidden peer">
+                            <div class="border-2 border-gray-200 peer-checked:border-amber-500 peer-checked:bg-amber-50/50 rounded-xl p-3.5 transition hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
+                                <div>
+                                    <span class="font-bold text-gray-800 text-sm block">SiCepat Halu</span>
+                                    <span class="text-xs text-gray-400 block mt-0.5">Estimasi: 3 - 5 Hari</span>
+                                </div>
+                                <span class="font-extrabold text-amber-600 text-sm mt-3 block">Rp 8.000</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div>
                     <label class="text-sm font-medium text-gray-700">Catatan Tambahan <span class="text-gray-400">(opsional)</span></label>
                     <textarea name="request_note" rows="2"
@@ -103,10 +140,20 @@
             </div>
 
             {{-- Total & Submit --}}
-            <div class="bg-white rounded-xl shadow p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-gray-600">Total Harga</span>
-                    <span id="total-price" class="text-xl font-bold text-amber-500">Rp 0</span>
+            <div class="bg-white rounded-xl shadow p-6 space-y-4">
+                <div class="bg-amber-50/50 border border-amber-200/20 rounded-xl p-4 text-sm space-y-2">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Harga Gelang Custom</span>
+                        <span id="subtotal-price">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Ongkos Kirim</span>
+                        <span id="shipping-cost-display">Rp 10.000</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-gray-800 pt-2 border-t border-dashed border-amber-200">
+                        <span>Total Bayar</span>
+                        <span id="total-price" class="text-amber-600 text-base">Rp 10.000</span>
+                    </div>
                 </div>
                 <button type="submit"
                     class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition">
@@ -126,7 +173,40 @@
 
         const checkboxes = document.querySelectorAll('.charm-checkbox');
         const countEl = document.getElementById('charm-count');
+        const subtotalEl = document.getElementById('subtotal-price');
+        const shippingEl = document.getElementById('shipping-cost-display');
         const totalEl = document.getElementById('total-price');
+        const courierRadios = document.querySelectorAll('input[name="courier"]');
+
+        const shippingCosts = {
+            'J&T': 10000,
+            'JNE': 12000,
+            'SiCepat': 8000
+        };
+
+        function calculateTotal() {
+            const checked = document.querySelectorAll('.charm-checkbox:checked');
+            
+            // Update count
+            countEl.textContent = checked.length;
+
+            // Calculate items subtotal
+            let subtotal = 0;
+            checked.forEach(c => subtotal += prices[c.value] || 0);
+
+            // Get selected courier cost
+            let selectedCourier = 'J&T';
+            courierRadios.forEach(radio => {
+                if (radio.checked) selectedCourier = radio.value;
+            });
+            const shippingCost = shippingCosts[selectedCourier];
+
+            // Update DOM
+            subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            shippingEl.textContent = 'Rp ' + shippingCost.toLocaleString('id-ID');
+            const grandTotal = subtotal + shippingCost;
+            totalEl.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+        }
 
         checkboxes.forEach(cb => {
             cb.addEventListener('change', function() {
@@ -138,19 +218,20 @@
                     return;
                 }
 
-                // Update count
-                countEl.textContent = checked.length;
-
                 // Update style
                 this.closest('label').querySelector('.charm-card').classList.toggle('border-amber-500', this.checked);
                 this.closest('label').querySelector('.charm-card').classList.toggle('bg-amber-50', this.checked);
 
-                // Update total
-                let total = 0;
-                checked.forEach(c => total += prices[c.value] || 0);
-                totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
+                calculateTotal();
             });
         });
+
+        courierRadios.forEach(radio => {
+            radio.addEventListener('change', calculateTotal);
+        });
+
+        // Run initially
+        calculateTotal();
     </script>
 
 </body>

@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Reviews\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -14,36 +14,36 @@ class ReviewsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order.id')
-                    ->label('Order #')
-                    ->sortable(),
-
                 TextColumn::make('user.name')
-                    ->label('Customer')
-                    ->searchable(),
+                    ->label('Pelanggan')
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('product.name')
                     ->label('Produk')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('rating')
-                    ->label('Rating')
-                    ->sortable()
-                    ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state)),
+                    ->label('Penilaian')
+                    ->badge()
+                    ->color('amber')
+                    ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state) . " ($state)")
+                    ->sortable(),
 
                 TextColumn::make('comment')
                     ->label('Komentar')
-                    ->limit(50)
-                    ->toggleable(),
+                    ->searchable()
+                    ->limit(50),
 
                 TextColumn::make('created_at')
                     ->label('Tanggal')
-                    ->dateTime('d M Y')
+                    ->dateTime('d M Y, H:i')
                     ->sortable(),
             ])
             ->filters([])
             ->recordActions([
-                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

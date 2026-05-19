@@ -12,7 +12,7 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-amber-50 to-orange-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-linear-to-br from-amber-50 to-orange-100 min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white/80 backdrop-blur-md border border-white/40 rounded-3xl shadow-xl p-8 md:p-12 max-w-lg w-full text-center relative overflow-hidden">
         {{-- Background decorative elements --}}
@@ -51,7 +51,7 @@
 
             <div class="space-y-3">
                 <a href="{{ route('customer.orders') }}"
-                   class="block w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3.5 rounded-xl transition duration-300 shadow-md hover:shadow-lg text-center transform hover:-translate-y-0.5">
+                   class="block w-full bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3.5 rounded-xl transition duration-300 shadow-md hover:shadow-lg text-center transform hover:-translate-y-0.5">
                     Lacak Pengiriman 🚚
                 </a>
 

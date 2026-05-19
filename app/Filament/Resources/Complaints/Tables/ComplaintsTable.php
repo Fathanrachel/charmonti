@@ -15,27 +15,23 @@ class ComplaintsTable
         return $table
             ->columns([
                 TextColumn::make('order.id')
-                    ->label('Order #')
+                    ->label('Pesanan #')
                     ->sortable(),
 
                 TextColumn::make('user.name')
-                    ->label('Customer')
-                    ->searchable(),
+                    ->label('Pelanggan')
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('category')
-                    ->label('Kategori')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'produk'     => 'danger',
-                        'pengiriman' => 'warning',
-                        'pembayaran' => 'info',
-                        'lainnya'    => 'gray',
-                    }),
+                    ->label('Kategori Masalah')
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('message')
-                    ->label('Pesan')
-                    ->limit(50)
-                    ->toggleable(),
+                    ->label('Detail Aduan')
+                    ->searchable()
+                    ->limit(50),
 
                 TextColumn::make('status')
                     ->label('Status')
@@ -44,11 +40,17 @@ class ComplaintsTable
                         'open'     => 'danger',
                         'diproses' => 'warning',
                         'selesai'  => 'success',
-                    }),
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'open'     => 'Baru / Menunggu',
+                        'diproses' => 'Diproses Toko',
+                        'selesai'  => 'Selesai / Teratasi',
+                    })
+                    ->sortable(),
 
                 TextColumn::make('created_at')
-                    ->label('Tanggal')
-                    ->dateTime('d M Y')
+                    ->label('Tanggal Pengaduan')
+                    ->dateTime('d M Y, H:i')
                     ->sortable(),
             ])
             ->filters([])

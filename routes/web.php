@@ -33,6 +33,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [CustomerController::class, 'orders'])->name('customer.orders');
     Route::post('/orders/{order}/cancel', [CustomerController::class, 'cancel'])->name('customer.order.cancel');
 
+    // Ulasan (Review)
+    Route::get('/orders/{order}/review', [CustomerController::class, 'createReview'])->name('customer.order.review');
+    Route::post('/orders/{order}/review', [CustomerController::class, 'storeReview'])->name('customer.order.review.store');
+
+    // Komplain (Complaint)
+    Route::get('/orders/{order}/complaint', [CustomerController::class, 'createComplaint'])->name('customer.order.complaint');
+    Route::post('/orders/{order}/complaint', [CustomerController::class, 'storeComplaint'])->name('customer.order.complaint.store');
+
     // Payment routes
     Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');
     Route::get('/payment/{order}/success', [PaymentController::class, 'success'])->name('payment.success');
