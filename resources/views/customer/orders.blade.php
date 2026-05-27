@@ -7,69 +7,70 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Outfit', sans-serif;
-        }
+        body { font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body class="bg-linear-to-br from-amber-50/60 to-orange-100/30 min-h-screen">
+<body class="bg-[#FCFBF9] text-gray-700 min-h-screen">
 
     {{-- Navbar --}}
     <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 px-6 py-4 flex justify-between items-center shadow-sm">
-        <a href="/" class="flex items-center gap-2.5 hover:opacity-95 transition">
-            <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-9 w-9 rounded-full object-cover border border-amber-200/50 shadow-sm">
-            <span class="text-2xl font-bold bg-linear-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">CharmOnTi</span>
-        </a>
-        <div class="flex gap-6 text-sm font-medium items-center">
-            <a href="/" class="text-gray-600 hover:text-amber-500 transition">Produk</a>
-            <a href="{{ route('customer.orders') }}" class="text-amber-500 border-b-2 border-amber-500 pb-1">Pesanan Saya</a>
+        <h1 class="text-2xl font-bold tracking-tight">
+            <a href="/" class="flex items-center gap-2.5 hover:opacity-90 transition">
+                <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-10 w-10 rounded-full object-cover border border-rose-100 shadow-sm">
+                <span class="bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
+            </a>
+        </h1>
+        <div class="flex gap-5 text-sm font-medium items-center">
+            <a href="/" class="text-gray-500 hover:text-rose-500 transition">Produk</a>
+            <a href="{{ route('customer.orders') }}" class="text-rose-500 border-b-2 border-rose-400 pb-1">Pesanan Saya</a>
             @auth
                 <span class="text-gray-500 font-normal">Halo, <span class="font-semibold text-gray-700">{{ Auth::user()->name }}</span></span>
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
-                    <button type="submit" class="text-red-400 hover:text-red-600 font-semibold transition">Logout</button>
+                    <button type="submit" class="text-gray-400 hover:text-red-500 font-semibold transition">Logout</button>
                 </form>
             @endauth
         </div>
     </nav>
 
     {{-- Main Container --}}
-    <div class="max-w-4xl mx-auto px-4 py-10">
+    <div class="max-w-4xl mx-auto px-6 py-12">
         @if(session('success'))
-            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-2xl mb-6 flex items-center justify-between shadow-sm">
+            <div class="bg-green-50 border border-green-100 text-green-700 px-5 py-4 rounded-2xl mb-8 flex items-center justify-between shadow-sm">
                 <span class="text-sm font-medium">✨ {{ session('success') }}</span>
             </div>
         @endif
         @if(session('error'))
-            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6 flex items-center justify-between shadow-sm">
+            <div class="bg-red-50 border border-red-100 text-red-700 px-5 py-4 rounded-2xl mb-8 flex items-center justify-between shadow-sm">
                 <span class="text-sm font-medium">⚠️ {{ session('error') }}</span>
             </div>
         @endif
+        
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h2 class="text-3xl font-bold text-gray-800">Pesanan Saya</h2>
-                <p class="text-sm text-gray-500 mt-1">Pantau pembayaran dan status pengiriman paketmu di sini</p>
+                <h2 class="text-3xl font-bold text-gray-800 tracking-tight">Pesanan Saya 🌸</h2>
+                <p class="text-sm text-gray-500 mt-2 font-light">Pantau pembayaran dan status pengiriman paket cantikmu di sini</p>
             </div>
-            <a href="/" class="text-sm text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1.5 transition">
+            <a href="/" class="text-sm text-rose-500 hover:text-rose-600 font-medium flex items-center gap-1.5 transition">
                 <span>←</span> Belanja Lagi
             </a>
         </div>
 
         @if($orders->isEmpty())
-            <div class="bg-white border border-gray-100 rounded-3xl p-12 text-center shadow-sm">
-                <div class="text-6xl mb-4">🛍️</div>
+            <div class="bg-white border border-gray-100/50 rounded-3xl p-16 text-center shadow-sm">
+                <div class="text-6xl mb-4 opacity-75">🛍️</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Belum ada pesanan</h3>
-                <p class="text-gray-500 text-sm mb-6 max-w-sm mx-auto">Kamu belum melakukan pemesanan apa pun. Yuk, buat gelang impianmu sekarang!</p>
-                <a href="/" class="inline-block bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition shadow-md">
+                <p class="text-gray-500 text-sm mb-8 font-light max-w-sm mx-auto">Kamu belum melakukan pemesanan apa pun. Yuk, buat gelang impianmu sekarang!</p>
+                <a href="/" class="inline-block bg-rose-400 hover:bg-rose-500 text-white font-medium px-8 py-3.5 rounded-full transition shadow-sm hover:shadow-md hover:-translate-y-0.5">
                     Cari Produk ✨
                 </a>
             </div>
         @else
-            <div class="space-y-6">
+            <div class="space-y-8">
                 @foreach($orders as $order)
-                    <div class="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden hover:shadow-md transition duration-300">
+                    <div class="bg-white border border-gray-100/50 rounded-3xl shadow-sm overflow-hidden hover:shadow-md transition duration-300">
                         {{-- Card Header --}}
-                        <div class="bg-amber-50/40 px-6 py-4 border-b border-gray-100 flex flex-wrap justify-between items-center gap-2">
+                        <div class="bg-rose-50/30 px-8 py-5 border-b border-rose-50 flex flex-wrap justify-between items-center gap-2">
                             <div class="flex items-center gap-3">
                                 <span class="text-sm font-semibold text-gray-600">{{ \Carbon\Carbon::parse($order->order_date)->translatedFormat('d M Y, H:i') }} WIB</span>
                             </div>
@@ -77,10 +78,10 @@
                             {{-- Order Status Badge --}}
                             @php
                                 $statusColors = [
-                                    'pending' => 'bg-amber-100 text-amber-700 border-amber-200',
-                                    'diproses' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                    'selesai' => 'bg-green-100 text-green-700 border-green-200',
-                                    'batal' => 'bg-red-100 text-red-700 border-red-200',
+                                    'pending' => 'bg-rose-100 text-rose-700 border-rose-200',
+                                    'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                    'selesai' => 'bg-green-50 text-green-600 border-green-100',
+                                    'batal' => 'bg-red-50 text-red-600 border-red-100',
                                 ];
                                 $statusLabels = [
                                     'pending' => 'Menunggu Pembayaran',
@@ -90,21 +91,21 @@
                                 ];
                                 $orderStatus = $order->status;
                             @endphp
-                            <span class="text-xs font-semibold px-3 py-1 rounded-full border {{ $statusColors[$orderStatus] ?? 'bg-gray-100 text-gray-700' }}">
+                            <span class="text-xs font-medium px-4 py-1.5 rounded-full border {{ $statusColors[$orderStatus] ?? 'bg-gray-50 text-gray-600 border-gray-200' }}">
                                 {{ $statusLabels[$orderStatus] ?? $orderStatus }}
                             </span>
                         </div>
 
                         @if($orderStatus === 'pending' && ($order->payment?->payment_status ?? 'pending') === 'pending')
-                            <div class="bg-amber-50/60 px-6 py-2.5 border-b border-amber-100/50 flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center text-xs text-amber-700 font-medium">
+                            <div class="bg-rose-50/60 px-8 py-3 border-b border-rose-100/50 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center text-xs text-rose-700 font-medium">
                                 <div class="flex items-center gap-2">
-                                    <span class="relative flex h-2 w-2">
-                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                    <span class="relative flex h-2.5 w-2.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
                                     </span>
                                     <span>Selesaikan pembayaran Anda segera sebelum batas waktu berakhir:</span>
                                 </div>
-                                <div class="bg-amber-100/70 border border-amber-200/50 px-3 py-1 rounded-xl flex items-center gap-1.5 font-bold font-mono text-amber-800 self-end sm:self-auto shadow-sm">
+                                <div class="bg-white border border-rose-200 px-4 py-1.5 rounded-full flex items-center gap-2 font-bold font-mono text-rose-600 self-end sm:self-auto shadow-sm">
                                     <span>⏳</span>
                                     <span class="countdown-timer" data-expiry="{{ \Carbon\Carbon::parse($order->order_date)->addDay()->toIso8601String() }}">--:--:--</span>
                                 </div>
@@ -112,46 +113,46 @@
                         @endif
 
                         {{-- Card Body --}}
-                        <div class="p-6">
+                        <div class="p-8">
                             {{-- Items --}}
-                            <div class="space-y-4 mb-6">
+                            <div class="space-y-5 mb-8">
                                 @foreach($order->orderItems as $item)
-                                    <div class="flex items-center gap-4">
-                                        <div class="bg-amber-50 rounded-xl h-14 w-14 flex items-center justify-center shrink-0 border border-amber-100">
+                                    <div class="flex items-center gap-5">
+                                        <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-50">
                                             @if($item->product->image)
-                                                <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover rounded-xl">
+                                                <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover rounded-2xl">
                                             @else
-                                                <span class="text-2xl">📿</span>
+                                                <span class="text-2xl text-rose-300">📿</span>
                                             @endif
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <h4 class="font-semibold text-gray-800 text-sm truncate">{{ $item->product->name }}</h4>
-                                            <p class="text-xs text-gray-400 mt-0.5">Jumlah: {{ $item->quantity }}x • Satuan: Rp {{ number_format($item->price, 0, ',', '.') }}</p>
+                                            <p class="text-xs text-gray-500 mt-1 font-light">Jumlah: {{ $item->quantity }}x • Satuan: Rp {{ number_format($item->price, 0, ',', '.') }}</p>
                                         </div>
                                         <div class="text-right shrink-0">
-                                            <span class="font-semibold text-gray-700 text-sm">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>
+                                            <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
 
-                            <hr class="border-gray-100 my-4">
+                            <hr class="border-gray-100 my-6">
 
                             {{-- Payment and Shipping Details Grid --}}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                                 {{-- Payment Column --}}
-                                <div class="bg-amber-50/20 border border-amber-200/20 rounded-2xl p-4">
-                                    <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Informasi Pembayaran</h5>
-                                    <div class="space-y-2 text-sm text-gray-600">
+                                <div class="bg-gray-50/50 border border-gray-100 rounded-2xl p-5">
+                                    <h5 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Informasi Pembayaran</h5>
+                                    <div class="space-y-3 text-sm text-gray-600">
                                         <div class="flex justify-between">
-                                            <span>Metode:</span>
+                                            <span class="font-light">Metode:</span>
                                             <span class="font-semibold text-gray-800 capitalize">{{ $order->payment_method ?? 'Midtrans' }}</span>
                                         </div>
                                         <div class="flex justify-between items-center">
-                                            <span>Status:</span>
+                                            <span class="font-light">Status:</span>
                                             @php
                                                 $payStatusColors = [
-                                                    'pending' => 'text-amber-500 bg-amber-50 border-amber-200',
+                                                    'pending' => 'text-rose-500 bg-rose-50 border-rose-200',
                                                     'paid' => 'text-green-600 bg-green-50 border-green-200',
                                                     'failed' => 'text-red-500 bg-red-50 border-red-200',
                                                 ];
@@ -162,39 +163,39 @@
                                                 ];
                                                 $payStatus = $order->payment?->payment_status ?? 'pending';
                                             @endphp
-                                            <span class="text-xs font-bold px-2 py-0.5 rounded border {{ $payStatusColors[$payStatus] }}">
+                                            <span class="text-xs font-bold px-3 py-1 rounded-full border {{ $payStatusColors[$payStatus] }}">
                                                 {{ $payStatusLabels[$payStatus] }}
                                             </span>
                                         </div>
                                         @if($order->payment?->payment_date)
                                         <div class="flex justify-between">
-                                            <span>Tanggal Bayar:</span>
-                                            <span class="font-semibold text-gray-800 text-xs">{{ \Carbon\Carbon::parse($order->payment->payment_date)->translatedFormat('d M Y H:i') }} WIB</span>
+                                            <span class="font-light">Tanggal Bayar:</span>
+                                            <span class="font-medium text-gray-800 text-xs">{{ \Carbon\Carbon::parse($order->payment->payment_date)->translatedFormat('d M Y H:i') }} WIB</span>
                                         </div>
                                         @endif
                                     </div>
                                 </div>
 
                                 {{-- Shipping Column --}}
-                                <div class="bg-orange-50/15 border border-orange-200/20 rounded-2xl p-4">
-                                    <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Informasi Pengiriman</h5>
+                                <div class="bg-gray-50/50 border border-gray-100 rounded-2xl p-5">
+                                    <h5 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Informasi Pengiriman</h5>
                                     @if($order->shipping)
-                                        <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="space-y-3 text-sm text-gray-600">
                                             <div class="flex justify-between">
-                                                <span>Kurir:</span>
+                                                <span class="font-light">Kurir:</span>
                                                 <span class="font-semibold text-gray-800 capitalize">{{ $order->shipping->courier ?: '-' }}</span>
                                             </div>
                                             <div class="flex justify-between">
-                                                <span>No. Resi:</span>
-                                                <span class="font-semibold text-amber-600 font-mono">{{ $order->shipping->tracking_number ?: 'Belum diisi oleh Kurir' }}</span>
+                                                <span class="font-light">No. Resi:</span>
+                                                <span class="font-semibold text-rose-500 font-mono tracking-wide">{{ $order->shipping->tracking_number ?: 'Belum diisi oleh Kurir' }}</span>
                                             </div>
                                             <div class="flex justify-between items-center">
-                                                <span>Status:</span>
+                                                <span class="font-light">Status:</span>
                                                 @php
                                                     $shipColors = [
-                                                        'pending' => 'bg-amber-100 text-amber-700',
-                                                        'dikirim' => 'bg-blue-100 text-blue-700',
-                                                        'sampai' => 'bg-green-100 text-green-700',
+                                                        'pending' => 'bg-rose-50 text-rose-600 border-rose-100',
+                                                        'dikirim' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                                        'sampai' => 'bg-green-50 text-green-600 border-green-100',
                                                     ];
                                                     $shipLabels = [
                                                         'pending' => 'Diproses',
@@ -203,46 +204,48 @@
                                                     ];
                                                     $shipStatus = $order->shipping->status;
                                                 @endphp
-                                                <span class="text-xs font-bold px-2 py-0.5 rounded-full {{ $shipColors[$shipStatus] ?? 'bg-gray-100 text-gray-700' }}">
+                                                <span class="text-xs font-medium px-3 py-1 rounded-full border {{ $shipColors[$shipStatus] ?? 'bg-gray-50 text-gray-600 border-gray-200' }}">
                                                     {{ $shipLabels[$shipStatus] ?? $shipStatus }}
                                                 </span>
                                             </div>
                                             @if($order->shipping->estimated_arrival)
                                             <div class="flex justify-between">
-                                                <span>Estimasi Tiba:</span>
-                                                <span class="font-semibold text-gray-800 text-xs">{{ \Carbon\Carbon::parse($order->shipping->estimated_arrival)->translatedFormat('d M Y') }}</span>
+                                                <span class="font-light">Estimasi Tiba:</span>
+                                                <span class="font-medium text-gray-800 text-xs">{{ \Carbon\Carbon::parse($order->shipping->estimated_arrival)->translatedFormat('d M Y') }}</span>
                                             </div>
                                             @endif
                                         </div>
                                     @else
-                                        <p class="text-xs text-gray-400 italic py-2">
-                                            @if($payStatus === 'paid')
-                                                Menunggu kurir ditunjuk...
-                                            @else
-                                                Selesaikan pembayaran terlebih dahulu.
-                                            @endif
-                                        </p>
+                                        <div class="flex items-center justify-center h-full">
+                                            <p class="text-xs text-gray-400 font-light italic">
+                                                @if($payStatus === 'paid')
+                                                    Menunggu kurir ditunjuk...
+                                                @else
+                                                    Selesaikan pembayaran terlebih dahulu.
+                                                @endif
+                                            </p>
+                                        </div>
                                     @endif
                                 </div>
                             </div>
 
                             @if($order->complaints->isNotEmpty())
-                                <div class="bg-red-50/40 border border-red-100 rounded-2xl p-4 mb-4">
-                                    <h6 class="text-xs font-bold text-red-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                                <div class="bg-red-50/50 border border-red-100 rounded-2xl p-5 mb-6">
+                                    <h6 class="text-xs font-bold text-red-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                         <span>⚠️</span> Riwayat Komplain Pesanan:
                                     </h6>
-                                    <div class="space-y-3">
+                                    <div class="space-y-4">
                                         @foreach($order->complaints as $complaint)
-                                            <div class="flex justify-between items-start gap-4 text-xs border-b border-red-100/50 last:border-0 pb-2 last:pb-0">
+                                            <div class="flex justify-between items-start gap-4 text-xs border-b border-red-100/50 last:border-0 pb-3 last:pb-0">
                                                 <div class="text-gray-600">
-                                                    <span class="font-bold text-gray-800 capitalize bg-red-50 px-2 py-0.5 rounded border border-red-100 mr-1.5">{{ $complaint->category }}</span>
-                                                    <span class="italic">"{{ $complaint->message }}"</span>
+                                                    <span class="font-semibold text-gray-800 capitalize bg-white px-2.5 py-1 rounded-md border border-red-100 mr-2 shadow-sm">{{ $complaint->category }}</span>
+                                                    <span class="italic font-light leading-relaxed">"{{ $complaint->message }}"</span>
                                                 </div>
                                                 @php
                                                     $compColors = [
-                                                        'open' => 'bg-red-100 text-red-700 border-red-200',
-                                                        'diproses' => 'bg-amber-100 text-amber-700 border-amber-200',
-                                                        'selesai' => 'bg-green-100 text-green-700 border-green-200',
+                                                        'open' => 'bg-red-50 text-red-600 border-red-200',
+                                                        'diproses' => 'bg-rose-50 text-rose-600 border-rose-200',
+                                                        'selesai' => 'bg-green-50 text-green-600 border-green-200',
                                                     ];
                                                     $compLabels = [
                                                         'open' => 'Baru / Menunggu',
@@ -250,7 +253,7 @@
                                                         'selesai' => 'Selesai / Teratasi',
                                                     ];
                                                 @endphp
-                                                <span class="px-2.5 py-0.5 rounded-full border text-[10px] font-bold shrink-0 {{ $compColors[$complaint->status] ?? 'bg-gray-100 text-gray-700' }}">
+                                                <span class="px-3 py-1 rounded-full border text-[10px] font-bold shrink-0 {{ $compColors[$complaint->status] ?? 'bg-gray-50 text-gray-600' }}">
                                                     {{ $compLabels[$complaint->status] ?? $complaint->status }}
                                                 </span>
                                             </div>
@@ -260,10 +263,10 @@
                             @endif
 
                             {{-- Footer Summary / Action --}}
-                            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-5 bg-rose-50/20 p-5 rounded-2xl border border-rose-50 mt-2">
                                 <div>
-                                    <span class="text-xs text-gray-400 block">Total Transaksi</span>
-                                    <span class="text-xl font-bold text-amber-500">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                                    <span class="text-xs text-gray-400 block font-light uppercase tracking-wide mb-1">Total Transaksi</span>
+                                    <span class="text-2xl font-bold text-rose-500 tracking-tight">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
                                 </div>
 
                                 @if($orderStatus === 'pending' && $payStatus === 'pending')
@@ -271,49 +274,49 @@
                                         <form method="POST" action="{{ route('customer.order.cancel', $order->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?');" class="inline">
                                             @csrf
                                             <button type="submit"
-                                                    class="border border-red-200 hover:bg-red-50 text-red-500 font-semibold px-5 py-2.5 rounded-xl text-center transition text-sm flex items-center justify-center gap-1.5">
-                                                Batalkan Pesanan ❌
+                                                    class="bg-white border border-gray-200 hover:bg-gray-50 hover:border-red-200 hover:text-red-500 text-gray-500 font-medium px-5 py-3 rounded-full text-center transition duration-300 text-sm flex items-center justify-center shadow-sm">
+                                                Batalkan
                                             </button>
                                         </form>
                                         <a href="{{ route('payment.show', $order->id) }}"
-                                           class="bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl text-center transition shadow-sm hover:shadow transform hover:-translate-y-0.5 text-sm flex items-center justify-center gap-1.5">
-                                            Bayar Sekarang 💳
+                                           class="bg-rose-400 hover:bg-rose-500 text-white font-medium px-8 py-3 rounded-full text-center transition duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 text-sm flex items-center justify-center gap-2">
+                                            Bayar Sekarang ✨
                                         </a>
                                     </div>
                                 @elseif($orderStatus === 'pending' && $payStatus === 'paid')
-                                    <span class="text-xs font-medium text-green-600 bg-green-50 border border-green-100 px-3 py-1.5 rounded-xl self-start sm:self-center">
+                                    <span class="text-xs font-medium text-green-600 bg-green-50/80 border border-green-100 px-4 py-2 rounded-full self-start sm:self-center shadow-sm">
                                         Pembayaran Lunas, Menunggu Konfirmasi Toko
                                     </span>
                                 @elseif($orderStatus === 'diproses')
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-3">
                                         @if($payStatus === 'paid')
                                             <a href="{{ route('customer.order.complaint', $order->id) }}"
-                                               class="border border-red-200 hover:bg-red-50 text-red-500 font-semibold px-4 py-2 rounded-xl text-xs transition">
-                                                Ajukan Komplain ⚠️
+                                               class="bg-white border border-gray-200 hover:border-red-200 hover:text-red-500 text-gray-500 font-medium px-4 py-2.5 rounded-full text-xs transition shadow-sm">
+                                                Ajukan Komplain
                                             </a>
                                         @endif
-                                        <span class="text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl self-start sm:self-center">
-                                            Penjual sedang mempersiapkan gelang unikmu 💖
+                                        <span class="text-xs font-medium text-blue-600 bg-blue-50/80 border border-blue-100 px-4 py-2.5 rounded-full self-start sm:self-center shadow-sm">
+                                            Penjual sedang mempersiapkan pesananmu 💖
                                         </span>
                                     </div>
                                 @elseif($orderStatus === 'selesai')
                                     @php
                                         $hasReviewed = \App\Models\Review::where('order_id', $order->id)->where('user_id', Auth::id())->exists();
                                     @endphp
-                                    <div class="flex items-center gap-2.5">
+                                    <div class="flex items-center gap-3">
                                         @if($payStatus === 'paid')
                                             <a href="{{ route('customer.order.complaint', $order->id) }}"
-                                               class="border border-red-200 hover:bg-red-50 text-red-500 font-semibold px-4 py-2 rounded-xl text-xs transition">
-                                                Ajukan Komplain ⚠️
+                                               class="bg-white border border-gray-200 hover:border-red-200 hover:text-red-500 text-gray-500 font-medium px-4 py-2.5 rounded-full text-xs transition shadow-sm">
+                                                Ajukan Komplain
                                             </a>
                                         @endif
                                         @if($hasReviewed)
-                                            <span class="text-xs font-semibold text-gray-500 bg-gray-100 border border-gray-200 px-4 py-2 rounded-xl">
-                                                Ulasan Dikirim ✓
+                                            <span class="text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 px-5 py-2.5 rounded-full shadow-sm">
+                                                Ulasan Terkirim ✓
                                             </span>
                                         @else
                                             <a href="{{ route('customer.order.review', $order->id) }}"
-                                               class="bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm">
+                                               class="bg-rose-400 hover:bg-rose-500 text-white font-medium px-6 py-2.5 rounded-full text-xs transition shadow-sm hover:shadow-md hover:-translate-y-0.5">
                                                 Beri Ulasan ⭐
                                             </a>
                                         @endif
@@ -339,7 +342,7 @@
 
                     if (distance < 0) {
                         timer.innerHTML = "Kadaluarsa";
-                        timer.closest('.bg-white').style.opacity = '0.7';
+                        timer.closest('.bg-white').style.opacity = '0.6';
                         // Refresh halaman secara otomatis setelah waktu habis untuk memicu pembatalan otomatis di backend
                         setTimeout(() => {
                             window.location.reload();
