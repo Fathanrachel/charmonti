@@ -5,75 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gelang Custom — Charm.onti</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
 </head>
-<body class="bg-amber-50 min-h-screen">
+<body class="bg-[#FCFBF9] text-gray-700 min-h-screen">
 
-    <nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-amber-500">Charm.onti</h1>
-        <a href="/" class="text-sm text-gray-600 hover:text-amber-500">← Kembali</a>
+    {{-- Navbar --}}
+    <nav class="bg-white/80 backdrop-blur-md shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-2xl font-bold tracking-tight">
+            <a href="/" class="flex items-center gap-2.5 hover:opacity-90 transition">
+                <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-10 w-10 rounded-full object-cover border border-rose-100 shadow-sm">
+                <span class="bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
+            </a>
+        </h1>
+        <a href="/" class="text-sm font-medium text-gray-500 hover:text-rose-500 transition">← Kembali</a>
     </nav>
 
-    <div class="max-w-3xl mx-auto px-6 py-10">
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">Buat Gelang Custom</h2>
-        <p class="text-gray-500 text-sm mb-8">Pilih warna strap dan charm favoritmu (maks. 15 charm)</p>
+    <div class="max-w-3xl mx-auto px-6 py-12">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2 tracking-tight">Buat Gelang Custom 🌸</h2>
+        <p class="text-gray-500 text-base font-light mb-8">Pilih warna strap dan charm favoritmu untuk merangkai kisahmu sendiri (maks. 15 charm)</p>
 
         @if($errors->any())
-            <div class="bg-red-50 text-red-500 text-sm rounded-lg px-4 py-3 mb-6">
+            <div class="bg-red-50 text-red-500 text-sm rounded-2xl px-5 py-4 mb-6 border border-red-100 shadow-sm">
                 {{ $errors->first() }}
             </div>
         @endif
 
-        <form method="POST" action="{{ route('custom.order.store') }}" class="space-y-6">
+        <form method="POST" action="{{ route('custom.order.store') }}" class="space-y-8">
             @csrf
 
             {{-- Pilih Warna Strap --}}
-            <div class="bg-white rounded-xl shadow p-6">
-                <h3 class="font-semibold text-gray-800 mb-4">1. Pilih Warna Strap</h3>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8">
+                <h3 class="font-bold text-lg text-gray-800 mb-5">1. Pilih Warna Strap</h3>
                 <div class="flex gap-4">
-                    <label class="flex-1 cursor-pointer">
+                    <label class="flex-1 cursor-pointer group">
                         <input type="radio" name="warna" value="silver" class="hidden peer" required>
-                        <div class="border-2 border-gray-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 rounded-xl p-4 text-center transition">
-                            <div class="text-3xl mb-2">⬜</div>
-                            <span class="font-medium text-gray-700">Silver</span>
+                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 group-hover:bg-gray-50 shadow-sm">
+                            <div class="text-4xl mb-3">⚪</div>
+                            <span class="font-semibold text-gray-700">Silver</span>
                         </div>
                     </label>
-                    <label class="flex-1 cursor-pointer">
+                    <label class="flex-1 cursor-pointer group">
                         <input type="radio" name="warna" value="gold" class="hidden peer">
-                        <div class="border-2 border-gray-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 rounded-xl p-4 text-center transition">
-                            <div class="text-3xl mb-2">🟨</div>
-                            <span class="font-medium text-gray-700">Gold</span>
+                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 group-hover:bg-gray-50 shadow-sm">
+                            <div class="text-4xl mb-3">🟡</div>
+                            <span class="font-semibold text-gray-700">Gold</span>
                         </div>
                     </label>
                 </div>
             </div>
 
             {{-- Pilih Charm --}}
-            <div class="bg-white rounded-xl shadow p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-semibold text-gray-800">2. Pilih Charm</h3>
-                    <span class="text-sm text-gray-500">Dipilih: <span id="charm-count" class="font-bold text-amber-500">0</span>/15</span>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-lg text-gray-800">2. Pilih Charm</h3>
+                    <span class="text-sm font-medium bg-rose-50 text-rose-500 px-4 py-1.5 rounded-full border border-rose-100">Dipilih: <span id="charm-count" class="font-bold">0</span>/15</span>
                 </div>
 
                 @if($charms->isEmpty())
-                    <p class="text-gray-400 text-center py-6">Belum ada charm tersedia.</p>
+                    <p class="text-gray-400 text-center py-8 font-light">Belum ada charm tersedia.</p>
                 @else
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         @foreach($charms as $charm)
-                        <label class="cursor-pointer">
+                        <label class="cursor-pointer group">
                             <input type="checkbox" name="charms[]" value="{{ $charm->id }}"
                                 class="hidden charm-checkbox">
-                            <div class="charm-card border-2 border-gray-200 rounded-xl p-3 text-center transition hover:border-amber-300">
-                                <div class="bg-amber-50 rounded-lg h-16 flex items-center justify-center mb-2 overflow-hidden">
+                            <div class="charm-card border-2 border-gray-100 rounded-2xl p-4 text-center transition duration-300 group-hover:border-rose-200">
+                                <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden">
                                     @if($charm->image)
                                         <img src="{{ Storage::url($charm->image) }}"
                                             alt="{{ $charm->name }}"
-                                            class="w-full h-full object-cover rounded-lg">
+                                            class="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500">
                                     @else
-                                        <span class="text-2xl">📿</span>
+                                        <span class="text-3xl text-rose-300">📿</span>
                                     @endif
                                 </div>
-                                <p class="text-xs font-medium text-gray-800 leading-tight">{{ $charm->name }}</p>
-                                <p class="text-xs text-amber-500 font-bold mt-1">
+                                <p class="text-sm font-medium text-gray-800 leading-tight mb-1">{{ $charm->name }}</p>
+                                <p class="text-xs text-rose-500 font-bold">
                                     Rp {{ number_format($charm->price, 0, ',', '.') }}
                                 </p>
                             </div>
@@ -84,80 +94,80 @@
             </div>
 
             {{-- Alamat & Catatan --}}
-            <div class="bg-white rounded-xl shadow p-6 space-y-4">
-                <h3 class="font-semibold text-gray-800 mb-2">3. Detail Pengiriman</h3>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 space-y-6">
+                <h3 class="font-bold text-lg text-gray-800 mb-2">3. Detail Pengiriman</h3>
 
                 <div>
-                    <label class="text-sm font-medium text-gray-700">Alamat Pengiriman</label>
+                    <label class="text-sm font-semibold text-gray-700 block mb-2">Alamat Pengiriman</label>
                     <textarea name="shipping_address" rows="3" required
-                        class="w-full mt-1 px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        placeholder="Masukkan alamat lengkap...">{{ old('shipping_address') }}</textarea>
+                        class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
+                        placeholder="Masukkan alamat lengkap kamu...">{{ old('shipping_address') }}</textarea>
                 </div>
 
                 {{-- Pilihan Kurir Pengiriman --}}
                 <div>
-                    <label class="text-sm font-semibold text-gray-700 block mb-2">Pilih Kurir & Layanan Pengiriman</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <label class="cursor-pointer">
+                    <label class="text-sm font-semibold text-gray-700 block mb-3">Pilih Kurir & Layanan Pengiriman</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <label class="cursor-pointer group">
                             <input type="radio" name="courier" value="J&T" class="hidden peer" required checked>
-                            <div class="border-2 border-gray-200 peer-checked:border-amber-500 peer-checked:bg-amber-50/50 rounded-xl p-3.5 transition hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
+                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
                                 <div>
                                     <span class="font-bold text-gray-800 text-sm block">J&T Express</span>
-                                    <span class="text-xs text-gray-400 block mt-0.5">Estimasi: 2 - 3 Hari</span>
+                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 2 - 3 Hari</span>
                                 </div>
-                                <span class="font-extrabold text-amber-600 text-sm mt-3 block">Rp 10.000</span>
+                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 10.000</span>
                             </div>
                         </label>
-                        <label class="cursor-pointer">
+                        <label class="cursor-pointer group">
                             <input type="radio" name="courier" value="JNE" class="hidden peer">
-                            <div class="border-2 border-gray-200 peer-checked:border-amber-500 peer-checked:bg-amber-50/50 rounded-xl p-3.5 transition hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
+                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
                                 <div>
                                     <span class="font-bold text-gray-800 text-sm block">JNE Reguler</span>
-                                    <span class="text-xs text-gray-400 block mt-0.5">Estimasi: 1 - 2 Hari</span>
+                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 1 - 2 Hari</span>
                                 </div>
-                                <span class="font-extrabold text-amber-600 text-sm mt-3 block">Rp 12.000</span>
+                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 12.000</span>
                             </div>
                         </label>
-                        <label class="cursor-pointer">
+                        <label class="cursor-pointer group">
                             <input type="radio" name="courier" value="SiCepat" class="hidden peer">
-                            <div class="border-2 border-gray-200 peer-checked:border-amber-500 peer-checked:bg-amber-50/50 rounded-xl p-3.5 transition hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
+                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
                                 <div>
                                     <span class="font-bold text-gray-800 text-sm block">SiCepat Halu</span>
-                                    <span class="text-xs text-gray-400 block mt-0.5">Estimasi: 3 - 5 Hari</span>
+                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 3 - 5 Hari</span>
                                 </div>
-                                <span class="font-extrabold text-amber-600 text-sm mt-3 block">Rp 8.000</span>
+                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 8.000</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium text-gray-700">Catatan Tambahan <span class="text-gray-400">(opsional)</span></label>
+                    <label class="text-sm font-semibold text-gray-700 block mb-2">Catatan Tambahan <span class="text-gray-400 font-normal">(opsional)</span></label>
                     <textarea name="request_note" rows="2"
-                        class="w-full mt-1 px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
                         placeholder="Contoh: tolong dibungkus cantik ya...">{{ old('request_note') }}</textarea>
                 </div>
             </div>
 
             {{-- Total & Submit --}}
-            <div class="bg-white rounded-xl shadow p-6 space-y-4">
-                <div class="bg-amber-50/50 border border-amber-200/20 rounded-xl p-4 text-sm space-y-2">
-                    <div class="flex justify-between text-gray-600">
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 space-y-5">
+                <div class="bg-rose-50/30 border border-rose-100/50 rounded-2xl p-6 text-sm space-y-3">
+                    <div class="flex justify-between text-gray-500">
                         <span>Harga Gelang Custom</span>
-                        <span id="subtotal-price">Rp 0</span>
+                        <span id="subtotal-price" class="font-medium text-gray-700">Rp 0</span>
                     </div>
-                    <div class="flex justify-between text-gray-600">
+                    <div class="flex justify-between text-gray-500">
                         <span>Ongkos Kirim</span>
-                        <span id="shipping-cost-display">Rp 10.000</span>
+                        <span id="shipping-cost-display" class="font-medium text-gray-700">Rp 10.000</span>
                     </div>
-                    <div class="flex justify-between font-bold text-gray-800 pt-2 border-t border-dashed border-amber-200">
+                    <div class="flex justify-between font-bold text-gray-800 pt-4 border-t border-dashed border-rose-200/60 text-base">
                         <span>Total Bayar</span>
-                        <span id="total-price" class="text-amber-600 text-base">Rp 10.000</span>
+                        <span id="total-price" class="text-rose-500 text-lg">Rp 10.000</span>
                     </div>
                 </div>
                 <button type="submit"
-                    class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition">
-                    Pesan Gelang Custom
+                    class="w-full mt-2 bg-rose-400 hover:bg-rose-500 text-white font-semibold py-4 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-300 text-base">
+                    Pesan Gelang Custom ✨
                 </button>
             </div>
 
@@ -219,8 +229,8 @@
                 }
 
                 // Update style
-                this.closest('label').querySelector('.charm-card').classList.toggle('border-amber-500', this.checked);
-                this.closest('label').querySelector('.charm-card').classList.toggle('bg-amber-50', this.checked);
+                this.closest('label').querySelector('.charm-card').classList.toggle('border-rose-400', this.checked);
+                this.closest('label').querySelector('.charm-card').classList.toggle('bg-rose-50/30', this.checked);
 
                 calculateTotal();
             });

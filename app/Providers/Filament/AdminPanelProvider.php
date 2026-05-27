@@ -26,11 +26,16 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->authGuard('admin')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Rose,
             ])
+            ->font('Outfit')
+            ->brandName('CharmOnTi')
+            ->brandLogo(asset('logo.jpg'))
+            ->brandLogoHeight('2.5rem')
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([

@@ -25,11 +25,16 @@ class OwnerPanelProvider extends PanelProvider
         return $panel
             ->id('owner')
             ->path('owner')
+            ->viteTheme('resources/css/filament/owner/theme.css')
             ->login()
             ->authGuard('owner')
             ->colors([
                 'primary' => Color::Rose,
             ])
+            ->font('Outfit')
+            ->brandName('CharmOnTi')
+            ->brandLogo(asset('logo.jpg'))
+            ->brandLogoHeight('2.5rem')
             ->discoverResources(in: app_path('Filament/Owner/Resources'), for: 'App\\Filament\\Owner\\Resources')
             ->discoverPages(in: app_path('Filament/Owner/Pages'), for: 'App\\Filament\\Owner\\Pages')
             ->pages([

@@ -9,28 +9,30 @@
     <style>
         body {
             font-family: 'Outfit', sans-serif;
-            background: linear-gradient(135deg, #FFF9F6 0%, #FFF3EC 100%);
+            background: linear-gradient(135deg, #FCFBF9 0%, #FFF0F5 100%);
             min-height: 100vh;
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(253, 230, 138, 0.4);
+            border: 1px solid rgba(255, 228, 230, 0.5); /* rose-100 */
         }
     </style>
 </head>
-<body class="py-12 px-4">
+<body class="py-12 px-6">
 
     <div class="max-w-2xl mx-auto">
         {{-- Brand Logo --}}
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center gap-2.5">
-                <img src="/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full object-cover border-2 border-amber-300 shadow-md">
-                <span class="text-2xl font-extrabold bg-linear-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent tracking-tight">CharmOnTi</span>
-            </div>
-            <h1 class="text-3xl font-extrabold text-gray-800 mt-4">Tulis Ulasan Produk</h1>
-            <p class="text-sm text-gray-500 mt-1.5">Bagikan pengalaman belanjamu untuk membantu pembeli lain dan mendukung produk lokal kami ✨</p>
+        <div class="text-center mb-10">
+            <h1 class="text-2xl font-bold tracking-tight mb-6">
+                <a href="/" class="inline-flex items-center gap-2.5 hover:opacity-90 transition">
+                    <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm">
+                    <span class="bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
+                </a>
+            </h1>
+            <h2 class="text-3xl font-extrabold text-gray-800 tracking-tight">Tulis Ulasan Produk 🌸</h2>
+            <p class="text-sm text-gray-500 mt-2 font-light">Bagikan pengalaman belanjamu untuk membantu pembeli lain dan mendukung produk lokal kami ✨</p>
         </div>
 
         <form method="POST" action="{{ route('customer.order.review.store', $order->id) }}">
@@ -38,30 +40,30 @@
 
             <div class="space-y-6">
                 @foreach($order->orderItems as $item)
-                    <div class="glass-card rounded-3xl p-6 shadow-sm hover:shadow-md transition duration-300">
+                    <div class="glass-card rounded-3xl p-8 shadow-sm hover:shadow-md transition duration-300">
                         {{-- Product Info --}}
-                        <div class="flex items-center gap-4 mb-5 border-b border-amber-100/50 pb-4">
-                            <div class="bg-amber-50 rounded-2xl h-14 w-14 flex items-center justify-center shrink-0 border border-amber-100 overflow-hidden">
+                        <div class="flex items-center gap-5 mb-6 border-b border-rose-50 pb-5">
+                            <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
                                 @if($item->product->image)
                                     <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
                                 @else
-                                    <span class="text-2xl">📿</span>
+                                    <span class="text-2xl text-rose-300">📿</span>
                                 @endif
                             </div>
                             <div>
                                 <h4 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->product->name }}</h4>
-                                <p class="text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-md inline-block mt-0.5 capitalize">{{ $item->product->category }}</p>
+                                <p class="text-xs text-rose-500 font-medium bg-rose-50 px-2.5 py-1 rounded-md inline-block mt-1.5 capitalize border border-rose-100/50">{{ $item->product->category }}</p>
                             </div>
                         </div>
 
                         {{-- Star Rating --}}
-                        <div class="mb-5">
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">Beri Rating:</label>
-                            <div class="flex items-center gap-2 star-rating-container" data-product-id="{{ $item->product->id }}">
+                        <div class="mb-6">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Beri Rating:</label>
+                            <div class="flex items-center gap-2.5 star-rating-container" data-product-id="{{ $item->product->id }}">
                                 <input type="hidden" name="ratings[{{ $item->product->id }}]" id="rating-input-{{ $item->product->id }}" value="5">
                                 @for($i = 1; $i <= 5; $i++)
                                     <button type="button" 
-                                            class="text-4xl star-btn text-amber-400 hover:scale-110 transition duration-150 transform" 
+                                            class="text-4xl star-btn text-yellow-400 hover:scale-110 transition duration-150 transform drop-shadow-xs" 
                                             data-value="{{ $i }}" 
                                             data-product-id="{{ $item->product->id }}">
                                         ★
@@ -72,25 +74,25 @@
 
                         {{-- Comment Box --}}
                         <div>
-                            <label for="comment-{{ $item->product->id }}" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Ulasan Anda (Opsional):</label>
+                            <label for="comment-{{ $item->product->id }}" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Ulasan Anda (Opsional):</label>
                             <textarea name="comments[{{ $item->product->id }}]" 
                                       id="comment-{{ $item->product->id }}" 
                                       rows="3" 
                                       placeholder="Tulis pendapatmu tentang gelang cantik ini..." 
-                                      class="w-full bg-white/70 border border-amber-200/50 rounded-2xl p-4 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400/50 placeholder-gray-400 transition"></textarea>
+                                      class="w-full bg-white/70 border border-rose-100 rounded-2xl p-4 text-sm text-gray-700 font-light focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 placeholder-gray-400 transition shadow-sm"></textarea>
                         </div>
                     </div>
                 @endforeach
             </div>
 
             {{-- Action Buttons --}}
-            <div class="flex gap-4 mt-8">
+            <div class="flex flex-col sm:flex-row gap-4 mt-8">
                 <a href="{{ route('customer.orders') }}" 
-                   class="flex-1 border border-amber-200 bg-white hover:bg-amber-50/50 text-amber-700 font-bold py-3.5 rounded-2xl text-center transition shadow-sm text-sm">
+                   class="sm:w-1/3 bg-white border border-gray-200 hover:border-rose-200 hover:text-rose-500 text-gray-500 font-medium py-3.5 rounded-full text-center transition shadow-sm text-sm">
                     Kembali
                 </a>
                 <button type="submit" 
-                        class="flex-2 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3.5 rounded-2xl transition shadow-md hover:shadow-lg text-sm text-center">
+                        class="sm:w-2/3 bg-rose-400 hover:bg-rose-500 text-white font-medium py-3.5 rounded-full transition shadow-sm hover:shadow-md hover:-translate-y-0.5 text-sm text-center">
                     Kirim Ulasan Cantik ✨
                 </button>
             </div>
@@ -116,11 +118,11 @@
                     stars.forEach(star => {
                         const starValue = parseInt(star.dataset.value);
                         if (starValue <= ratingValue) {
-                            star.classList.remove('text-gray-300');
-                            star.classList.add('text-amber-400');
+                            star.classList.remove('text-gray-200');
+                            star.classList.add('text-yellow-400');
                         } else {
-                            star.classList.remove('text-amber-400');
-                            star.classList.add('text-gray-300');
+                            star.classList.remove('text-yellow-400');
+                            star.classList.add('text-gray-200');
                         }
                     });
                 });
