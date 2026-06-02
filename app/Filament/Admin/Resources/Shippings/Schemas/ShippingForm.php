@@ -20,7 +20,7 @@ class ShippingForm
                 TextInput::make('shipping_cost')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
+                    ->prefix('Rp'),
                 TextInput::make('tracking_number'),
                 DateTimePicker::make('estimated_arrival'),
                 TextInput::make('status')

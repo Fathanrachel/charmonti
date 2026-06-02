@@ -20,7 +20,7 @@ class OrderItemForm
                 TextInput::make('price')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
+                    ->prefix('Rp'),
                 TextInput::make('quantity')
                     ->required()
                     ->numeric(),

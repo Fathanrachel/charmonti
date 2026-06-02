@@ -24,7 +24,7 @@ class OrderForm
                 TextInput::make('total_price')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
+                    ->prefix('Rp'),
                 TextInput::make('payment_method'),
                 Textarea::make('shipping_address')
                     ->required()

@@ -20,7 +20,7 @@ class ShippingsTable
                 TextColumn::make('courier')
                     ->searchable(),
                 TextColumn::make('shipping_cost')
-                    ->money()
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('tracking_number')
                     ->searchable(),

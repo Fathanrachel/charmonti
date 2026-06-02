@@ -18,7 +18,7 @@ class ShippingResource extends Resource
 {
     protected static ?string $model = Shipping::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
     protected static ?string $recordTitleAttribute = 'courier';
 
