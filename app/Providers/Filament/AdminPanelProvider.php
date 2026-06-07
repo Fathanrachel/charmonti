@@ -34,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->font('Outfit')
             ->brandName('CharmOnTi')
-            ->brandLogo(asset('logo.jpg'))
+            ->brandLogo(asset('charmonti.png'))
             ->brandLogoHeight('2.5rem')
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
