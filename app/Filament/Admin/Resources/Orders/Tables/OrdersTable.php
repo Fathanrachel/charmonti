@@ -23,7 +23,7 @@ class OrdersTable
                 TextColumn::make('status')
                     ->searchable(),
                 TextColumn::make('total_price')
-                    ->money()
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('payment_method')
                     ->searchable(),

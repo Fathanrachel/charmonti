@@ -33,7 +33,7 @@ class OwnerPanelProvider extends PanelProvider
             ])
             ->font('Outfit')
             ->brandName('CharmOnTi')
-            ->brandLogo(asset('logo.jpg'))
+            ->brandLogo(asset('charmonti.png'))
             ->brandLogoHeight('2.5rem')
             ->discoverResources(in: app_path('Filament/Owner/Resources'), for: 'App\\Filament\\Owner\\Resources')
             ->discoverPages(in: app_path('Filament/Owner/Pages'), for: 'App\\Filament\\Owner\\Pages')

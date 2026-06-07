@@ -21,7 +21,7 @@ class OrderItemsTable
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('price')
-                    ->money()
+                    ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('quantity')
                     ->numeric()

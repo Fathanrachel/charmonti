@@ -20,7 +20,7 @@ class ProductForm
                 TextInput::make('price')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
+                    ->prefix('Rp'),
                 TextInput::make('category')
                     ->required()
                     ->default('gelang_jadi'),

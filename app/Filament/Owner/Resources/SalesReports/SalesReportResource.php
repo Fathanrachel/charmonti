@@ -18,7 +18,7 @@ class SalesReportResource extends Resource
 {
     protected static ?string $model = SalesReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartPie;
 
     protected static ?string $recordTitleAttribute = 'date';
 

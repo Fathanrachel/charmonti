@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link rel="icon" type="image/png" href="{{ asset('charmonti.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Charm.onti</title>
@@ -10,9 +11,13 @@
         body { font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body class="bg-[#FCFBF9] min-h-screen flex items-center justify-center">
+<body class="bg-linear-to-br from-rose-100 via-pink-100 to-rose-100/90 min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Decorative elements -->
+    <div class="absolute top-20 right-20 w-56 h-56 bg-pink-300/40 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-10 -left-20 w-80 h-80 bg-rose-300/30 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 left-1/4 w-64 h-64 bg-pink-200/25 rounded-full blur-2xl"></div>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 w-full max-w-md">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 w-full max-w-md relative z-10">
         <h1 class="text-2xl font-bold text-center mb-2">
             <span class="bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">Charm.onti</span>
         </h1>

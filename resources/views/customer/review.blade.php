@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link rel="icon" type="image/png" href="{{ asset('charmonti.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beri Ulasan - CharmOnTi</title>
@@ -27,7 +28,7 @@
         <div class="text-center mb-10">
             <h1 class="text-2xl font-bold tracking-tight mb-6">
                 <a href="/" class="inline-flex items-center gap-2.5 hover:opacity-90 transition">
-                    <img src="{{ asset('logo.jpg') }}" alt="CharmOnTi Logo" class="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm">
+                    <img src="{{ asset('charmonti.png') }}" alt="CharmOnTi Logo" class="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm">
                     <span class="bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
                 </a>
             </h1>
