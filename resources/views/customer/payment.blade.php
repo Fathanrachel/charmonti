@@ -45,17 +45,17 @@
                     <div class="flex items-center gap-4">
                         <div class="bg-rose-50/50 rounded-xl h-12 w-12 flex items-center justify-center shrink-0 border border-rose-100/50">
                             @if($item->product->image)
-                                <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover rounded-xl">
+                                <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->product_name }}" class="w-full h-full object-cover rounded-xl">
                             @else
                                 <span class="text-xl text-rose-300">📿</span>
                             @endif
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-gray-700">{{ $item->product->name }}</p>
-                            <p class="text-xs text-gray-400 font-light">{{ $item->quantity }}x</p>
+                            <p class="text-sm font-semibold text-gray-700">{{ $item->product->product_name }}</p>
+                            <p class="text-xs text-gray-400 font-light">{{ $item->qty }}x</p>
                         </div>
                     </div>
-                    <span class="text-sm font-medium text-gray-600">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>
+                    <span class="text-sm font-medium text-gray-600">Rp {{ number_format($item->price * $item->qty, 0, ',', '.') }}</span>
                 </div>
                 @endforeach
             </div>

@@ -46,13 +46,13 @@
                         <div class="flex items-center gap-5 mb-6 border-b border-rose-50 pb-5">
                             <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
                                 @if($item->product->image)
-                                    <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
+                                    <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->product_name }}" class="w-full h-full object-cover">
                                 @else
                                     <span class="text-2xl text-rose-300">📿</span>
                                 @endif
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->product->name }}</h4>
+                                <h4 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->product->product_name }}</h4>
                                 <p class="text-xs text-rose-500 font-medium bg-rose-50 px-2.5 py-1 rounded-md inline-block mt-1.5 capitalize border border-rose-100/50">{{ $item->product->category }}</p>
                             </div>
                         </div>

@@ -31,14 +31,14 @@
             <div class="bg-rose-50/50 rounded-2xl h-20 w-20 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                 @if($product->image)
                     <img src="{{ Storage::url($product->image) }}"
-                        alt="{{ $product->name }}"
+                        alt="{{ $product->product_name }}"
                         class="w-full h-full object-cover rounded-2xl">
                 @else
                     <span class="text-3xl text-rose-300">📿</span>
                 @endif
             </div>
             <div>
-                <h3 class="font-bold text-lg text-gray-800">{{ $product->name }}</h3>
+                <h3 class="font-bold text-lg text-gray-800">{{ $product->product_name }}</h3>
                 <p class="text-rose-500 font-bold mt-1 text-base">
                     Rp {{ number_format($product->price, 0, ',', '.') }}
                 </p>

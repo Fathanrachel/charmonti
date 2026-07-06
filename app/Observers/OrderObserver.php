@@ -12,13 +12,11 @@ class OrderObserver
             foreach ($order->orderItems as $item) {
                 $product = $item->product;
 
-                // Gelang jadi tidak potong stok
-                if ($product->category === 'gelang_jadi') {
+                if (!$product || $product->category === 'gelang_jadi') {
                     continue;
                 }
 
-                // Kurangi stok produk
-                $product->decrement('stock', $item->quantity);
+                $product->deductStock($item->qty);
             }
         }
     }

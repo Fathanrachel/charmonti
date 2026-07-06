@@ -13,7 +13,7 @@ class ProductForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
+                TextInput::make('product_name')
                     ->required(),
                 Textarea::make('description')
                     ->columnSpanFull(),
@@ -26,10 +26,6 @@ class ProductForm
                     ->default('gelang_jadi'),
                 FileUpload::make('image')
                     ->image(),
-                TextInput::make('stock')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
             ]);
     }
 }

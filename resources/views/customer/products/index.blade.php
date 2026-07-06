@@ -26,7 +26,7 @@
 
             @auth
                 <a href="{{ route('customer.orders') }}" class="text-gray-500 hover:text-rose-500 transition">Pesanan Saya</a>
-                <span class="text-gray-500 font-normal">Halo, <span class="font-semibold text-gray-700">{{ Auth::user()->name }}</span></span>
+                <span class="text-gray-500 font-normal">Halo, <span class="font-semibold text-gray-700">{{ Auth::user()->profile?->name }}</span></span>
 
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
@@ -65,13 +65,13 @@
                     <div class="bg-rose-50/50 rounded-2xl h-48 flex items-center justify-center mb-4 overflow-hidden border border-rose-100/50">
                         @if($product->image)
                             <img src="{{ Storage::url($product->image) }}"
-                                alt="{{ $product->name }}"
+                                alt="{{ $product->product_name }}"
                                 class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
                         @else
                             <span class="text-5xl text-rose-300 group-hover:scale-110 transition duration-300">📿</span>
                         @endif
                     </div>
-                    <h4 class="font-bold text-gray-800 text-base mb-1">{{ $product->name }}</h4>
+                    <h4 class="font-bold text-gray-800 text-base mb-1">{{ $product->product_name }}</h4>
                     <p class="text-rose-500 font-bold text-sm tracking-wide">
                         Rp {{ number_format($product->price, 0, ',', '.') }}
                     </p>

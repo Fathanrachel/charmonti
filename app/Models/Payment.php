@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Expedition;
+use App\Models\Shipping;
 use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
@@ -27,19 +29,15 @@ class Payment extends Model
                             'payment_method' => $payment->payment_type ?? 'midtrans',
                         ]);
 
-                        // Potong stok produk otomatis
-                        foreach ($order->orderItems as $item) {
-                            $product = $item->product;
-                            if ($product) {
-                                $product->decrement('stock', $item->quantity);
-                            }
-                        }
+                        // Stock deduction is handled by OrderObserver when order status changes to diproses.
 
                         // Buat data pengiriman otomatis jika belum ada
                         if (!$order->shipping) {
+                            $expedition = Expedition::first();
                             Shipping::create([
                                 'order_id' => $order->id,
-                                'courier' => 'Belum ditentukan',
+                                'payment_id' => $payment->id,
+                                'expedition_id' => $expedition?->id,
                                 'shipping_cost' => 0,
                                 'status' => 'pending',
                             ]);

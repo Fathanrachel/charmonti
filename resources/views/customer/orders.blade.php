@@ -25,7 +25,7 @@
             <a href="/" class="text-gray-500 hover:text-rose-500 transition">Produk</a>
             <a href="{{ route('customer.orders') }}" class="text-rose-500 border-b-2 border-rose-400 pb-1">Pesanan Saya</a>
             @auth
-                <span class="text-gray-500 font-normal">Halo, <span class="font-semibold text-gray-700">{{ Auth::user()->name }}</span></span>
+                <span class="text-gray-500 font-normal">Halo, <span class="font-semibold text-gray-700">{{ Auth::user()->profile?->name }}</span></span>
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
                     <button type="submit" class="text-gray-400 hover:text-red-500 font-semibold transition">Logout</button>
@@ -121,17 +121,17 @@
                                     <div class="flex items-center gap-5">
                                         <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-50">
                                             @if($item->product->image)
-                                                <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover rounded-2xl">
+                                                <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->product_name }}" class="w-full h-full object-cover rounded-2xl">
                                             @else
                                                 <span class="text-2xl text-rose-300">📿</span>
                                             @endif
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <h4 class="font-semibold text-gray-800 text-sm truncate">{{ $item->product->name }}</h4>
-                                            <p class="text-xs text-gray-500 mt-1 font-light">Jumlah: {{ $item->quantity }}x • Satuan: Rp {{ number_format($item->price, 0, ',', '.') }}</p>
+                                            <h4 class="font-semibold text-gray-800 text-sm truncate">{{ $item->product->product_name }}</h4>
+                                            <p class="text-xs text-gray-500 mt-1 font-light">Jumlah: {{ $item->qty }}x • Satuan: Rp {{ number_format($item->price, 0, ',', '.') }}</p>
                                         </div>
                                         <div class="text-right shrink-0">
-                                            <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>
+                                            <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($item->price * $item->qty, 0, ',', '.') }}</span>
                                         </div>
                                     </div>
                                 @endforeach
