@@ -77,13 +77,13 @@
                                 <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden">
                                     @if($charm->image)
                                         <img src="{{ Storage::url($charm->image) }}"
-                                            alt="{{ $charm->name }}"
+                                            alt="{{ $charm->nama_bahan }}"
                                             class="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500">
                                     @else
                                         <span class="text-3xl text-rose-300">📿</span>
                                     @endif
                                 </div>
-                                <p class="text-sm font-medium text-gray-800 leading-tight mb-1">{{ $charm->name }}</p>
+                                <p class="text-sm font-medium text-gray-800 leading-tight mb-1">{{ $charm->nama_bahan }}</p>
                                 <p class="text-xs text-rose-500 font-bold">
                                     Rp {{ number_format($charm->price, 0, ',', '.') }}
                                 </p>

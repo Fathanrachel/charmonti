@@ -22,9 +22,13 @@ class CustomerAuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'role' => 'customer'])) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('home'));
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
+            if ($user->isCustomer()) {
+                $request->session()->regenerate();
+                return redirect()->intended(route('home'));
+            }
+            Auth::logout();
         }
 
         return back()->withErrors(['email' => 'Email atau password salah.']);
@@ -44,10 +48,13 @@ class CustomerAuthController extends Controller
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => 'customer',
+        ]);
+
+        $user->profile()->create([
+            'name' => $request->name,
+            'role' => 'customer',
         ]);
 
         Auth::login($user);

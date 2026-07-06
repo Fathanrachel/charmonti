@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="{{ asset('charmonti.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $product->name }} — Charm.onti</title>
+    <title>{{ $product->product_name }} — Charm.onti</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -26,7 +26,7 @@
 
             @auth
                 <a href="{{ route('customer.orders') }}" class="text-gray-500 hover:text-rose-500 transition">Pesanan Saya</a>
-                <span class="text-rose-400 font-semibold">Halo, {{ Auth::user()->name }}</span>
+                <span class="text-rose-400 font-semibold">Halo, {{ Auth::user()->profile?->name }}</span>
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
                     <button type="submit" class="text-gray-400 hover:text-red-500 transition">Logout</button>
@@ -49,7 +49,7 @@
             <div class="bg-rose-50/50 rounded-2xl h-80 w-full md:w-80 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                 @if($product->image)
                     <img src="{{ Storage::url($product->image) }}"
-                        alt="{{ $product->name }}"
+                        alt="{{ $product->product_name }}"
                         class="w-full h-full object-cover rounded-2xl hover:scale-105 transition duration-500">
                 @else
                     <span class="text-6xl text-rose-300">📿</span>
@@ -58,7 +58,7 @@
 
             {{-- Info Produk --}}
             <div class="flex-1 flex flex-col justify-center">
-                <h2 class="text-3xl font-bold text-gray-800 tracking-tight">{{ $product->name }}</h2>
+                <h2 class="text-3xl font-bold text-gray-800 tracking-tight">{{ $product->product_name }}</h2>
 
                 @php
                     $avgRating = $product->reviews->avg('rating');
@@ -115,7 +115,7 @@
                         <div class="border-b border-gray-50 last:border-b-0 pb-6 last:pb-0">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <span class="font-semibold text-base text-gray-800">{{ $review->user->name }}</span>
+                                    <span class="font-semibold text-base text-gray-800">{{ $review->user->profile?->name }}</span>
                                     <div class="flex items-center gap-1 mt-1">
                                         @for($i = 1; $i <= 5; $i++)
                                             <span class="text-sm {{ $i <= $review->rating ? 'text-rose-400' : 'text-gray-200' }}">★</span>

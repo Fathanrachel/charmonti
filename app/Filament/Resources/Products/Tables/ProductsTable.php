@@ -21,7 +21,7 @@ class ProductsTable
                     ->circular()
                     ->defaultImageUrl(asset('images/no-image.png')),
 
-                TextColumn::make('name')
+                TextColumn::make('product_name')
                     ->label('Nama Produk')
                     ->searchable(),
 
@@ -32,6 +32,7 @@ class ProductsTable
 
                 TextColumn::make('stock')
                     ->label('Stok')
+                    ->getStateUsing(fn ($record) => $record->stock)
                     ->numeric()
                     ->sortable()
                     ->badge()

@@ -11,11 +11,13 @@ class User extends Authenticatable implements FilamentUser
 {
     use Notifiable;
 
+    protected $table = 'users';
+
     protected $fillable = [
-        'name',
         'email',
         'password',
-        'role',
+        'email_verified_at',
+        'remember_token',
     ];
 
     protected $hidden = [
@@ -28,6 +30,23 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
+    public function profile()
+    {
+        return $this->hasOne(Profile::class, 'users_id');
+    }
+
+    // Helper to get name from profile
+    public function getNameAttribute()
+    {
+        return $this->profile?->name;
+    }
+
+    // Helper to get role from profile
+    public function getRoleAttribute()
+    {
+        return $this->profile?->role;
+    }
+
     // Hanya admin dan owner yang bisa akses panel Filament
     public function canAccessPanel(Panel $panel): bool
     {
@@ -38,13 +57,24 @@ class User extends Authenticatable implements FilamentUser
         };
     }
 
-    public function isAdmin(): bool { return $this->role === 'admin'; }
-    public function isOwner(): bool { return $this->role === 'owner'; }
-    public function isCustomer(): bool { return $this->role === 'customer'; }
+    public function isAdmin(): bool
+    {
+        return $this->profile?->role === 'admin';
+    }
+
+    public function isOwner(): bool
+    {
+        return $this->profile?->role === 'owner';
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->profile?->role === 'customer';
+    }
 
     public function orders()
     {
-        return $this->hasMany(Order::class);
+        return $this->hasManyThrough(Order::class, Profile::class, 'users_id', 'profile_id', 'id', 'id');
     }
 
     public function reviews()

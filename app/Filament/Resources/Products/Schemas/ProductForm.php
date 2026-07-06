@@ -22,7 +22,7 @@ class ProductForm
                     ->imagePreviewHeight('200')
                     ->columnSpanFull(),
 
-                TextInput::make('name')
+                TextInput::make('product_name')
                     ->label('Nama Produk')
                     ->required()
                     ->maxLength(255),
@@ -50,12 +50,6 @@ class ProductForm
                     ->required()
                     ->default('gelang_jadi'),
                 
-                TextInput::make('stock')
-                    ->label('Stok')
-                    ->required()
-                    ->numeric()
-                    ->default(0)
-                    ->minValue(0),
             ]);
     }
 }

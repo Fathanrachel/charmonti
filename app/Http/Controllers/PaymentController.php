@@ -24,7 +24,7 @@ class PaymentController extends Controller
     public function show(Order $order)
     {
         // Pastikan order milik customer yang login
-        if ($order->user_id !== Auth::id()) {
+        if ($order->profile?->users_id !== Auth::id()) {
             abort(403);
         }
 
@@ -54,15 +54,15 @@ class PaymentController extends Controller
                 'gross_amount' => (int) $order->total_price,
             ],
             'customer_details' => [
-                'first_name' => $order->user->name,
-                'email'      => $order->user->email,
+                'first_name' => $order->profile?->name,
+                'email'      => $order->profile?->user?->email,
             ],
             'item_details' => $order->orderItems->map(function ($item) {
                 return [
                     'id'       => (string) $item->product_id,
                     'price'    => (int) $item->price,
-                    'quantity' => $item->quantity,
-                    'name'     => $item->product->name,
+                    'quantity' => $item->qty,
+                    'name'     => $item->product->product_name,
                 ];
             })->toArray(),
         ];

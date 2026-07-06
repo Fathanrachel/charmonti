@@ -7,17 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'order_date',
         'status',
         'total_price',
         'payment_method',
-        'shipping_address',
     ];
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Profile::class, 'profile_id');
     }
 
     public function orderItems()
@@ -35,9 +34,9 @@ class Order extends Model
         return $this->hasOne(Shipping::class);
     }
 
-    public function customOrder()
+    public function customBahanOrder()
     {
-        return $this->hasOne(CustomOrder::class);
+        return $this->hasOne(CustomBahanOrder::class, 'order_id');
     }
 
     public function complaints()
