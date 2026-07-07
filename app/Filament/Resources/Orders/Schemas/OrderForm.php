@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
-use App\Models\User;
+use App\Models\Profile;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
 class OrderForm
@@ -15,9 +14,13 @@ class OrderForm
     {
         return $schema
             ->components([
-                Select::make('user_id')
+                Select::make('profile_id')
                     ->label('Customer')
-                    ->options(User::where('role', 'customer')->pluck('name', 'id'))
+                    ->options(
+                        Profile::where('role', 'customer')
+                            ->get()
+                            ->pluck('name', 'id')
+                    )
                     ->required()
                     ->searchable(),
 
@@ -51,12 +54,6 @@ class OrderForm
                         'midtrans'  => 'Midtrans',
                     ])
                     ->nullable(),
-
-                Textarea::make('shipping_address')
-                    ->label('Alamat Pengiriman')
-                    ->required()
-                    ->rows(3)
-                    ->columnSpanFull(),
             ]);
     }
 }

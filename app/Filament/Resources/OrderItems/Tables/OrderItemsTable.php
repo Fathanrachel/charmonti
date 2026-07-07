@@ -18,12 +18,12 @@ class OrderItemsTable
                     ->label('Order #')
                     ->sortable(),
 
-                TextColumn::make('product.name')
+                TextColumn::make('product.product_name')
                     ->label('Produk')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('quantity')
+                TextColumn::make('qty')
                     ->label('Jumlah')
                     ->numeric()
                     ->sortable(),

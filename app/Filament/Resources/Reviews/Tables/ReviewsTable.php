@@ -14,12 +14,12 @@ class ReviewsTable
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')
+                TextColumn::make('user.profile.name')
                     ->label('Pelanggan')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('product.name')
+                TextColumn::make('product.product_name')
                     ->label('Produk')
                     ->searchable()
                     ->sortable(),

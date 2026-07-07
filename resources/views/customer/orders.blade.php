@@ -128,7 +128,7 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <h4 class="font-semibold text-gray-800 text-sm truncate">{{ $item->product->product_name }}</h4>
-                                            <p class="text-xs text-gray-500 mt-1 font-light">Jumlah: {{ $item->qty }}x • Satuan: Rp {{ number_format($item->price, 0, ',', '.') }}</p>
+                                            <p class="text-xs text-gray-500 mt-1 font-light">Jumlah: {{ $item->qty }}x &bull; Satuan: Rp {{ number_format($item->price, 0, ',', '.') }}</p>
                                         </div>
                                         <div class="text-right shrink-0">
                                             <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($item->price * $item->qty, 0, ',', '.') }}</span>

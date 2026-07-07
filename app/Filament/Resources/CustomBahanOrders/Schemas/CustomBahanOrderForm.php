@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\CustomOrders\Schemas;
+namespace App\Filament\Resources\CustomBahanOrders\Schemas;
 
 use App\Models\Order;
 use Filament\Forms\Components\Select;
@@ -8,7 +8,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
-class CustomOrderForm
+class CustomBahanOrderForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -26,20 +26,10 @@ class CustomOrderForm
                     ->rows(3)
                     ->columnSpanFull(),
 
-                TextInput::make('ukuran')
-                    ->label('Ukuran')
-                    ->nullable()
-                    ->placeholder('contoh: S, M, L atau 16cm'),
-
                 TextInput::make('warna')
                     ->label('Warna')
                     ->nullable()
                     ->placeholder('contoh: Merah, Biru'),
-
-                TextInput::make('tambahan_aksesoris')
-                    ->label('Tambahan Aksesoris')
-                    ->nullable()
-                    ->placeholder('contoh: Liontin Bintang'),
 
                 Select::make('status')
                     ->label('Status')
@@ -50,12 +40,6 @@ class CustomOrderForm
                     ])
                     ->default('pending')
                     ->required(),
-
-                Textarea::make('remarks_assessment')
-                    ->label('Catatan Penilaian')
-                    ->nullable()
-                    ->rows(2)
-                    ->columnSpanFull(),
             ]);
     }
 }

@@ -15,7 +15,7 @@ class ProductsTable
     {
         return $table
             ->columns([
-                TextColumn::make('product_name')
+                TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('price')
                     ->money('IDR', locale: 'id')
@@ -31,6 +31,9 @@ class ProductsTable
                 TextColumn::make('category')
                     ->searchable(),
                 ImageColumn::make('image'),
+                TextColumn::make('stock')
+                    ->numeric()
+                    ->sortable(),
             ])
             ->filters([
                 //

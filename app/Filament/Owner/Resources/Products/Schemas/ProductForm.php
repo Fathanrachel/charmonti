@@ -26,6 +26,7 @@ class ProductForm
                     ->default('gelang_jadi'),
                 FileUpload::make('image')
                     ->image(),
+
             ]);
     }
 }

@@ -20,7 +20,7 @@ class OrdersTable
                     ->label('Order #')
                     ->sortable(),
 
-                TextColumn::make('user.name')
+                TextColumn::make('profile.name')
                     ->label('Customer')
                     ->searchable()
                     ->sortable(),

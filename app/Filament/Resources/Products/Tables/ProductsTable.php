@@ -31,12 +31,11 @@ class ProductsTable
                     ->sortable(),
 
                 TextColumn::make('stock')
-                    ->label('Stok')
+                    ->label('Stok (Sisa)')
                     ->getStateUsing(fn ($record) => $record->stock)
                     ->numeric()
-                    ->sortable()
                     ->badge()
-                    ->color(fn (int $state): string => match(true) {
+                    ->color(fn ($state): string => match(true) {
                         $state <= 0  => 'danger',
                         $state <= 5  => 'warning',
                         default      => 'success',
