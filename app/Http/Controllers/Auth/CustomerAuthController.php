@@ -52,9 +52,15 @@ class CustomerAuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->profile()->create([
+        $profile = $user->profile()->create([
             'name' => $request->name,
             'role' => 'customer',
+        ]);
+
+        \App\Models\Registrasi::create([
+            'profile_id' => $profile->id,
+            'users_id'   => $user->id,
+            'name'       => $request->name,
         ]);
 
         Auth::login($user);
