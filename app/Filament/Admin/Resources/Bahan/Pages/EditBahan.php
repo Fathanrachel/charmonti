@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Owner\Resources\CustomBahanOrders\Pages;
+namespace App\Filament\Admin\Resources\Bahan\Pages;
 
-use App\Filament\Owner\Resources\CustomBahanOrders\CustomBahanOrderResource;
+use App\Filament\Admin\Resources\Bahan\BahanResource;
 use Filament\Resources\Pages\EditRecord;
 
-class EditCustomBahanOrder extends EditRecord
+class EditBahan extends EditRecord
 {
-    protected static string $resource = CustomBahanOrderResource::class;
+    protected static string $resource = BahanResource::class;
 
     protected function getRedirectUrl(): string
     {

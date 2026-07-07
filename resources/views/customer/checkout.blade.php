@@ -59,10 +59,13 @@
             </div>
 
             <div>
-                <label class="text-sm font-semibold text-gray-700 block mb-2">Alamat Pengiriman</label>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-sm font-semibold text-gray-700 block">Alamat Pengiriman</label>
+                    <a href="{{ route('customer.profile') }}" class="text-xs text-rose-500 hover:underline">Ubah alamat di Profil Saya →</a>
+                </div>
                 <textarea name="shipping_address" rows="3" required
                     class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
-                    placeholder="Masukkan alamat lengkap kamu..."></textarea>
+                    placeholder="Masukkan alamat lengkap kamu...">{{ old('shipping_address', (Auth::user()->profile?->address_line ? Auth::user()->profile->address_line . ', ' . (Auth::user()->profile->city?->city ?? '') . ', ' . (Auth::user()->profile->city?->province?->province ?? '') . ' ' . (Auth::user()->profile->postal_code ?? '') : '')) }}</textarea>
                 @error('shipping_address')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror

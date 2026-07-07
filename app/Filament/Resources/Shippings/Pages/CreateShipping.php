@@ -8,4 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateShipping extends CreateRecord
 {
     protected static string $resource = ShippingResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

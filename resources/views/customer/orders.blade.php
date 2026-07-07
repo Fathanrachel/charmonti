@@ -21,15 +21,49 @@
                 <span class="bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
             </a>
         </h1>
-        <div class="flex gap-5 text-sm font-medium items-center">
-            <a href="/" class="text-gray-500 hover:text-rose-500 transition">Produk</a>
-            <a href="{{ route('customer.orders') }}" class="text-rose-500 border-b-2 border-rose-400 pb-1">Pesanan Saya</a>
             @auth
-                <span class="text-gray-500 font-normal">Halo, <span class="font-semibold text-gray-700">{{ Auth::user()->profile?->name }}</span></span>
-                <form method="POST" action="{{ route('logout') }}" class="inline">
-                    @csrf
-                    <button type="submit" class="text-gray-400 hover:text-red-500 font-semibold transition">Logout</button>
-                </form>
+                <!-- Dropdown Profile -->
+                <div class="relative inline-block text-left" id="profile-dropdown-container">
+                    <button type="button" id="dropdown-btn" class="flex items-center gap-1.5 text-gray-700 hover:text-rose-500 font-semibold focus:outline-none transition py-1">
+                        <span>Halo, <span class="text-rose-400 font-bold">{{ Auth::user()->profile?->name }}</span></span>
+                        <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu Box -->
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2.5 w-48 rounded-2xl bg-white border border-gray-100 shadow-lg py-2 z-50 ring-1 ring-black/5 transition duration-300">
+                        <a href="{{ route('customer.profile') }}" class="block px-5 py-2.5 text-sm text-gray-600 hover:bg-rose-50/50 hover:text-rose-500 font-medium transition">
+                            👤 Profil Saya
+                        </a>
+                        <a href="{{ route('customer.orders') }}" class="block px-5 py-2.5 text-sm text-gray-600 hover:bg-rose-50/50 hover:text-rose-500 font-medium transition">
+                            📦 Pesanan Saya
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <form method="POST" action="{{ route('logout') }}" class="block">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-5 py-2.5 text-sm text-red-500 hover:bg-red-50/50 font-semibold transition">
+                                🚪 Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const btn = document.getElementById('dropdown-btn');
+                        const menu = document.getElementById('dropdown-menu');
+                        
+                        btn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            menu.classList.toggle('hidden');
+                        });
+
+                        document.addEventListener('click', function () {
+                            menu.classList.add('hidden');
+                        });
+                    });
+                </script>
             @endauth
         </div>
     </nav>
