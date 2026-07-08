@@ -13,7 +13,12 @@ class ListSalesReports extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            \Filament\Actions\Action::make('downloadPdf')
+                ->label('Unduh PDF Laporan')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('danger')
+                ->url(route('owner.reports.sales.pdf'))
+                ->openUrlInNewTab(),
         ];
     }
 }

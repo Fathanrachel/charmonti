@@ -22,6 +22,15 @@
             </a>
         </h1>
         <div class="flex gap-5 text-sm font-medium items-center">
+            <a href="{{ route('cart.index') }}" class="relative text-gray-500 hover:text-rose-500 transition mr-2 flex items-center gap-1.5" title="Keranjang Belanja">
+                <span>🛒</span>
+                @php $cartCount = count(Session::get('cart', [])); @endphp
+                @if($cartCount > 0)
+                    <span class="absolute -top-2.5 -right-3 bg-rose-400 text-white text-[10px] font-extrabold h-4.5 w-4.5 rounded-full flex items-center justify-center border border-white">
+                        {{ $cartCount }}
+                    </span>
+                @endif
+            </a>
             <a href="/" class="text-rose-500 border-b-2 border-rose-400 pb-1">Produk</a>
 
             @auth

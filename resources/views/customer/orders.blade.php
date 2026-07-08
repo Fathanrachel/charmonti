@@ -151,6 +151,7 @@
                         <div class="p-8">
                             {{-- Items --}}
                             <div class="space-y-5 mb-8">
+                                {{-- 1. Regular Product Items --}}
                                 @foreach($order->orderItems as $item)
                                     <div class="flex items-center gap-5">
                                         <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-50">
@@ -169,6 +170,45 @@
                                         </div>
                                     </div>
                                 @endforeach
+
+                                {{-- 2. Custom Gelang Order --}}
+                                @if($order->customBahanOrder)
+                                    <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5">
+                                        <div class="flex items-center gap-4 mb-4">
+                                            <div class="bg-rose-100 rounded-xl h-12 w-12 flex items-center justify-center text-2xl shrink-0">
+                                                ✨
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</h4>
+                                                @if($order->customBahanOrder->request_note)
+                                                    <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $order->customBahanOrder->request_note }}"</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        
+                                        {{-- Daftar Bahan/Charm --}}
+                                        <div class="border-t border-rose-100/40 pt-3">
+                                            <p class="text-xs font-semibold text-gray-400 mb-2.5 uppercase tracking-wide">Bahan / Charm yang Digunakan:</p>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                                @foreach($order->customBahanOrder->customBahanOrderItems as $customItem)
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="h-8 w-8 rounded-lg bg-white border border-rose-50 flex items-center justify-center shrink-0">
+                                                            @if($customItem->bahan->image)
+                                                                <img src="{{ Storage::url($customItem->bahan->image) }}" alt="{{ $customItem->bahan->nama_bahan }}" class="h-full w-full object-cover rounded-lg">
+                                                            @else
+                                                                <span class="text-sm">💎</span>
+                                                            @endif
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="text-xs font-medium text-gray-700 truncate">{{ $customItem->bahan->nama_bahan }}</p>
+                                                            <p class="text-[10px] text-gray-400 font-light">Rp {{ number_format($customItem->bahan->price, 0, ',', '.') }}</p>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             <hr class="border-gray-100 my-6">

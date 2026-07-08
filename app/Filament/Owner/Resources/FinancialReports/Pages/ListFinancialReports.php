@@ -13,7 +13,12 @@ class ListFinancialReports extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            \Filament\Actions\Action::make('downloadPdf')
+                ->label('Unduh PDF Laporan')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('danger')
+                ->url(fn () => route('owner.reports.financial.pdf', ['period' => request()->input('tableFilters.period.value', 'daily')]))
+                ->openUrlInNewTab(),
         ];
     }
 }

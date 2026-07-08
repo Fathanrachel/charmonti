@@ -34,7 +34,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('custom.order.store') }}" class="space-y-8">
+        <form method="POST" action="{{ route('cart.add-custom') }}" class="space-y-8">
             @csrf
 
             {{-- Pilih Warna Strap --}}
@@ -94,62 +94,14 @@
                 @endif
             </div>
 
-            {{-- Alamat & Catatan --}}
+            {{-- Catatan --}}
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 space-y-6">
-                <h3 class="font-bold text-lg text-gray-800 mb-2">3. Detail Pengiriman</h3>
-
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-sm font-semibold text-gray-700 block">Alamat Pengiriman</label>
-                        <a href="{{ route('customer.profile') }}" class="text-xs text-rose-500 hover:underline">Ubah alamat di Profil Saya →</a>
-                    </div>
-                    <textarea name="shipping_address" rows="3" required
-                        class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
-                        placeholder="Masukkan alamat lengkap kamu...">{{ old('shipping_address', (Auth::user()->profile?->address_line ? Auth::user()->profile->address_line . ', ' . (Auth::user()->profile->city?->city ?? '') . ', ' . (Auth::user()->profile->city?->province?->province ?? '') . ' ' . (Auth::user()->profile->postal_code ?? '') : '')) }}</textarea>
-                </div>
-
-                {{-- Pilihan Kurir Pengiriman --}}
-                <div>
-                    <label class="text-sm font-semibold text-gray-700 block mb-3">Pilih Kurir & Layanan Pengiriman</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="courier" value="J&T" class="hidden peer" required checked>
-                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                                <div>
-                                    <span class="font-bold text-gray-800 text-sm block">J&T Express</span>
-                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 2 - 3 Hari</span>
-                                </div>
-                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 10.000</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="courier" value="JNE" class="hidden peer">
-                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                                <div>
-                                    <span class="font-bold text-gray-800 text-sm block">JNE Reguler</span>
-                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 1 - 2 Hari</span>
-                                </div>
-                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 12.000</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="courier" value="SiCepat" class="hidden peer">
-                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                                <div>
-                                    <span class="font-bold text-gray-800 text-sm block">SiCepat Halu</span>
-                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 3 - 5 Hari</span>
-                                </div>
-                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 8.000</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
+                <h3 class="font-bold text-lg text-gray-800 mb-2">3. Catatan Desain</h3>
                 <div>
                     <label class="text-sm font-semibold text-gray-700 block mb-2">Catatan Tambahan <span class="text-gray-400 font-normal">(opsional)</span></label>
                     <textarea name="request_note" rows="2"
                         class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
-                        placeholder="Contoh: tolong dibungkus cantik ya...">{{ old('request_note') }}</textarea>
+                        placeholder="Contoh: tolong diurutkan bintang, bulat, bintang ya..."></textarea>
                 </div>
             </div>
 
@@ -160,18 +112,14 @@
                         <span>Harga Gelang Custom</span>
                         <span id="subtotal-price" class="font-medium text-gray-700">Rp 0</span>
                     </div>
-                    <div class="flex justify-between text-gray-500">
-                        <span>Ongkos Kirim</span>
-                        <span id="shipping-cost-display" class="font-medium text-gray-700">Rp 10.000</span>
-                    </div>
                     <div class="flex justify-between font-bold text-gray-800 pt-4 border-t border-dashed border-rose-200/60 text-base">
-                        <span>Total Bayar</span>
-                        <span id="total-price" class="text-rose-500 text-lg">Rp 10.000</span>
+                        <span>Total Desain</span>
+                        <span id="total-price" class="text-rose-500 text-lg">Rp 0</span>
                     </div>
                 </div>
                 <button type="submit"
                     class="w-full mt-2 bg-rose-400 hover:bg-rose-500 text-white font-semibold py-4 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-300 text-base">
-                    Pesan Gelang Custom ✨
+                    Masukkan Desain ke Keranjang 🛒
                 </button>
             </div>
 
@@ -187,16 +135,7 @@
 
         const checkboxes = document.querySelectorAll('.charm-checkbox');
         const countEl = document.getElementById('charm-count');
-        const subtotalEl = document.getElementById('subtotal-price');
-        const shippingEl = document.getElementById('shipping-cost-display');
         const totalEl = document.getElementById('total-price');
-        const courierRadios = document.querySelectorAll('input[name="courier"]');
-
-        const shippingCosts = {
-            'J&T': 10000,
-            'JNE': 12000,
-            'SiCepat': 8000
-        };
 
         function calculateTotal() {
             const checked = document.querySelectorAll('.charm-checkbox:checked');
@@ -208,18 +147,8 @@
             let subtotal = 0;
             checked.forEach(c => subtotal += prices[c.value] || 0);
 
-            // Get selected courier cost
-            let selectedCourier = 'J&T';
-            courierRadios.forEach(radio => {
-                if (radio.checked) selectedCourier = radio.value;
-            });
-            const shippingCost = shippingCosts[selectedCourier];
-
             // Update DOM
-            subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-            shippingEl.textContent = 'Rp ' + shippingCost.toLocaleString('id-ID');
-            const grandTotal = subtotal + shippingCost;
-            totalEl.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            totalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
         }
 
         checkboxes.forEach(cb => {
@@ -238,10 +167,6 @@
 
                 calculateTotal();
             });
-        });
-
-        courierRadios.forEach(radio => {
-            radio.addEventListener('change', calculateTotal);
         });
 
         // Run initially

@@ -23,6 +23,15 @@
         </h1>
         <div class="flex gap-5 text-sm font-medium items-center">
             <a href="/" class="text-gray-500 hover:text-rose-500 transition">← Kembali</a>
+            <a href="{{ route('cart.index') }}" class="relative text-gray-500 hover:text-rose-500 transition mx-1 flex items-center gap-1.5" title="Keranjang Belanja">
+                <span>🛒</span>
+                @php $cartCount = count(Session::get('cart', [])); @endphp
+                @if($cartCount > 0)
+                    <span class="absolute -top-2.5 -right-3 bg-rose-400 text-white text-[10px] font-extrabold h-4.5 w-4.5 rounded-full flex items-center justify-center border border-white">
+                        {{ $cartCount }}
+                    </span>
+                @endif
+            </a>
 
             @auth
                 <!-- Dropdown Profile -->
@@ -129,10 +138,17 @@
                     </p>
                 </div>
 
-                <a href="{{ route('checkout', $product) }}"
-                    class="mt-8 block w-full bg-rose-400 hover:bg-rose-500 text-white font-medium py-3.5 rounded-full shadow-sm hover:shadow-md transition text-center hover:-translate-y-0.5">
-                        Pesan Sekarang 🛍️
-                </a>
+                <form action="{{ route('cart.add', $product) }}" method="POST" class="mt-8 space-y-4">
+                    @csrf
+                    <div class="flex items-center gap-3">
+                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Jumlah:</label>
+                        <input type="number" name="quantity" value="1" min="1" class="w-20 border border-gray-200 rounded-xl px-3 py-2 text-center text-sm font-bold focus:border-rose-400 focus:outline-none">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-rose-400 hover:bg-rose-500 text-white font-medium py-3.5 rounded-full shadow-sm hover:shadow-md transition text-center hover:-translate-y-0.5">
+                        Masukkan ke Keranjang 🛒
+                    </button>
+                </form>
             </div>
         </div>
     </div>

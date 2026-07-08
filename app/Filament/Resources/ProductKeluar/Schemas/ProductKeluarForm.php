@@ -78,6 +78,7 @@ class ProductKeluarForm
                 DateTimePicker::make('tanggal_keluar')
                     ->label('Tanggal Keluar')
                     ->default(now())
+                    ->minDate(now()->startOfDay()) // Mengunci semua tanggal dan bulan sebelum hari ini
                     ->required(),
             ]);
     }
