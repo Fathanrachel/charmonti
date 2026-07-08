@@ -122,12 +122,16 @@
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 space-y-5">
                 <div class="bg-rose-50/30 border border-rose-100/50 rounded-2xl p-6 text-sm space-y-3">
                     <div class="flex justify-between text-gray-500">
-                        <span>Harga Gelang Custom</span>
+                        <span>Strap Gelang</span>
+                        <span class="font-medium text-gray-700">Rp 20.000</span>
+                    </div>
+                    <div class="flex justify-between text-gray-500">
+                        <span>Harga Charm Pilihan</span>
                         <span id="subtotal-price" class="font-medium text-gray-700">Rp 0</span>
                     </div>
                     <div class="flex justify-between font-bold text-gray-800 pt-4 border-t border-dashed border-rose-200/60 text-base">
                         <span>Total Desain</span>
-                        <span id="total-price" class="text-rose-500 text-lg">Rp 0</span>
+                        <span id="total-price" class="text-rose-500 text-lg">Rp 20.000</span>
                     </div>
                 </div>
                 <button type="submit"
@@ -199,8 +203,10 @@
                 subtotal += (prices[id] || 0) * qty;
             });
 
+            let totalPrice = 20000 + subtotal;
+
             subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-            totalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            totalEl.textContent = 'Rp ' + totalPrice.toLocaleString('id-ID');
         }
 
         // Run initially

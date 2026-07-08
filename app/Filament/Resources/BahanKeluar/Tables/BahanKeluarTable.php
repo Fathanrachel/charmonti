@@ -19,9 +19,8 @@ class BahanKeluarTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('bahanMasuk.id')
+                TextColumn::make('bahanMasuk.nama_bahan')
                     ->label('Batch Masuk')
-                    ->description(fn ($record) => $record->bahanMasuk?->tanggal_masuk ? 'Masuk: ' . $record->bahanMasuk->tanggal_masuk->translatedFormat('d M Y H:i') : '-')
                     ->sortable(),
 
                 TextColumn::make('qty_keluar')

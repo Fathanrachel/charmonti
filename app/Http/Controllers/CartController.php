@@ -77,16 +77,14 @@ class CartController extends Controller
     {
         $request->validate([
             'warna' => 'required|in:silver,gold',
-            'charms' => 'required|array',
+            'charms' => 'nullable|array',
             'request_note' => 'nullable|string|max:500',
         ]);
 
-        // Filter out items with 0 quantity
-        $selectedCharmsInput = array_filter($request->charms, fn($qty) => $qty > 0);
+        $charmsInput = $request->charms ?? [];
 
-        if (empty($selectedCharmsInput)) {
-            return redirect()->back()->withErrors(['charms' => 'Silakan pilih minimal 1 charm/manik untuk gelang custom Anda.'])->withInput();
-        }
+        // Filter out items with 0 quantity
+        $selectedCharmsInput = array_filter($charmsInput, fn($qty) => $qty > 0);
 
         // Validate aggregate quantity max 15
         $totalQty = array_sum($selectedCharmsInput);
@@ -94,16 +92,19 @@ class CartController extends Controller
             return redirect()->back()->withErrors(['charms' => 'Total manik/charm yang Anda pilih melebihi batas maksimal (15 manik).'])->withInput();
         }
 
-        // Validate that all keys exist in bahan table
-        $bahanIds = array_keys($selectedCharmsInput);
-        $charmsModels = Bahan::whereIn('id', $bahanIds)->get()->keyBy('id');
+        // Validate that all keys exist in bahan table if charms are selected
+        $charmsModels = collect();
+        if (!empty($selectedCharmsInput)) {
+            $bahanIds = array_keys($selectedCharmsInput);
+            $charmsModels = Bahan::whereIn('id', $bahanIds)->get()->keyBy('id');
 
-        if (count($charmsModels) !== count($bahanIds)) {
-            return redirect()->back()->withErrors(['charms' => 'Terdapat charm pilihan yang tidak valid.'])->withInput();
+            if (count($charmsModels) !== count($bahanIds)) {
+                return redirect()->back()->withErrors(['charms' => 'Terdapat charm pilihan yang tidak valid.'])->withInput();
+            }
         }
 
-        // Calculate total price based on quantities
-        $charmsPrice = 0;
+        // Base price of strap = Rp 20.000
+        $charmsPrice = 20000;
         $charmsDetails = [];
         $charmsFlattenedIds = [];
 
@@ -245,7 +246,7 @@ class CartController extends Controller
             'order_date' => now(),
             'status' => 'pending',
             'total_price' => $totalPrice,
-            'payment_method' => 'Midtrans',
+            'payment_method' => 'midtrans',
         ]);
 
         // 2. Populate items

@@ -94,8 +94,8 @@ class PaymentController extends Controller
         }
 
         $payment = Payment::firstOrNew(['order_id' => $order->id]);
-        $payment->payment_type   = $request->payment_type ?? 'midtrans';
-        $payment->transaction_id = $request->transaction_id ?? $request->order_id;
+        $payment->payment_type   = in_array($request->payment_type ?? '', ['transfer', 'QRIS']) ? $request->payment_type : 'midtrans';
+        $payment->transaction_id = $request->order_id ?? $request->transaction_id;
 
         $transactionStatus = $request->transaction_status ?? 'pending';
 
@@ -145,8 +145,8 @@ class PaymentController extends Controller
             $status  = \Midtrans\Transaction::status($orderId);
 
             $payment = Payment::firstOrNew(['order_id' => $order->id]);
-            $payment->payment_type   = $status->payment_type ?? 'midtrans';
-            $payment->transaction_id = $status->transaction_id ?? $orderId;
+            $payment->payment_type   = in_array($status->payment_type ?? '', ['transfer', 'QRIS']) ? $status->payment_type : 'midtrans';
+            $payment->transaction_id = $status->order_id ?? $orderId;
 
             $transactionStatus = $status->transaction_status ?? 'pending';
 

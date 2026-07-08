@@ -30,9 +30,9 @@ class ProductsTable
                     ->money('IDR', locale: 'id')
                     ->sortable(),
 
-                TextColumn::make('stock')
+                TextColumn::make('dynamic_stock')
                     ->label('Stok (Sisa)')
-                    ->getStateUsing(fn ($record) => $record->stock)
+                    ->getStateUsing(fn ($record) => $record->dynamic_stock)
                     ->numeric()
                     ->badge()
                     ->color(fn ($state): string => match(true) {

@@ -20,11 +20,7 @@ class ShippingForm
                     ->required()
                     ->searchable(),
 
-                Select::make('payment_id')
-                    ->label('Payment')
-                    ->options(\App\Models\Payment::all()->pluck('id', 'id')->map(fn($id) => 'Payment #' . $id))
-                    ->nullable()
-                    ->searchable(),
+
 
                 Select::make('expedition_id')
                     ->label('Ekspedisi / Kurir')
