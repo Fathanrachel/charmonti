@@ -79,7 +79,7 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Gelang custom berhasil dimasukkan ke keranjang!');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         $cart = Session::get('cart', []);
         $quantity = intval($request->input('quantity', 1));
@@ -92,7 +92,7 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Jumlah barang berhasil diperbarui.');
     }
 
-    public function remove($id)
+    public function remove(string $id)
     {
         $cart = Session::get('cart', []);
 
