@@ -19,8 +19,18 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout')->middleware('auth');
 
+// Keranjang Belanja (Shopping Cart)
+use App\Http\Controllers\CartController;
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/add-custom', [CartController::class, 'addCustom'])->name('cart.add-custom');
+Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+
 // Semua route yang butuh login
 Route::middleware('auth')->group(function () {
+    Route::get('/checkout-gabungan', [CartController::class, 'checkout'])->name('checkout.gabungan');
+    Route::post('/checkout-gabungan', [CartController::class, 'storeCheckout'])->name('checkout.store');
     Route::get('/checkout/{product}', [CustomerController::class, 'checkout'])->name('checkout');
     Route::post('/checkout/{product}', [CustomerController::class, 'store'])->name('order.store');
     Route::get('/order/success/{order}', [CustomerController::class, 'orderSuccess'])->name('order.success');
@@ -40,6 +50,15 @@ Route::middleware('auth')->group(function () {
     // Komplain (Complaint)
     Route::get('/orders/{order}/complaint', [CustomerController::class, 'createComplaint'])->name('customer.order.complaint');
     Route::post('/orders/{order}/complaint', [CustomerController::class, 'storeComplaint'])->name('customer.order.complaint.store');
+
+    // Profile
+    Route::get('/profile', [CustomerController::class, 'profile'])->name('customer.profile');
+    Route::post('/profile', [CustomerController::class, 'updateProfile'])->name('customer.profile.update');
+    Route::get('/api/cities/{province_id}', [CustomerController::class, 'getCities'])->name('api.cities');
+
+    // PDF Download Routes
+    Route::get('/owner/reports/sales/pdf', [\App\Http\Controllers\ReportPdfController::class, 'downloadSalesReport'])->name('owner.reports.sales.pdf');
+    Route::get('/owner/reports/financial/pdf', [\App\Http\Controllers\ReportPdfController::class, 'downloadFinancialReport'])->name('owner.reports.financial.pdf');
 
     // Payment routes
     Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');

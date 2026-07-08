@@ -62,8 +62,8 @@
             
             @if($order->shipping)
             <div class="mt-4 pt-4 border-t border-dashed border-rose-100 flex justify-between items-center">
-                <span class="text-sm text-gray-500 font-light">Ongkos Kirim ({{ $order->shipping->courier }})</span>
-                <span class="text-sm font-medium text-gray-600">Rp {{ number_format($order->shipping->cost, 0, ',', '.') }}</span>
+                <span class="text-sm text-gray-500 font-light">Ongkos Kirim ({{ $order->shipping->expedition?->name_expedition }})</span>
+                <span class="text-sm font-medium text-gray-600">Rp {{ number_format($order->shipping->shipping_cost, 0, ',', '.') }}</span>
             </div>
             @endif
         </div>

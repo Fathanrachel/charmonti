@@ -20,10 +20,17 @@ class ShippingForm
                     ->required()
                     ->searchable(),
 
-                TextInput::make('courier')
-                    ->label('Kurir')
-                    ->required()
-                    ->placeholder('contoh: JNE, J&T, SiCepat'),
+                Select::make('payment_id')
+                    ->label('Payment')
+                    ->options(\App\Models\Payment::all()->pluck('id', 'id')->map(fn($id) => 'Payment #' . $id))
+                    ->nullable()
+                    ->searchable(),
+
+                Select::make('expedition_id')
+                    ->label('Ekspedisi / Kurir')
+                    ->options(\App\Models\Expedition::all()->pluck('name_expedition', 'id'))
+                    ->nullable()
+                    ->searchable(),
 
                 TextInput::make('shipping_cost')
                     ->label('Ongkos Kirim')

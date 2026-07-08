@@ -14,7 +14,7 @@ class BestSellerChart extends ChartWidget
     protected function getData(): array
     {
         // Hitung total kuantitas per produk dari pesanan selesai
-        $bestSellers = OrderItem::select('product_id', DB::raw('SUM(quantity) as total_qty'))
+        $bestSellers = OrderItem::select('product_id', DB::raw('SUM(qty) as total_qty'))
             ->whereHas('order', function ($query) {
                 $query->where('status', 'selesai');
             })
@@ -28,7 +28,7 @@ class BestSellerChart extends ChartWidget
         $data = [];
 
         foreach ($bestSellers as $item) {
-            $labels[] = $item->product?->name ?? 'Produk';
+            $labels[] = $item->product?->product_name ?? 'Produk';
             $data[] = (int) $item->total_qty;
         }
 

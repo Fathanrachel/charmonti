@@ -43,8 +43,6 @@ class SalesReportResource extends Resource
     {
         return [
             'index' => ListSalesReports::route('/'),
-            'create' => CreateSalesReport::route('/create'),
-            'edit' => EditSalesReport::route('/{record}/edit'),
         ];
     }
 }

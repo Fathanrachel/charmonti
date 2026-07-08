@@ -303,4 +303,54 @@ class CustomerController extends Controller
 
         return redirect()->route('customer.orders')->with('success', 'Komplain Anda berhasil terkirim dan akan segera ditinjau oleh Admin. ⚠️');
     }
+
+    public function profile()
+    {
+        $user = Auth::user();
+        $profile = $user->profile;
+        $provinces = \App\Models\Province::orderBy('province')->get();
+        
+        // Dapatkan kota-kota sesuai provinsi yang saat ini dipilih (jika ada)
+        $cities = collect();
+        if ($profile?->city_id) {
+            $currentCity = \App\Models\City::find($profile->city_id);
+            if ($currentCity) {
+                $cities = \App\Models\City::where('province_id', $currentCity->province_id)->orderBy('city')->get();
+            }
+        }
+
+        return view('customer.profile', compact('user', 'profile', 'provinces', 'cities'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        $profile = $user->profile;
+
+        $request->validate([
+            'name'         => 'required|string|max:255',
+            'phone'        => 'nullable|string|max:20',
+            'province_id'  => 'nullable|exists:provinces,id',
+            'city_id'      => 'nullable|exists:cities,id',
+            'address_line' => 'nullable|string|max:500',
+            'postal_code'  => 'nullable|string|max:10',
+        ]);
+
+        // Update profile
+        $profile->update([
+            'name'         => $request->name,
+            'phone'        => $request->phone,
+            'city_id'      => $request->city_id,
+            'address_line' => $request->address_line,
+            'postal_code'  => $request->postal_code,
+        ]);
+
+        return redirect()->route('customer.profile')->with('success', 'Profil Anda berhasil diperbarui! ✨');
+    }
+
+    public function getCities($provinceId)
+    {
+        $cities = \App\Models\City::where('province_id', $provinceId)->orderBy('city')->get(['id', 'city']);
+        return response()->json($cities);
+    }
 }

@@ -31,6 +31,21 @@ class ProductMasuksTable
                     ->numeric()
                     ->sortable(),
 
+                TextColumn::make('sisa_stok')
+                    ->label('Sisa Stok Batch')
+                    ->getStateUsing(function ($record) {
+                        $alreadyOut = $record->productKeluar()->sum('qty_keluar');
+                        return $record->qty_masuk - $alreadyOut;
+                    })
+                    ->numeric()
+                    ->badge()
+                    ->color(fn ($state) => match (true) {
+                        $state <= 0 => 'danger',
+                        $state <= 5 => 'warning',
+                        default => 'success',
+                    })
+                    ->sortable(),
+
                 TextColumn::make('tanggal_masuk')
                     ->label('Tanggal Masuk')
                     ->dateTime('d M Y H:i')

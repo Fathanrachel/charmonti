@@ -43,8 +43,6 @@ class FinancialReportResource extends Resource
     {
         return [
             'index' => ListFinancialReports::route('/'),
-            'create' => CreateFinancialReport::route('/create'),
-            'edit' => EditFinancialReport::route('/{record}/edit'),
         ];
     }
 }

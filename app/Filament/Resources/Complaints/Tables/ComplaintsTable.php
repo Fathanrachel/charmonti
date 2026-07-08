@@ -18,7 +18,7 @@ class ComplaintsTable
                     ->label('Pesanan #')
                     ->sortable(),
 
-                TextColumn::make('user.name')
+                TextColumn::make('user.profile.name')
                     ->label('Pelanggan')
                     ->searchable()
                     ->sortable(),

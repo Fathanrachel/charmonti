@@ -31,6 +31,15 @@ class ProductsTable
                 TextColumn::make('category')
                     ->searchable(),
                 ImageColumn::make('image'),
+                TextColumn::make('stock')
+                    ->getStateUsing(fn ($record) => $record->stock)
+                    ->numeric()
+                    ->badge()
+                    ->color(fn ($state): string => match(true) {
+                        $state <= 0 => 'danger',
+                        $state <= 5 => 'warning',
+                        default     => 'success',
+                    }),
             ])
             ->filters([
                 //

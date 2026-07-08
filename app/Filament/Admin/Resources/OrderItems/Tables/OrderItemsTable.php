@@ -23,7 +23,7 @@ class OrderItemsTable
                 TextColumn::make('price')
                     ->money('IDR', locale: 'id')
                     ->sortable(),
-                TextColumn::make('quantity')
+                TextColumn::make('qty')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')

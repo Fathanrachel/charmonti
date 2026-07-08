@@ -22,14 +22,62 @@
             </a>
         </h1>
         <div class="flex gap-5 text-sm font-medium items-center">
+            <a href="{{ route('cart.index') }}" class="relative text-gray-500 hover:text-rose-500 transition p-2 rounded-full hover:bg-rose-50/50 flex items-center justify-center" title="Keranjang Belanja">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                @php $cartCount = count(Session::get('cart', [])); @endphp
+                @if($cartCount > 0)
+                    <span class="absolute top-1 right-1 bg-rose-500 text-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-white shadow-xs">
+                        {{ $cartCount }}
+                    </span>
+                @endif
+            </a>
             <a href="/" class="text-gray-500 hover:text-rose-500 transition">Produk</a>
-            <a href="{{ route('customer.orders') }}" class="text-rose-500 border-b-2 border-rose-400 pb-1">Pesanan Saya</a>
+
             @auth
-                <span class="text-gray-500 font-normal">Halo, <span class="font-semibold text-gray-700">{{ Auth::user()->profile?->name }}</span></span>
-                <form method="POST" action="{{ route('logout') }}" class="inline">
-                    @csrf
-                    <button type="submit" class="text-gray-400 hover:text-red-500 font-semibold transition">Logout</button>
-                </form>
+                <!-- Dropdown Profile -->
+                <div class="relative inline-block text-left" id="profile-dropdown-container">
+                    <button type="button" id="dropdown-btn" class="flex items-center gap-1.5 text-gray-700 hover:text-rose-500 font-semibold focus:outline-none transition py-1">
+                        <span>Halo, <span class="text-rose-400 font-bold">{{ Auth::user()->profile?->name }}</span></span>
+                        <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu Box -->
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2.5 w-48 rounded-2xl bg-white border border-gray-100 shadow-lg py-2 z-50 ring-1 ring-black/5 transition duration-300">
+                        <a href="{{ route('customer.profile') }}" class="block px-5 py-2.5 text-sm text-gray-600 hover:bg-rose-50/50 hover:text-rose-500 font-medium transition">
+                            👤 Profil Saya
+                        </a>
+                        <a href="{{ route('customer.orders') }}" class="block px-5 py-2.5 text-sm text-gray-600 hover:bg-rose-50/50 hover:text-rose-500 font-medium transition">
+                            📦 Pesanan Saya
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <form method="POST" action="{{ route('logout') }}" class="block">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-5 py-2.5 text-sm text-red-500 hover:bg-red-50/50 font-semibold transition">
+                                🚪 Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const btn = document.getElementById('dropdown-btn');
+                        const menu = document.getElementById('dropdown-menu');
+                        
+                        btn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            menu.classList.toggle('hidden');
+                        });
+
+                        document.addEventListener('click', function () {
+                            menu.classList.add('hidden');
+                        });
+                    });
+                </script>
             @endauth
         </div>
     </nav>
@@ -117,6 +165,7 @@
                         <div class="p-8">
                             {{-- Items --}}
                             <div class="space-y-5 mb-8">
+                                {{-- 1. Regular Product Items --}}
                                 @foreach($order->orderItems as $item)
                                     <div class="flex items-center gap-5">
                                         <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-50">
@@ -128,13 +177,52 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <h4 class="font-semibold text-gray-800 text-sm truncate">{{ $item->product->product_name }}</h4>
-                                            <p class="text-xs text-gray-500 mt-1 font-light">Jumlah: {{ $item->qty }}x • Satuan: Rp {{ number_format($item->price, 0, ',', '.') }}</p>
+                                            <p class="text-xs text-gray-500 mt-1 font-light">Jumlah: {{ $item->qty }}x &bull; Satuan: Rp {{ number_format($item->price, 0, ',', '.') }}</p>
                                         </div>
                                         <div class="text-right shrink-0">
                                             <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($item->price * $item->qty, 0, ',', '.') }}</span>
                                         </div>
                                     </div>
                                 @endforeach
+
+                                {{-- 2. Custom Gelang Order --}}
+                                @if($order->customBahanOrder)
+                                    <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5">
+                                        <div class="flex items-center gap-4 mb-4">
+                                            <div class="bg-rose-100 rounded-xl h-12 w-12 flex items-center justify-center text-2xl shrink-0">
+                                                ✨
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</h4>
+                                                @if($order->customBahanOrder->request_note)
+                                                    <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $order->customBahanOrder->request_note }}"</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        
+                                        {{-- Daftar Bahan/Charm --}}
+                                        <div class="border-t border-rose-100/40 pt-3">
+                                            <p class="text-xs font-semibold text-gray-400 mb-2.5 uppercase tracking-wide">Bahan / Charm yang Digunakan:</p>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                                @foreach($order->customBahanOrder->customBahanOrderItems as $customItem)
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="h-8 w-8 rounded-lg bg-white border border-rose-50 flex items-center justify-center shrink-0">
+                                                            @if($customItem->bahan->image)
+                                                                <img src="{{ Storage::url($customItem->bahan->image) }}" alt="{{ $customItem->bahan->nama_bahan }}" class="h-full w-full object-cover rounded-lg">
+                                                            @else
+                                                                <span class="text-sm">💎</span>
+                                                            @endif
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="text-xs font-medium text-gray-700 truncate">{{ $customItem->bahan->nama_bahan }}</p>
+                                                            <p class="text-[10px] text-gray-400 font-light">Rp {{ number_format($customItem->bahan->price, 0, ',', '.') }}</p>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             <hr class="border-gray-100 my-6">
@@ -184,7 +272,7 @@
                                         <div class="space-y-3 text-sm text-gray-600">
                                             <div class="flex justify-between">
                                                 <span class="font-light">Kurir:</span>
-                                                <span class="font-semibold text-gray-800 capitalize">{{ $order->shipping->courier ?: '-' }}</span>
+                                                <span class="font-semibold text-gray-800 capitalize">{{ $order->shipping->expedition?->name_expedition ?: '-' }}</span>
                                             </div>
                                             <div class="flex justify-between">
                                                 <span class="font-light">No. Resi:</span>

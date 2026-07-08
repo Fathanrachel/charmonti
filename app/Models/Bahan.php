@@ -41,4 +41,35 @@ class Bahan extends Model
         $keluar = $this->bahanKeluar()->sum('qty_keluar');
         return $masuk - $keluar;
     }
+
+    public function deductStock(int $quantity): int
+    {
+        $needed = $quantity;
+        $batches = $this->bahanMasuk()
+            ->orderBy('tanggal_masuk', 'asc')
+            ->get();
+
+        foreach ($batches as $batch) {
+            if ($needed <= 0) {
+                break;
+            }
+
+            $alreadyOut = BahanKeluar::where('idbahan_masuk', $batch->id)->sum('qty_keluar');
+            $batchStock = $batch->qty_masuk - $alreadyOut;
+
+            if ($batchStock > 0) {
+                $deduct = min($needed, $batchStock);
+                BahanKeluar::create([
+                    'idbahan_masuk' => $batch->id,
+                    'bahan_id' => $this->id,
+                    'qty_keluar' => $deduct,
+                    'sisa' => $batchStock - $deduct,
+                    'tanggal_keluar' => now(),
+                ]);
+                $needed -= $deduct;
+            }
+        }
+
+        return $needed; // Returns remaining quantity if out of stock
+    }
 }

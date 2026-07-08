@@ -10,27 +10,27 @@ class ProductPolicy
     // Semua bisa lihat
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['admin', 'owner']);
+        return in_array($user->profile?->role, ['admin', 'owner']);
     }
 
     public function view(User $user, Product $product): bool
     {
-        return in_array($user->role, ['admin', 'owner']);
+        return in_array($user->profile?->role, ['admin', 'owner']);
     }
 
-    // Hanya owner yang bisa create, edit, delete
+    // Admin dan owner bisa create, edit, delete
     public function create(User $user): bool
     {
-        return $user->isOwner();
+        return in_array($user->profile?->role, ['admin', 'owner']);
     }
 
     public function update(User $user, Product $product): bool
     {
-        return $user->isOwner();
+        return in_array($user->profile?->role, ['admin', 'owner']);
     }
 
     public function delete(User $user, Product $product): bool
     {
-        return $user->isOwner();
+        return in_array($user->profile?->role, ['admin', 'owner']);
     }
 }

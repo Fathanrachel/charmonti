@@ -34,7 +34,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('custom.order.store') }}" class="space-y-8">
+        <form method="POST" action="{{ route('cart.add-custom') }}" class="space-y-8">
             @csrf
 
             {{-- Pilih Warna Strap --}}
@@ -70,9 +70,7 @@
                 @else
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         @foreach($charms as $charm)
-                        <label class="cursor-pointer group">
-                            <input type="checkbox" name="charms[]" value="{{ $charm->id }}"
-                                class="hidden charm-checkbox">
+                        <div class="charm-card-container group">
                             <div class="charm-card border-2 border-gray-100 rounded-2xl p-4 text-center transition duration-300 group-hover:border-rose-200">
                                 <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden">
                                     @if($charm->image)
@@ -84,69 +82,39 @@
                                     @endif
                                 </div>
                                 <p class="text-sm font-medium text-gray-800 leading-tight mb-1">{{ $charm->nama_bahan }}</p>
-                                <p class="text-xs text-rose-500 font-bold">
+                                <p class="text-xs text-rose-500 font-bold mb-3">
                                     Rp {{ number_format($charm->price, 0, ',', '.') }}
                                 </p>
+
+                                {{-- Counter Buttons --}}
+                                <div class="flex items-center justify-center gap-3">
+                                    <button type="button" 
+                                        onclick="adjustQty({{ $charm->id }}, -1)"
+                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none">-</button>
+                                    
+                                    <span id="qty-display-{{ $charm->id }}" class="font-bold text-gray-700 w-6 text-center text-sm">0</span>
+                                    
+                                    <input type="hidden" name="charms[{{ $charm->id }}]" id="qty-input-{{ $charm->id }}" value="0" class="charm-qty-input">
+
+                                    <button type="button" 
+                                        onclick="adjustQty({{ $charm->id }}, 1)"
+                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none">+</button>
+                                </div>
                             </div>
-                        </label>
+                        </div>
                         @endforeach
                     </div>
                 @endif
             </div>
 
-            {{-- Alamat & Catatan --}}
+            {{-- Catatan --}}
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 space-y-6">
-                <h3 class="font-bold text-lg text-gray-800 mb-2">3. Detail Pengiriman</h3>
-
-                <div>
-                    <label class="text-sm font-semibold text-gray-700 block mb-2">Alamat Pengiriman</label>
-                    <textarea name="shipping_address" rows="3" required
-                        class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
-                        placeholder="Masukkan alamat lengkap kamu...">{{ old('shipping_address') }}</textarea>
-                </div>
-
-                {{-- Pilihan Kurir Pengiriman --}}
-                <div>
-                    <label class="text-sm font-semibold text-gray-700 block mb-3">Pilih Kurir & Layanan Pengiriman</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="courier" value="J&T" class="hidden peer" required checked>
-                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                                <div>
-                                    <span class="font-bold text-gray-800 text-sm block">J&T Express</span>
-                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 2 - 3 Hari</span>
-                                </div>
-                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 10.000</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="courier" value="JNE" class="hidden peer">
-                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                                <div>
-                                    <span class="font-bold text-gray-800 text-sm block">JNE Reguler</span>
-                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 1 - 2 Hari</span>
-                                </div>
-                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 12.000</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="courier" value="SiCepat" class="hidden peer">
-                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                                <div>
-                                    <span class="font-bold text-gray-800 text-sm block">SiCepat Halu</span>
-                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 3 - 5 Hari</span>
-                                </div>
-                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 8.000</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
+                <h3 class="font-bold text-lg text-gray-800 mb-2">3. Catatan Desain</h3>
                 <div>
                     <label class="text-sm font-semibold text-gray-700 block mb-2">Catatan Tambahan <span class="text-gray-400 font-normal">(opsional)</span></label>
                     <textarea name="request_note" rows="2"
                         class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
-                        placeholder="Contoh: tolong dibungkus cantik ya...">{{ old('request_note') }}</textarea>
+                        placeholder="Contoh: tolong diurutkan bintang, bulat, bintang ya..."></textarea>
                 </div>
             </div>
 
@@ -157,18 +125,14 @@
                         <span>Harga Gelang Custom</span>
                         <span id="subtotal-price" class="font-medium text-gray-700">Rp 0</span>
                     </div>
-                    <div class="flex justify-between text-gray-500">
-                        <span>Ongkos Kirim</span>
-                        <span id="shipping-cost-display" class="font-medium text-gray-700">Rp 10.000</span>
-                    </div>
                     <div class="flex justify-between font-bold text-gray-800 pt-4 border-t border-dashed border-rose-200/60 text-base">
-                        <span>Total Bayar</span>
-                        <span id="total-price" class="text-rose-500 text-lg">Rp 10.000</span>
+                        <span>Total Desain</span>
+                        <span id="total-price" class="text-rose-500 text-lg">Rp 0</span>
                     </div>
                 </div>
                 <button type="submit"
                     class="w-full mt-2 bg-rose-400 hover:bg-rose-500 text-white font-semibold py-4 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-300 text-base">
-                    Pesan Gelang Custom ✨
+                    Masukkan Desain ke Keranjang 🛒
                 </button>
             </div>
 
@@ -182,64 +146,62 @@
             @endforeach
         };
 
-        const checkboxes = document.querySelectorAll('.charm-checkbox');
         const countEl = document.getElementById('charm-count');
         const subtotalEl = document.getElementById('subtotal-price');
-        const shippingEl = document.getElementById('shipping-cost-display');
         const totalEl = document.getElementById('total-price');
-        const courierRadios = document.querySelectorAll('input[name="courier"]');
 
-        const shippingCosts = {
-            'J&T': 10000,
-            'JNE': 12000,
-            'SiCepat': 8000
-        };
+        function adjustQty(charmId, delta) {
+            const input = document.getElementById('qty-input-' + charmId);
+            const display = document.getElementById('qty-display-' + charmId);
+            const card = display.closest('.charm-card');
 
-        function calculateTotal() {
-            const checked = document.querySelectorAll('.charm-checkbox:checked');
-            
-            // Update count
-            countEl.textContent = checked.length;
+            let currentVal = parseInt(input.value) || 0;
+            let currentTotal = getTotalQty();
 
-            // Calculate items subtotal
-            let subtotal = 0;
-            checked.forEach(c => subtotal += prices[c.value] || 0);
+            // Check max 15 charms limit for additions
+            if (delta > 0 && currentTotal >= 15) {
+                alert('Maksimal manik/charm yang dapat dimasukkan adalah 15.');
+                return;
+            }
 
-            // Get selected courier cost
-            let selectedCourier = 'J&T';
-            courierRadios.forEach(radio => {
-                if (radio.checked) selectedCourier = radio.value;
-            });
-            const shippingCost = shippingCosts[selectedCourier];
+            let newVal = currentVal + delta;
+            if (newVal < 0) newVal = 0;
 
-            // Update DOM
-            subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-            shippingEl.textContent = 'Rp ' + shippingCost.toLocaleString('id-ID');
-            const grandTotal = subtotal + shippingCost;
-            totalEl.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            input.value = newVal;
+            display.textContent = newVal;
+
+            // Update Card Highlight Styles
+            if (newVal > 0) {
+                card.classList.add('border-rose-400', 'bg-rose-50/30');
+            } else {
+                card.classList.remove('border-rose-400', 'bg-rose-50/30');
+            }
+
+            calculateTotal();
         }
 
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', function() {
-                const checked = document.querySelectorAll('.charm-checkbox:checked');
-
-                // Max 15
-                if (checked.length > 15) {
-                    this.checked = false;
-                    return;
-                }
-
-                // Update style
-                this.closest('label').querySelector('.charm-card').classList.toggle('border-rose-400', this.checked);
-                this.closest('label').querySelector('.charm-card').classList.toggle('bg-rose-50/30', this.checked);
-
-                calculateTotal();
+        function getTotalQty() {
+            let total = 0;
+            document.querySelectorAll('.charm-qty-input').forEach(input => {
+                total += parseInt(input.value) || 0;
             });
-        });
+            return total;
+        }
 
-        courierRadios.forEach(radio => {
-            radio.addEventListener('change', calculateTotal);
-        });
+        function calculateTotal() {
+            let totalQty = getTotalQty();
+            countEl.textContent = totalQty;
+
+            let subtotal = 0;
+            document.querySelectorAll('.charm-qty-input').forEach(input => {
+                const id = input.id.replace('qty-input-', '');
+                const qty = parseInt(input.value) || 0;
+                subtotal += (prices[id] || 0) * qty;
+            });
+
+            subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            totalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+        }
 
         // Run initially
         calculateTotal();

@@ -18,8 +18,8 @@ class ShippingsTable
                     ->label('Order #')
                     ->sortable(),
 
-                TextColumn::make('courier')
-                    ->label('Kurir')
+                TextColumn::make('expedition.name_expedition')
+                    ->label('Kurir / Ekspedisi')
                     ->searchable(),
 
                 TextColumn::make('shipping_cost')

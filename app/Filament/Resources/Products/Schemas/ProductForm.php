@@ -50,6 +50,7 @@ class ProductForm
                     ->required()
                     ->default('gelang_jadi'),
                 
+
             ]);
     }
 }

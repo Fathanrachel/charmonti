@@ -23,14 +23,61 @@
         </h1>
         <div class="flex gap-5 text-sm font-medium items-center">
             <a href="/" class="text-gray-500 hover:text-rose-500 transition">← Kembali</a>
+            <a href="{{ route('cart.index') }}" class="relative text-gray-500 hover:text-rose-500 transition p-2 rounded-full hover:bg-rose-50/50 flex items-center justify-center" title="Keranjang Belanja">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                @php $cartCount = count(Session::get('cart', [])); @endphp
+                @if($cartCount > 0)
+                    <span class="absolute top-1 right-1 bg-rose-500 text-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-white shadow-xs">
+                        {{ $cartCount }}
+                    </span>
+                @endif
+            </a>
 
             @auth
-                <a href="{{ route('customer.orders') }}" class="text-gray-500 hover:text-rose-500 transition">Pesanan Saya</a>
-                <span class="text-rose-400 font-semibold">Halo, {{ Auth::user()->profile?->name }}</span>
-                <form method="POST" action="{{ route('logout') }}" class="inline">
-                    @csrf
-                    <button type="submit" class="text-gray-400 hover:text-red-500 transition">Logout</button>
-                </form>
+                <!-- Dropdown Profile -->
+                <div class="relative inline-block text-left" id="profile-dropdown-container">
+                    <button type="button" id="dropdown-btn" class="flex items-center gap-1.5 text-gray-700 hover:text-rose-500 font-semibold focus:outline-none transition py-1">
+                        <span>Halo, <span class="text-rose-400 font-bold">{{ Auth::user()->profile?->name }}</span></span>
+                        <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu Box -->
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2.5 w-48 rounded-2xl bg-white border border-gray-100 shadow-lg py-2 z-50 ring-1 ring-black/5 transition duration-300">
+                        <a href="{{ route('customer.profile') }}" class="block px-5 py-2.5 text-sm text-gray-600 hover:bg-rose-50/50 hover:text-rose-500 font-medium transition">
+                            👤 Profil Saya
+                        </a>
+                        <a href="{{ route('customer.orders') }}" class="block px-5 py-2.5 text-sm text-gray-600 hover:bg-rose-50/50 hover:text-rose-500 font-medium transition">
+                            📦 Pesanan Saya
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <form method="POST" action="{{ route('logout') }}" class="block">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-5 py-2.5 text-sm text-red-500 hover:bg-red-50/50 font-semibold transition">
+                                🚪 Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const btn = document.getElementById('dropdown-btn');
+                        const menu = document.getElementById('dropdown-menu');
+                        
+                        btn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            menu.classList.toggle('hidden');
+                        });
+
+                        document.addEventListener('click', function () {
+                            menu.classList.add('hidden');
+                        });
+                    });
+                </script>
             @else
                 <a href="{{ route('login') }}" class="text-gray-500 hover:text-rose-500 transition">Login</a>
                 <a href="{{ route('register') }}"
@@ -93,10 +140,17 @@
                     </p>
                 </div>
 
-                <a href="{{ route('checkout', $product) }}"
-                    class="mt-8 block w-full bg-rose-400 hover:bg-rose-500 text-white font-medium py-3.5 rounded-full shadow-sm hover:shadow-md transition text-center hover:-translate-y-0.5">
-                        Pesan Sekarang 🛍️
-                </a>
+                <form action="{{ route('cart.add', $product) }}" method="POST" class="mt-8 space-y-4">
+                    @csrf
+                    <div class="flex items-center gap-3">
+                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Jumlah:</label>
+                        <input type="number" name="quantity" value="1" min="1" class="w-20 border border-gray-200 rounded-xl px-3 py-2 text-center text-sm font-bold focus:border-rose-400 focus:outline-none">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-rose-400 hover:bg-rose-500 text-white font-medium py-3.5 rounded-full shadow-sm hover:shadow-md transition text-center hover:-translate-y-0.5">
+                        Masukkan ke Keranjang 🛒
+                    </button>
+                </form>
             </div>
         </div>
     </div>

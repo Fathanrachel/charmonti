@@ -21,7 +21,7 @@ class OrderItemForm
                     ->required()
                     ->numeric()
                     ->prefix('Rp'),
-                TextInput::make('quantity')
+                TextInput::make('qty')
                     ->required()
                     ->numeric(),
             ]);
