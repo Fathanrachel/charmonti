@@ -20,7 +20,7 @@ class ComplaintResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'courier';
+    protected static ?string $recordTitleAttribute = 'complaint_id';
 
     public static function form(Schema $schema): Schema
     {

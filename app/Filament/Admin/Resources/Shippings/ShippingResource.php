@@ -20,7 +20,7 @@ class ShippingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
-    protected static ?string $recordTitleAttribute = 'courier';
+    protected static ?string $recordTitleAttribute = 'shipping_id';
 
     public static function form(Schema $schema): Schema
     {

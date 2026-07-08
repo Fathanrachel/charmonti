@@ -218,7 +218,7 @@
                                         <div class="space-y-3 text-sm text-gray-600">
                                             <div class="flex justify-between">
                                                 <span class="font-light">Kurir:</span>
-                                                <span class="font-semibold text-gray-800 capitalize">{{ $order->shipping->courier ?: '-' }}</span>
+                                                <span class="font-semibold text-gray-800 capitalize">{{ $order->shipping->expedition?->name_expedition ?: '-' }}</span>
                                             </div>
                                             <div class="flex justify-between">
                                                 <span class="font-light">No. Resi:</span>

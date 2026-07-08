@@ -14,33 +14,39 @@ class ShippingsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order_id')
-                    ->numeric()
+                TextColumn::make('order.id')
+                    ->label('Order #')
                     ->sortable(),
-                TextColumn::make('courier')
+
+                TextColumn::make('expedition.name_expedition')
+                    ->label('Kurir / Ekspedisi')
                     ->searchable(),
+
                 TextColumn::make('shipping_cost')
+                    ->label('Ongkos Kirim')
                     ->money('IDR', locale: 'id')
                     ->sortable(),
+
                 TextColumn::make('tracking_number')
-                    ->searchable(),
+                    ->label('Nomor Resi')
+                    ->searchable()
+                    ->toggleable(),
+
                 TextColumn::make('estimated_arrival')
-                    ->dateTime()
+                    ->label('Estimasi Tiba')
+                    ->dateTime('d M Y')
                     ->sortable(),
+
                 TextColumn::make('status')
-                    ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending'  => 'warning',
+                        'dikirim'  => 'info',
+                        'sampai'   => 'success',
+                    }),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make(),
             ])
@@ -51,3 +57,4 @@ class ShippingsTable
             ]);
     }
 }
+
