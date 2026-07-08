@@ -18,7 +18,7 @@ class BahanKeluarResource extends Resource
 {
     protected static ?string $model = BahanKeluar::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInbox;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-inbox-arrow-down';
 
     protected static ?string $navigationLabel = 'Bahan Keluar';
 
