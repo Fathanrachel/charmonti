@@ -11,59 +11,68 @@
         body { font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body class="bg-linear-to-br from-rose-100 via-pink-100 to-rose-100/90 min-h-screen flex items-center justify-center relative overflow-hidden">
+<body class="bg-linear-to-br from-rose-100 via-pink-100 to-rose-100/90 min-h-screen flex items-center justify-center relative overflow-hidden py-10">
     <!-- Decorative elements -->
     <div class="absolute top-20 right-20 w-56 h-56 bg-pink-300/40 rounded-full blur-3xl"></div>
     <div class="absolute -bottom-10 -left-20 w-80 h-80 bg-rose-300/30 rounded-full blur-3xl"></div>
     <div class="absolute top-1/3 left-1/4 w-64 h-64 bg-pink-200/25 rounded-full blur-2xl"></div>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 w-full max-w-md relative z-10">
-        <h1 class="text-2xl font-bold text-center mb-2">
-            <span class="bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">Charm.onti</span>
-        </h1>
-        <p class="text-center text-gray-500 text-sm mb-8">Buat akun baru ✨</p>
+    <div class="bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(244,114,182,0.15)] border border-white/60 p-10 w-[90%] max-w-[440px] relative z-10">
+        <!-- Sparkle Header Icon -->
+        <div class="flex justify-center mb-4">
+            <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-rose-400 drop-shadow-[0_2px_8px_rgba(244,114,182,0.3)]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l2.4 5.6L20 10l-5.6 2.4L12 18l-2.4-5.6L4 10l5.6-2.4z"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-rose-400 absolute -top-1.5 -right-1 opacity-70 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l1.5 3.5L17 7l-3.5 1.5L12 12l-1.5-3.5L7 7l3.5-1.5z"/>
+                </svg>
+            </div>
+        </div>
 
+        <h2 class="text-2xl font-bold text-gray-800 text-center mb-8 tracking-tight">Buat akun baru</h2>
+ 
         @if($errors->any())
-            <div class="bg-rose-50/50 text-rose-600 text-sm rounded-2xl px-4 py-3 mb-4 border border-rose-100/50">
+            <div class="bg-rose-50/50 text-rose-500 text-xs rounded-2xl px-4 py-3 mb-5 border border-rose-100/50 text-center font-medium">
                 {{ $errors->first() }}
             </div>
         @endif
-
+ 
         <form method="POST" action="/register" class="space-y-5">
             @csrf
             <div>
-                <label class="text-sm font-medium text-gray-700">Nama Lengkap</label>
+                <label class="text-sm font-medium text-gray-700 block mb-1.5">Nama Lengkap</label>
                 <input type="text" name="name" value="{{ old('name') }}"
-                    class="w-full mt-2 px-4 py-3 border border-gray-100/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 bg-white transition"
+                    class="w-full px-5 py-3.5 border border-rose-100/30 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 bg-[#FAF8F6]/50 text-gray-700 placeholder-gray-400 transition"
                     placeholder="Nama kamu" required>
             </div>
             <div>
-                <label class="text-sm font-medium text-gray-700">Email</label>
+                <label class="text-sm font-medium text-gray-700 block mb-1.5">Email</label>
                 <input type="email" name="email" value="{{ old('email') }}"
-                    class="w-full mt-2 px-4 py-3 border border-gray-100/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 bg-white transition"
+                    class="w-full px-5 py-3.5 border border-rose-100/30 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 bg-[#FAF8F6]/50 text-gray-700 placeholder-gray-400 transition"
                     placeholder="email@kamu.com" required>
             </div>
             <div>
-                <label class="text-sm font-medium text-gray-700">Password</label>
+                <label class="text-sm font-medium text-gray-700 block mb-1.5">Password</label>
                 <input type="password" name="password"
-                    class="w-full mt-2 px-4 py-3 border border-gray-100/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 bg-white transition"
+                    class="w-full px-5 py-3.5 border border-rose-100/30 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 bg-[#FAF8F6]/50 text-gray-700 placeholder-gray-400 transition"
                     placeholder="Min. 8 karakter" required>
             </div>
             <div>
-                <label class="text-sm font-medium text-gray-700">Konfirmasi Password</label>
+                <label class="text-sm font-medium text-gray-700 block mb-1.5">Konfirmasi Password</label>
                 <input type="password" name="password_confirmation"
-                    class="w-full mt-2 px-4 py-3 border border-gray-100/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 bg-white transition"
+                    class="w-full px-5 py-3.5 border border-rose-100/30 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 bg-[#FAF8F6]/50 text-gray-700 placeholder-gray-400 transition"
                     placeholder="Ulangi password" required>
             </div>
             <button type="submit"
-                class="w-full bg-rose-400 hover:bg-rose-500 text-white font-semibold py-3 rounded-2xl transition shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                class="w-full mt-2 bg-rose-400 hover:bg-rose-500 active:scale-[0.98] text-white font-semibold py-4 rounded-full transition duration-300 shadow-[0_4px_15px_rgba(244,114,182,0.25)] hover:shadow-[0_6px_20px_rgba(244,114,182,0.35)] text-base">
                 Daftar Sekarang
             </button>
         </form>
-
-        <p class="text-center text-sm text-gray-500 mt-6">
-            Sudah punya akun?
-            <a href="/login" class="text-rose-500 font-medium hover:text-rose-600 transition">Masuk</a>
+ 
+        <p class="text-center text-sm text-gray-500 mt-8">
+            Sudah punya akun? 
+            <a href="/login" class="text-rose-400 font-semibold hover:text-rose-500 transition">Masuk</a>
         </p>
     </div>
 
