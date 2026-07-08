@@ -30,6 +30,17 @@ class BahanTable
                     ->money('IDR', locale: 'id')
                     ->sortable(),
 
+                TextColumn::make('stock')
+                    ->label('Total Stok')
+                    ->getStateUsing(fn ($record) => $record->stock)
+                    ->numeric()
+                    ->badge()
+                    ->color(fn ($state): string => match(true) {
+                        $state <= 0  => 'danger',
+                        $state <= 5  => 'warning',
+                        default      => 'success',
+                    }),
+
                 TextColumn::make('description')
                     ->label('Deskripsi')
                     ->limit(50),

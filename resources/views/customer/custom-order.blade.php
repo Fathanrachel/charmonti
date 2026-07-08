@@ -70,9 +70,7 @@
                 @else
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         @foreach($charms as $charm)
-                        <label class="cursor-pointer group">
-                            <input type="checkbox" name="charms[]" value="{{ $charm->id }}"
-                                class="hidden charm-checkbox">
+                        <div class="charm-card-container group">
                             <div class="charm-card border-2 border-gray-100 rounded-2xl p-4 text-center transition duration-300 group-hover:border-rose-200">
                                 <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden">
                                     @if($charm->image)
@@ -84,11 +82,26 @@
                                     @endif
                                 </div>
                                 <p class="text-sm font-medium text-gray-800 leading-tight mb-1">{{ $charm->nama_bahan }}</p>
-                                <p class="text-xs text-rose-500 font-bold">
+                                <p class="text-xs text-rose-500 font-bold mb-3">
                                     Rp {{ number_format($charm->price, 0, ',', '.') }}
                                 </p>
+
+                                {{-- Counter Buttons --}}
+                                <div class="flex items-center justify-center gap-3">
+                                    <button type="button" 
+                                        onclick="adjustQty({{ $charm->id }}, -1)"
+                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none">-</button>
+                                    
+                                    <span id="qty-display-{{ $charm->id }}" class="font-bold text-gray-700 w-6 text-center text-sm">0</span>
+                                    
+                                    <input type="hidden" name="charms[{{ $charm->id }}]" id="qty-input-{{ $charm->id }}" value="0" class="charm-qty-input">
+
+                                    <button type="button" 
+                                        onclick="adjustQty({{ $charm->id }}, 1)"
+                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none">+</button>
+                                </div>
                             </div>
-                        </label>
+                        </div>
                         @endforeach
                     </div>
                 @endif
@@ -133,41 +146,62 @@
             @endforeach
         };
 
-        const checkboxes = document.querySelectorAll('.charm-checkbox');
         const countEl = document.getElementById('charm-count');
+        const subtotalEl = document.getElementById('subtotal-price');
         const totalEl = document.getElementById('total-price');
 
-        function calculateTotal() {
-            const checked = document.querySelectorAll('.charm-checkbox:checked');
-            
-            // Update count
-            countEl.textContent = checked.length;
+        function adjustQty(charmId, delta) {
+            const input = document.getElementById('qty-input-' + charmId);
+            const display = document.getElementById('qty-display-' + charmId);
+            const card = display.closest('.charm-card');
 
-            // Calculate items subtotal
-            let subtotal = 0;
-            checked.forEach(c => subtotal += prices[c.value] || 0);
+            let currentVal = parseInt(input.value) || 0;
+            let currentTotal = getTotalQty();
 
-            // Update DOM
-            totalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            // Check max 15 charms limit for additions
+            if (delta > 0 && currentTotal >= 15) {
+                alert('Maksimal manik/charm yang dapat dimasukkan adalah 15.');
+                return;
+            }
+
+            let newVal = currentVal + delta;
+            if (newVal < 0) newVal = 0;
+
+            input.value = newVal;
+            display.textContent = newVal;
+
+            // Update Card Highlight Styles
+            if (newVal > 0) {
+                card.classList.add('border-rose-400', 'bg-rose-50/30');
+            } else {
+                card.classList.remove('border-rose-400', 'bg-rose-50/30');
+            }
+
+            calculateTotal();
         }
 
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', function() {
-                const checked = document.querySelectorAll('.charm-checkbox:checked');
-
-                // Max 15
-                if (checked.length > 15) {
-                    this.checked = false;
-                    return;
-                }
-
-                // Update style
-                this.closest('label').querySelector('.charm-card').classList.toggle('border-rose-400', this.checked);
-                this.closest('label').querySelector('.charm-card').classList.toggle('bg-rose-50/30', this.checked);
-
-                calculateTotal();
+        function getTotalQty() {
+            let total = 0;
+            document.querySelectorAll('.charm-qty-input').forEach(input => {
+                total += parseInt(input.value) || 0;
             });
-        });
+            return total;
+        }
+
+        function calculateTotal() {
+            let totalQty = getTotalQty();
+            countEl.textContent = totalQty;
+
+            let subtotal = 0;
+            document.querySelectorAll('.charm-qty-input').forEach(input => {
+                const id = input.id.replace('qty-input-', '');
+                const qty = parseInt(input.value) || 0;
+                subtotal += (prices[id] || 0) * qty;
+            });
+
+            subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            totalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+        }
 
         // Run initially
         calculateTotal();

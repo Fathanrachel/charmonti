@@ -17,8 +17,34 @@ use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
+    private function checkProfileComplete()
+    {
+        if (!Auth::check()) {
+            return true; // Biarkan middleware auth yang mengurus redirect login
+        }
+
+        $profile = Auth::user()->profile;
+
+        if (!$profile || 
+            empty($profile->name) || 
+            empty($profile->phone) || 
+            empty($profile->city_id) || 
+            empty($profile->address_line) || 
+            empty($profile->postal_code)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function index()
     {
+        if (!$this->checkProfileComplete()) {
+            return redirect()->route('customer.profile')
+                ->with('error', 'Silakan lengkapi data profil (Nama, No Telepon, Provinsi, Kota, Alamat Lengkap, & Kode Pos) Anda terlebih dahulu sebelum memesan barang. ⚠️');
+        }
+
         $cart = Session::get('cart', []);
         return view('customer.cart', compact('cart'));
     }
@@ -51,13 +77,52 @@ class CartController extends Controller
     {
         $request->validate([
             'warna' => 'required|in:silver,gold',
-            'charms' => 'required|array|min:1|max:15',
-            'charms.*' => 'exists:bahan,id',
+            'charms' => 'required|array',
             'request_note' => 'nullable|string|max:500',
         ]);
 
-        $selectedCharms = Bahan::whereIn('id', $request->charms)->get();
-        $charmsPrice = $selectedCharms->sum('price');
+        // Filter out items with 0 quantity
+        $selectedCharmsInput = array_filter($request->charms, fn($qty) => $qty > 0);
+
+        if (empty($selectedCharmsInput)) {
+            return redirect()->back()->withErrors(['charms' => 'Silakan pilih minimal 1 charm/manik untuk gelang custom Anda.'])->withInput();
+        }
+
+        // Validate aggregate quantity max 15
+        $totalQty = array_sum($selectedCharmsInput);
+        if ($totalQty > 15) {
+            return redirect()->back()->withErrors(['charms' => 'Total manik/charm yang Anda pilih melebihi batas maksimal (15 manik).'])->withInput();
+        }
+
+        // Validate that all keys exist in bahan table
+        $bahanIds = array_keys($selectedCharmsInput);
+        $charmsModels = Bahan::whereIn('id', $bahanIds)->get()->keyBy('id');
+
+        if (count($charmsModels) !== count($bahanIds)) {
+            return redirect()->back()->withErrors(['charms' => 'Terdapat charm pilihan yang tidak valid.'])->withInput();
+        }
+
+        // Calculate total price based on quantities
+        $charmsPrice = 0;
+        $charmsDetails = [];
+        $charmsFlattenedIds = [];
+
+        foreach ($selectedCharmsInput as $id => $qty) {
+            $model = $charmsModels[$id];
+            $charmsPrice += $model->price * $qty;
+            $charmsDetails[] = [
+                'id' => $model->id,
+                'name' => $model->nama_bahan,
+                'price' => $model->price,
+                'quantity' => $qty,
+                'image' => $model->image
+            ];
+
+            // Flatten charms array for compatibility
+            for ($i = 0; $i < $qty; $i++) {
+                $charmsFlattenedIds[] = $model->id;
+            }
+        }
 
         $cart = Session::get('cart', []);
         
@@ -67,8 +132,9 @@ class CartController extends Controller
         $cart[$cartId] = [
             'type' => 'custom',
             'warna' => $request->warna,
-            'charms' => $request->charms, // Array of IDs
-            'charms_details' => $selectedCharms->map(fn($c) => ['name' => $c->nama_bahan, 'price' => $c->price, 'image' => $c->image])->toArray(),
+            'charms' => $charmsFlattenedIds, // Keep flattened array of IDs for compatibility
+            'charms_quantities' => $selectedCharmsInput, // Key-value array of [bahan_id => qty]
+            'charms_details' => $charmsDetails,
             'name' => 'Gelang Custom (' . ucfirst($request->warna) . ')',
             'price' => $charmsPrice,
             'request_note' => $request->request_note,
@@ -110,6 +176,11 @@ class CartController extends Controller
             return redirect()->route('login')->with('info', 'Silakan login terlebih dahulu untuk checkout.');
         }
 
+        if (!$this->checkProfileComplete()) {
+            return redirect()->route('customer.profile')
+                ->with('error', 'Silakan lengkapi data profil (Nama, No Telepon, Provinsi, Kota, Alamat Lengkap, & Kode Pos) Anda terlebih dahulu sebelum memesan barang. ⚠️');
+        }
+
         $cart = Session::get('cart', []);
         if (empty($cart)) {
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja Anda kosong.');
@@ -122,6 +193,11 @@ class CartController extends Controller
     {
         if (!Auth::check()) {
             return redirect()->route('login');
+        }
+
+        if (!$this->checkProfileComplete()) {
+            return redirect()->route('customer.profile')
+                ->with('error', 'Silakan lengkapi data profil Anda terlebih dahulu sebelum memproses pesanan.');
         }
 
         $cart = Session::get('cart', []);
