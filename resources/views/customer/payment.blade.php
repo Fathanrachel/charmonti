@@ -83,6 +83,49 @@
             data-client-key="{{ config('midtrans.client_key') }}"></script>
 
     <script>
+        // Custom premium floating toast notification helper
+        function showToast(message, type = 'info') {
+            // Remove existing toast if any
+            const existingToast = document.getElementById('custom-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.id = 'custom-toast';
+            toast.className = `fixed top-6 right-6 z-50 flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl px-6 py-4 border shadow-[0_15px_40px_-5px_rgba(0,0,0,0.08)] transform translate-y-2 opacity-0 transition-all duration-300 ease-out`;
+            
+            // Adjust styles depending on type
+            if (type === 'error') {
+                toast.classList.add('border-red-100');
+                toast.innerHTML = `
+                    <div class="h-8 w-8 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0">⚠️</div>
+                    <span class="text-sm font-semibold text-gray-700">${message}</span>
+                `;
+            } else {
+                toast.classList.add('border-rose-100');
+                toast.innerHTML = `
+                    <div class="h-8 w-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">✨</div>
+                    <span class="text-sm font-semibold text-gray-700">${message}</span>
+                `;
+            }
+
+            document.body.appendChild(toast);
+
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+
+            // Auto dismiss after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
         document.getElementById('pay-button').onclick = function() {
             snap.pay('{{ $snapToken }}', {
                 onSuccess: function(result) {
@@ -92,10 +135,10 @@
                     window.location.href = '{{ route('payment.check-status', $order->id) }}';
                 },
                 onError: function(result) {
-                    alert('Pembayaran gagal. Silakan coba lagi.');
+                    showToast('Pembayaran gagal. Silakan coba lagi.', 'error');
                 },
                 onClose: function() {
-                    alert('Kamu menutup popup pembayaran.');
+                    showToast('Kamu menutup popup pembayaran.', 'info');
                 }
             });
         };
