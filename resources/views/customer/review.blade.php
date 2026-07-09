@@ -40,33 +40,33 @@
             @csrf
 
             <div class="space-y-6">
-                @foreach($order->orderItems as $item)
+                @foreach($itemsToReview as $item)
                     <div class="glass-card rounded-3xl p-8 shadow-sm hover:shadow-md transition duration-300">
                         {{-- Product Info --}}
                         <div class="flex items-center gap-5 mb-6 border-b border-rose-50 pb-5">
                             <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
-                                @if($item->product->image)
-                                    <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->product_name }}" class="w-full h-full object-cover">
+                                @if(!empty($item['image']))
+                                    <img src="{{ Storage::url($item['image']) }}" alt="{{ $item['name'] }}" class="w-full h-full object-cover">
                                 @else
                                     <span class="text-2xl text-rose-300">📿</span>
                                 @endif
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->product->product_name }}</h4>
-                                <p class="text-xs text-rose-500 font-medium bg-rose-50 px-2.5 py-1 rounded-md inline-block mt-1.5 capitalize border border-rose-100/50">{{ $item->product->category }}</p>
+                                <h4 class="font-bold text-gray-800 text-sm md:text-base">{{ $item['name'] }}</h4>
+                                <p class="text-xs text-rose-500 font-medium bg-rose-50 px-2.5 py-1 rounded-md inline-block mt-1.5 capitalize border border-rose-100/50">{{ $item['category'] }}</p>
                             </div>
                         </div>
 
                         {{-- Star Rating --}}
                         <div class="mb-6">
                             <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Beri Rating:</label>
-                            <div class="flex items-center gap-2.5 star-rating-container" data-product-id="{{ $item->product->id }}">
-                                <input type="hidden" name="ratings[{{ $item->product->id }}]" id="rating-input-{{ $item->product->id }}" value="5">
+                            <div class="flex items-center gap-2.5 star-rating-container" data-product-id="{{ $item['id'] }}">
+                                <input type="hidden" name="ratings[{{ $item['id'] }}]" id="rating-input-{{ $item['id'] }}" value="5">
                                 @for($i = 1; $i <= 5; $i++)
                                     <button type="button" 
                                             class="text-4xl star-btn text-yellow-400 hover:scale-110 transition duration-150 transform drop-shadow-xs" 
                                             data-value="{{ $i }}" 
-                                            data-product-id="{{ $item->product->id }}">
+                                            data-product-id="{{ $item['id'] }}">
                                         ★
                                     </button>
                                 @endfor
@@ -75,9 +75,9 @@
 
                         {{-- Comment Box --}}
                         <div>
-                            <label for="comment-{{ $item->product->id }}" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Ulasan Anda (Opsional):</label>
-                            <textarea name="comments[{{ $item->product->id }}]" 
-                                      id="comment-{{ $item->product->id }}" 
+                            <label for="comment-{{ $item['id'] }}" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Ulasan Anda (Opsional):</label>
+                            <textarea name="comments[{{ $item['id'] }}]" 
+                                      id="comment-{{ $item['id'] }}" 
                                       rows="3" 
                                       placeholder="Tulis pendapatmu tentang gelang cantik ini..." 
                                       class="w-full bg-white/70 border border-rose-100 rounded-2xl p-4 text-sm text-gray-700 font-light focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 placeholder-gray-400 transition shadow-sm"></textarea>

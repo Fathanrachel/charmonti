@@ -225,17 +225,46 @@ class CustomerController extends Controller
             return redirect()->back()->with('success', 'Pesanan Anda berhasil dibatalkan.');
         }
 
-        return redirect()->back()->with('error', 'Pesanan ini sudah diproses atau dibayar, tidak dapat dibatalkan.');
+            return redirect()->back()->with('error', 'Pesanan ini sudah diproses atau dibayar, tidak dapat dibatalkan.');
     }
 
     public function createReview(Order $order)
     {
-        // Pastikan kepemilikan pesanan
         abort_if($order->profile?->users_id !== Auth::id(), 403);
-        // Hanya pesanan yang selesai yang bisa diulas
         abort_if($order->status !== 'selesai', 403);
 
-        return view('customer.review', compact('order'));
+        // Ensure the dummy "Gelang Custom" product exists in catalog for review anchor
+        $customProductDummy = Product::firstOrCreate(
+            ['product_name' => 'Gelang Custom'],
+            [
+                'description' => 'Produk ulasan gelang custom rancangan pengguna.',
+                'price' => 0.00,
+                'category' => 'gelang_jadi',
+            ]
+        );
+
+        // Gather all products to review (regular orderItems products + custom items)
+        $itemsToReview = [];
+        foreach ($order->orderItems as $item) {
+            $itemsToReview[] = [
+                'id' => $item->product->id,
+                'name' => $item->product->product_name,
+                'category' => $item->product->category,
+                'image' => $item->product->image,
+            ];
+        }
+
+        // If this order has custom bracelets, add a single review slot for "Gelang Custom"
+        if ($order->customBahanOrder()->exists()) {
+            $itemsToReview[] = [
+                'id' => $customProductDummy->id,
+                'name' => 'Gelang Custom (' . ucfirst($order->customBahanOrder->warna ?? '') . ')',
+                'category' => 'Gelang Custom',
+                'image' => null, // Display default bracelet emoji/logo
+            ];
+        }
+
+        return view('customer.review', compact('order', 'itemsToReview'));
     }
 
     public function storeReview(Request $request, Order $order)
@@ -250,9 +279,14 @@ class CustomerController extends Controller
             'comments.*' => 'nullable|string|max:1000',
         ]);
 
+        $customProductDummy = Product::where('product_name', 'Gelang Custom')->first();
+
         foreach ($request->ratings as $productId => $rating) {
-            // Pastikan produk tersebut ada di pesanan ini
-            if ($order->orderItems()->where('product_id', $productId)->exists()) {
+            // Validate that the product was indeed in the order (or it's the dummy custom product and the order has custom bracelet)
+            $isRegularItem = $order->orderItems()->where('product_id', $productId)->exists();
+            $isCustomItem = ($customProductDummy && $productId == $customProductDummy->id && $order->customBahanOrder()->exists());
+
+            if ($isRegularItem || $isCustomItem) {
                 Review::updateOrCreate(
                     [
                         'order_id' => $order->id,
