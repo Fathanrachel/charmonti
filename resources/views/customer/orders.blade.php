@@ -321,30 +321,87 @@
                             @if($order->complaints->isNotEmpty())
                                 <div class="bg-red-50/50 border border-red-100 rounded-2xl p-5 mb-6">
                                     <h6 class="text-xs font-bold text-red-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <span>⚠️</span> Riwayat Komplain Pesanan:
+                                        <span>⚠️</span> Riwayat Obrolan Keluhan:
                                     </h6>
-                                    <div class="space-y-4">
+                                    <div class="space-y-5">
                                         @foreach($order->complaints as $complaint)
-                                            <div class="flex justify-between items-start gap-4 text-xs border-b border-red-100/50 last:border-0 pb-3 last:pb-0">
-                                                <div class="text-gray-600">
-                                                    <span class="font-semibold text-gray-800 capitalize bg-white px-2.5 py-1 rounded-md border border-red-100 mr-2 shadow-sm">{{ $complaint->category }}</span>
-                                                    <span class="italic font-light leading-relaxed">"{{ $complaint->message }}"</span>
+                                            <div class="border-b border-red-100/50 last:border-0 pb-5 last:pb-0 space-y-4">
+                                                <div class="flex justify-between items-center bg-white/60 p-2.5 rounded-xl border border-red-100/30">
+                                                    <span class="font-bold text-gray-800 text-xs capitalize">Kategori: {{ $complaint->category }}</span>
+                                                    @php
+                                                        $compColors = [
+                                                            'open' => 'bg-red-50 text-red-600 border-red-200',
+                                                            'diproses' => 'bg-rose-50 text-rose-600 border-rose-200',
+                                                            'selesai' => 'bg-green-50 text-green-600 border-green-200',
+                                                        ];
+                                                        $compLabels = [
+                                                            'open' => 'Baru / Menunggu',
+                                                            'diproses' => 'Diproses Toko',
+                                                            'selesai' => 'Selesai / Teratasi',
+                                                        ];
+                                                    @endphp
+                                                    <span class="px-3 py-1 rounded-full border text-[10px] font-bold {{ $compColors[$complaint->status] ?? 'bg-gray-50 text-gray-600' }}">
+                                                        {{ $compLabels[$complaint->status] ?? $complaint->status }}
+                                                    </span>
                                                 </div>
-                                                @php
-                                                    $compColors = [
-                                                        'open' => 'bg-red-50 text-red-600 border-red-200',
-                                                        'diproses' => 'bg-rose-50 text-rose-600 border-rose-200',
-                                                        'selesai' => 'bg-green-50 text-green-600 border-green-200',
-                                                    ];
-                                                    $compLabels = [
-                                                        'open' => 'Baru / Menunggu',
-                                                        'diproses' => 'Diproses Toko',
-                                                        'selesai' => 'Selesai / Teratasi',
-                                                    ];
-                                                @endphp
-                                                <span class="px-3 py-1 rounded-full border text-[10px] font-bold shrink-0 {{ $compColors[$complaint->status] ?? 'bg-gray-50 text-gray-600' }}">
-                                                    {{ $compLabels[$complaint->status] ?? $complaint->status }}
-                                                </span>
+
+                                                {{-- Chat Thread list --}}
+                                                <div class="space-y-3.5 pl-2">
+                                                    @php
+                                                        // Split by double newline to parse separate messages
+                                                        $chatLines = explode("\n\n", $complaint->message);
+                                                    @endphp
+                                                    @foreach($chatLines as $index => $line)
+                                                        @if(trim($line))
+                                                            @php
+                                                                $isUserMessage = !str_starts_with(trim($line), '[Admin]') && !str_contains($line, '- Owner') && !str_contains($line, '- Admin');
+                                                            @endphp
+                                                            <div class="flex {{ $isUserMessage ? 'justify-end' : 'justify-start' }}">
+                                                                <div class="rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-xs border {{ $isUserMessage ? 'bg-white border-red-100/60 rounded-br-none text-gray-800' : 'bg-gray-100 border-gray-200 rounded-bl-none text-gray-700' }}">
+                                                                    <p class="leading-relaxed whitespace-pre-line">{{ $line }}</p>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                                
+                                                {{-- Store Reply (Tanggapan Toko - main reply field) --}}
+                                                @if($complaint->reply_message)
+                                                    <div class="ml-2 bg-rose-50/70 border border-rose-100/40 rounded-2xl p-4 text-xs text-gray-700 relative">
+                                                        <div class="absolute -top-1.5 left-6 w-3 h-3 bg-rose-50 border-t border-l border-rose-100/40 transform rotate-45"></div>
+                                                        <div class="flex items-center gap-1.5 font-bold text-rose-500 mb-1">
+                                                            <span>💬</span> Tanggapan Toko:
+                                                        </div>
+                                                        <p class="font-light leading-relaxed">{{ $complaint->reply_message }}</p>
+                                                    </div>
+                                                @endif
+
+                                                {{-- Quick Reply Form for customer --}}
+                                                @if($complaint->status !== 'selesai')
+                                                    <div class="pt-2 pl-2">
+                                                        <button type="button" onclick="toggleReplyForm({{ $complaint->id }})" 
+                                                                class="text-[11px] font-semibold text-rose-500 hover:text-rose-600 transition flex items-center gap-1 hover:underline">
+                                                            <span>💬</span> Kirim Balasan Baru
+                                                        </button>
+                                                        
+                                                        <form id="reply-form-{{ $complaint->id }}" method="POST" action="{{ route('customer.complaint.reply', $complaint->id) }}" class="hidden mt-3 space-y-2.5">
+                                                            @csrf
+                                                            <textarea name="reply_message" rows="2" required 
+                                                                      placeholder="Tulis balasan atau penjelasan tambahan di sini..." 
+                                                                      class="w-full bg-white border border-red-100/60 rounded-2xl p-3 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-200 placeholder-gray-400 transition shadow-xs"></textarea>
+                                                            <div class="flex justify-end gap-2">
+                                                                <button type="button" onclick="toggleReplyForm({{ $complaint->id }})" 
+                                                                        class="bg-white border border-gray-200 text-gray-400 font-semibold px-4 py-1.5 rounded-full text-[10px] transition">
+                                                                    Batal
+                                                                </button>
+                                                                <button type="submit" 
+                                                                        class="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-4 py-1.5 rounded-full text-[10px] transition shadow-xs">
+                                                                    Kirim Balasan
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endforeach
                                     </div>
@@ -491,6 +548,16 @@
                 }
             });
         });
+
+        function toggleReplyForm(complaintId) {
+            const form = document.getElementById(`reply-form-${complaintId}`);
+            if (form) {
+                form.classList.toggle('hidden');
+                if (!form.classList.contains('hidden')) {
+                    form.querySelector('textarea').focus();
+                }
+            }
+        }
     </script>
 
     <!-- Custom Cancel Modal -->

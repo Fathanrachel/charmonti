@@ -20,7 +20,8 @@ class ComplaintForm
                     ->required(),
 
                 Select::make('user_id')
-                    ->relationship('user', 'name')
+                    ->relationship('user', 'email')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->profile?->name ?? $record->email)
                     ->label('Pelanggan')
                     ->disabled()
                     ->required(),
@@ -45,6 +46,11 @@ class ComplaintForm
                     ->disabled()
                     ->columnSpanFull()
                     ->required(),
+
+                Textarea::make('reply_message')
+                    ->label('Balasan / Tanggapan Toko')
+                    ->placeholder('Tulis balasan atau solusi yang ditawarkan toko di sini...')
+                    ->columnSpanFull(),
             ]);
     }
 }

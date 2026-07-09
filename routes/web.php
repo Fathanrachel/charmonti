@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     // Komplain (Complaint)
     Route::get('/orders/{order}/complaint', [CustomerController::class, 'createComplaint'])->name('customer.order.complaint');
     Route::post('/orders/{order}/complaint', [CustomerController::class, 'storeComplaint'])->name('customer.order.complaint.store');
+    Route::post('/complaints/{complaint}/reply', [CustomerController::class, 'replyComplaint'])->name('customer.complaint.reply');
 
     // Profile
     Route::get('/profile', [CustomerController::class, 'profile'])->name('customer.profile');

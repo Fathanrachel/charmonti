@@ -387,4 +387,26 @@ class CustomerController extends Controller
         $cities = \App\Models\City::where('province_id', $provinceId)->orderBy('city')->get(['id', 'city']);
         return response()->json($cities);
     }
+
+    public function replyComplaint(Request $request, Complaint $complaint)
+    {
+        abort_if($complaint->user_id !== Auth::id(), 403);
+        abort_if($complaint->status === 'selesai', 403);
+
+        $request->validate([
+            'reply_message' => 'required|string|max:1000',
+        ]);
+
+        $formattedTime = now()->translatedFormat('d M H:i');
+        $senderName = Auth::user()->profile?->name ?? 'Pelanggan';
+
+        // Append customer reply to the main conversation thread text
+        $updatedMessage = $complaint->message . "\n\n[" . $formattedTime . " - " . $senderName . "]: " . $request->reply_message;
+
+        $complaint->update([
+            'message' => $updatedMessage
+        ]);
+
+        return redirect()->back()->with('success', 'Balasan Anda berhasil dikirim! 💬');
+    }
 }
