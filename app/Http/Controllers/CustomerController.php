@@ -18,7 +18,7 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $products = Product::all();
+        $products = Product::where('product_name', '!=', 'Gelang Custom')->get();
         return view('customer.products.index', compact('products'));
     }
 

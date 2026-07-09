@@ -360,9 +360,9 @@
 
                                 @if($orderStatus === 'pending' && $payStatus === 'pending')
                                     <div class="flex items-center gap-3">
-                                        <form method="POST" action="{{ route('customer.order.cancel', $order->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?');" class="inline">
+                                        <form method="POST" action="{{ route('customer.order.cancel', $order->id) }}" class="inline">
                                             @csrf
-                                            <button type="submit"
+                                            <button type="submit" onclick="openCancelModal(event, this.closest('form'))"
                                                     class="bg-white border border-gray-200 hover:bg-gray-50 hover:border-red-200 hover:text-red-500 text-gray-500 font-medium px-5 py-3 rounded-full text-center transition duration-300 text-sm flex items-center justify-center shadow-sm">
                                                 Batalkan
                                             </button>
@@ -454,7 +454,77 @@
             updateTimers();
             setInterval(updateTimers, 1000);
         });
+
+        let activeCancelForm = null;
+
+        function openCancelModal(event, form) {
+            event.preventDefault();
+            activeCancelForm = form;
+            
+            const modal = document.getElementById('cancel-modal');
+            const content = document.getElementById('cancel-modal-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeCancelModal() {
+            const modal = document.getElementById('cancel-modal');
+            const content = document.getElementById('cancel-modal-content');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                activeCancelForm = null;
+            }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('confirm-cancel-btn').addEventListener('click', function() {
+                if (activeCancelForm) {
+                    activeCancelForm.submit();
+                }
+            });
+        });
     </script>
+
+    <!-- Custom Cancel Modal -->
+    <div id="cancel-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <!-- Backdrop overlay -->
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-xs transition-opacity duration-300" onclick="closeCancelModal()"></div>
+        
+        <!-- Modal Content Box -->
+        <div class="bg-white/95 backdrop-blur-md rounded-[2rem] border border-gray-100 p-8 max-w-sm w-[90%] relative z-10 shadow-[0_20px_50px_rgba(244,114,182,0.12)] transform scale-95 opacity-0 transition-all duration-300 ease-out" id="cancel-modal-content">
+            <!-- Icon Warning -->
+            <div class="flex justify-center mb-5">
+                <div class="bg-rose-50 h-14 w-14 rounded-full flex items-center justify-center text-rose-500 border border-rose-100/50 shadow-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-800 text-center mb-2 tracking-tight">Batalkan Pesanan?</h3>
+            <p class="text-sm text-gray-500 font-light text-center mb-6 leading-relaxed">Apakah Anda yakin ingin membatalkan pesanan ini? Stok barang akan otomatis dikembalikan ke gudang.</p>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button type="button" onclick="closeCancelModal()"
+                    class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 font-semibold py-3 rounded-full text-center transition text-sm">
+                    Kembali
+                </button>
+                <button type="button" id="confirm-cancel-btn"
+                    class="flex-1 bg-rose-400 hover:bg-rose-500 text-white font-semibold py-3 rounded-full text-center transition duration-300 shadow-[0_4px_15px_rgba(244,114,182,0.2)] text-sm">
+                    Ya, Batalkan
+                </button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
