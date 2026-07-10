@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Filament\Admin\Widgets;
+
+use App\Models\Order;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+
+class OrdersToProcessWidget extends BaseWidget
+{
+    protected static ?int $sort = 1;
+    protected int | string | array $columnSpan = 4;
+
+    protected function getStats(): array
+    {
+        $ordersToProcess = Order::where('status', 'pending')
+            ->whereHas('payment', function ($query) {
+                $query->where('payment_status', 'paid');
+            })
+            ->count();
+
+        return [
+            Stat::make('Pesanan Perlu Diproses', $ordersToProcess . ' Transaksi')
+                ->description('Pesanan lunas baru yang harus dikonfirmasi & dikirim')
+                ->descriptionIcon('heroicon-m-shopping-bag')
+                ->color($ordersToProcess > 0 ? 'warning' : 'gray'),
+        ];
+    }
+}

@@ -9,27 +9,53 @@ use Illuminate\Support\Facades\DB;
 class BestSellerChart extends ChartWidget
 {
     protected ?string $heading = '5 Produk Gelang Terlaris (Unit Terjual)';
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 6;
+    protected int | string | array $columnSpan = 6;
 
     protected function getData(): array
     {
-        // Hitung total kuantitas per produk dari pesanan selesai
-        $bestSellers = OrderItem::select('product_id', DB::raw('SUM(qty) as total_qty'))
+        // 1. Get total sales for catalog products from completed orders
+        $catalogSales = OrderItem::select('product_id', DB::raw('SUM(qty) as total_qty'))
             ->whereHas('order', function ($query) {
                 $query->where('status', 'selesai');
             })
             ->groupBy('product_id')
-            ->orderByDesc('total_qty')
-            ->limit(5)
             ->with('product')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->product?->product_name ?? 'Produk',
+                    'qty' => (int) $item->total_qty
+                ];
+            })->toArray();
+
+        // 2. Count total custom bracelets sold from completed orders
+        $customSalesCount = \App\Models\CustomBahanOrder::whereHas('order', function ($query) {
+                $query->where('status', 'selesai');
+            })
+            ->count();
+
+        // 3. Combine both sales lists
+        $combinedSales = $catalogSales;
+        if ($customSalesCount > 0) {
+            $combinedSales[] = [
+                'name' => 'Gelang Custom',
+                'qty' => $customSalesCount
+            ];
+        }
+
+        // 4. Sort descending by sales quantity and take top 5
+        usort($combinedSales, function ($a, $b) {
+            return $b['qty'] <=> $a['qty'];
+        });
+        $topSales = array_slice($combinedSales, 0, 5);
 
         $labels = [];
         $data = [];
 
-        foreach ($bestSellers as $item) {
-            $labels[] = $item->product?->product_name ?? 'Produk';
-            $data[] = (int) $item->total_qty;
+        foreach ($topSales as $item) {
+            $labels[] = $item['name'];
+            $data[] = $item['qty'];
         }
 
         if (empty($labels)) {

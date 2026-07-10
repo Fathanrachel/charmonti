@@ -44,6 +44,7 @@ class ShippingsTable
                         'pending'  => 'warning',
                         'dikirim'  => 'info',
                         'sampai'   => 'success',
+                        'batal'    => 'danger',
                     }),
             ])
             ->filters([])

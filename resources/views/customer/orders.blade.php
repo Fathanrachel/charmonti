@@ -167,6 +167,9 @@
                             <div class="space-y-5 mb-8">
                                 {{-- 1. Regular Product Items --}}
                                 @foreach($order->orderItems as $item)
+                                    @if($item->product_id == 4)
+                                        @continue
+                                    @endif
                                     <div class="flex items-center gap-5">
                                         <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-50">
                                             @if($item->product->image)
@@ -187,16 +190,27 @@
 
                                 {{-- 2. Custom Gelang Order --}}
                                 @if($order->customBahanOrder)
+                                    @php
+                                        $customPrice = 20000; // Base price tali strap
+                                        foreach($order->customBahanOrder->customBahanOrderItems as $customItem) {
+                                            $customPrice += ($customItem->bahan->price ?? 0) * ($customItem->qty ?? 1);
+                                        }
+                                    @endphp
                                     <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5">
-                                        <div class="flex items-center gap-4 mb-4">
-                                            <div class="bg-rose-100 rounded-xl h-12 w-12 flex items-center justify-center text-2xl shrink-0">
-                                                ✨
+                                        <div class="flex items-center justify-between gap-4 mb-4">
+                                            <div class="flex items-center gap-4">
+                                                <div class="bg-rose-100 rounded-xl h-12 w-12 flex items-center justify-center text-2xl shrink-0">
+                                                    ✨
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</h4>
+                                                    @if($order->customBahanOrder->request_note)
+                                                        <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $order->customBahanOrder->request_note }}"</p>
+                                                    @endif
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</h4>
-                                                @if($order->customBahanOrder->request_note)
-                                                    <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $order->customBahanOrder->request_note }}"</p>
-                                                @endif
+                                            <div class="text-right shrink-0">
+                                                <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($customPrice, 0, ',', '.') }}</span>
                                             </div>
                                         </div>
                                         

@@ -259,6 +259,14 @@ class CartController extends Controller
                     'price' => $item['price'],
                 ]);
             } elseif ($item['type'] === 'custom') {
+                // Catat di tabel induk barang pesanan (order_product_items)
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => 4, // ID 4 adalah Dummy Product 'Gelang Custom'
+                    'qty' => $item['quantity'],
+                    'price' => $item['price'],
+                ]);
+
                 for ($i = 0; $i < $item['quantity']; $i++) {
                     $customBahanOrder = CustomBahanOrder::create([
                         'order_id' => $order->id,

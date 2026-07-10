@@ -9,7 +9,8 @@ use Filament\Widgets\ChartWidget;
 class SalesReportChart extends ChartWidget
 {
     protected ?string $heading = 'Tren Pendapatan Bulanan (Omzet)';
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 5;
+    protected int | string | array $columnSpan = 6;
 
     protected function getData(): array
     {
