@@ -187,7 +187,8 @@ class CartController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja Anda kosong.');
         }
 
-        return view('customer.checkout_gabungan', compact('cart'));
+        $expeditions = Expedition::all();
+        return view('customer.checkout_gabungan', compact('cart', 'expeditions'));
     }
 
     public function storeCheckout(Request $request)
@@ -208,7 +209,7 @@ class CartController extends Controller
 
         $request->validate([
             'shipping_address' => 'required|string',
-            'courier' => 'required|string|in:JNE,J&T,SiCepat',
+            'courier' => 'required|string',
         ]);
 
         // Calculate item total
@@ -217,20 +218,14 @@ class CartController extends Controller
             $itemTotal += $item['price'] * $item['quantity'];
         }
 
-        // Map shipping cost
-        $shippingCosts = [
-            'J&T' => 10000,
-            'JNE' => 12000,
-            'SiCepat' => 8000,
-        ];
-        
-        $shippingArrivals = [
-            'J&T' => now()->addDays(3),
-            'JNE' => now()->addDays(2),
-            'SiCepat' => now()->addDays(5),
-        ];
+        // Ambil data ekspedisi dari database
+        $expedition = Expedition::where('name_expedition', $request->courier)->first();
+        if (!$expedition) {
+            return redirect()->back()->with('error', 'Kurir pengiriman tidak valid.');
+        }
 
-        $shippingCost = $shippingCosts[$request->courier] ?? 10000;
+        $shippingCost = $expedition->shipping_cost;
+        $estimatedDays = $expedition->estimated_days;
         $totalPrice = $itemTotal + $shippingCost;
 
         $profile = Auth::user()->profile;
@@ -287,12 +282,11 @@ class CartController extends Controller
         }
 
         // 3. Create Shipping
-        $expedition = Expedition::firstOrCreate(['name_expedition' => $request->courier]);
         Shipping::create([
             'order_id' => $order->id,
             'expedition_id' => $expedition->id,
             'shipping_cost' => $shippingCost,
-            'estimated_arrival' => $shippingArrivals[$request->courier] ?? now()->addDays(3),
+            'estimated_arrival' => now()->addDays($estimatedDays),
             'status' => 'pending',
         ]);
 

@@ -44,32 +44,15 @@
                     <h3 class="font-bold text-gray-800 text-lg mb-4">🚚 Pilihan Ekspedisi</h3>
                     
                     <div class="grid grid-cols-3 gap-4">
-                        {{-- J&T --}}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="courier" value="J&T" class="hidden peer" required checked>
-                            <div class="border border-gray-200 peer-checked:border-rose-400 peer-checked:bg-rose-50/20 rounded-2xl p-4 text-center hover:border-gray-300 transition">
-                                <span class="block font-bold text-sm text-gray-800">J&T Express</span>
-                                <span class="block text-xs text-gray-400 mt-1">Rp 10.000 (3 Hari)</span>
-                            </div>
-                        </label>
-
-                        {{-- JNE --}}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="courier" value="JNE" class="hidden peer">
-                            <div class="border border-gray-200 peer-checked:border-rose-400 peer-checked:bg-rose-50/20 rounded-2xl p-4 text-center hover:border-gray-300 transition">
-                                <span class="block font-bold text-sm text-gray-800">JNE REG</span>
-                                <span class="block text-xs text-gray-400 mt-1">Rp 12.000 (2 Hari)</span>
-                            </div>
-                        </label>
-
-                        {{-- SiCepat --}}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="courier" value="SiCepat" class="hidden peer">
-                            <div class="border border-gray-200 peer-checked:border-rose-400 peer-checked:bg-rose-50/20 rounded-2xl p-4 text-center hover:border-gray-300 transition">
-                                <span class="block font-bold text-sm text-gray-800">SiCepat</span>
-                                <span class="block text-xs text-gray-400 mt-1">Rp 8.000 (5 Hari)</span>
-                            </div>
-                        </label>
+                        @foreach($expeditions as $index => $exp)
+                            <label class="cursor-pointer">
+                                <input type="radio" name="courier" value="{{ $exp->name_expedition }}" data-cost="{{ $exp->shipping_cost }}" class="hidden peer" required {{ $index === 0 ? 'checked' : '' }}>
+                                <div class="border border-gray-200 peer-checked:border-rose-400 peer-checked:bg-rose-50/20 rounded-2xl p-4 text-center hover:border-gray-300 transition h-full flex flex-col justify-center items-center">
+                                    <span class="block font-bold text-sm text-gray-800">{{ $exp->name_expedition }}</span>
+                                    <span class="block text-xs text-gray-400 mt-1">Rp {{ number_format($exp->shipping_cost, 0, ',', '.') }} ({{ $exp->estimated_days }} Hari)</span>
+                                </div>
+                            </label>
+                        @endforeach
                     </div>
                 </div>
 
@@ -106,12 +89,12 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="font-light">Ongkos Kirim</span>
-                        <span class="font-bold text-gray-800" id="shipping-cost-label">Rp 10.000</span>
+                        <span class="font-bold text-gray-800" id="shipping-cost-label">Rp {{ number_format($expeditions->first()->shipping_cost ?? 10000, 0, ',', '.') }}</span>
                     </div>
                     <hr class="border-gray-50">
                     <div class="flex justify-between text-base">
                         <span class="font-semibold text-gray-800">Total Harga</span>
-                        <span class="font-bold text-rose-500" id="total-price-label">Rp {{ number_format($itemTotal + 10000, 0, ',', '.') }}</span>
+                        <span class="font-bold text-rose-500" id="total-price-label">Rp {{ number_format($itemTotal + ($expeditions->first()->shipping_cost ?? 10000), 0, ',', '.') }}</span>
                     </div>
                 </div>
 
@@ -130,19 +113,15 @@
             const totalPriceLabel = document.getElementById('total-price-label');
 
             const itemTotal = {{ $itemTotal }};
-            const shippingCosts = {
-                'J&T': 10000,
-                'JNE': 12000,
-                'SiCepat': 8000
-            };
 
             function updatePricing() {
-                let selectedCourier = 'J&T';
+                let shippingCost = 10000;
                 courierRadios.forEach(radio => {
-                    if (radio.checked) selectedCourier = radio.value;
+                    if (radio.checked) {
+                        shippingCost = parseInt(radio.getAttribute('data-cost')) || 0;
+                    }
                 });
 
-                const shippingCost = shippingCosts[selectedCourier];
                 const total = itemTotal + shippingCost;
 
                 shippingCostLabel.innerHTML = 'Rp ' + shippingCost.toLocaleString('id-ID');
