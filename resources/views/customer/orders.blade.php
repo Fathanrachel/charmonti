@@ -218,18 +218,30 @@
                                         <div class="border-t border-rose-100/40 pt-3">
                                             <p class="text-xs font-semibold text-gray-400 mb-2.5 uppercase tracking-wide">Bahan / Charm yang Digunakan:</p>
                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                                @foreach($order->customBahanOrder->customBahanOrderItems as $customItem)
+                                                @php
+                                                    $groupedCharms = $order->customBahanOrder->customBahanOrderItems->groupBy('bahan_id');
+                                                @endphp
+                                                @foreach($groupedCharms as $bahanId => $items)
+                                                    @php
+                                                        $firstItem = $items->first();
+                                                        $totalQty = $items->sum('qty');
+                                                    @endphp
                                                     <div class="flex items-center gap-3">
                                                         <div class="h-8 w-8 rounded-lg bg-white border border-rose-50 flex items-center justify-center shrink-0">
-                                                            @if($customItem->bahan->image)
-                                                                <img src="{{ Storage::url($customItem->bahan->image) }}" alt="{{ $customItem->bahan->nama_bahan }}" class="h-full w-full object-cover rounded-lg">
+                                                            @if($firstItem->bahan->image)
+                                                                <img src="{{ Storage::url($firstItem->bahan->image) }}" alt="{{ $firstItem->bahan->nama_bahan }}" class="h-full w-full object-cover rounded-lg">
                                                             @else
                                                                 <span class="text-sm">💎</span>
                                                             @endif
                                                         </div>
                                                         <div class="min-w-0 flex-1">
-                                                            <p class="text-xs font-medium text-gray-700 truncate">{{ $customItem->bahan->nama_bahan }}</p>
-                                                            <p class="text-[10px] text-gray-400 font-light">Rp {{ number_format($customItem->bahan->price, 0, ',', '.') }}</p>
+                                                            <p class="text-xs font-semibold text-gray-700 truncate">
+                                                                {{ $firstItem->bahan->nama_bahan }}
+                                                                <span class="ml-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-100/50">
+                                                                    {{ $totalQty }}x
+                                                                </span>
+                                                            </p>
+                                                            <p class="text-[10px] text-gray-400 font-light">Rp {{ number_format($firstItem->bahan->price, 0, ',', '.') }} /pcs</p>
                                                         </div>
                                                     </div>
                                                 @endforeach
@@ -290,7 +302,15 @@
                                             </div>
                                             <div class="flex justify-between">
                                                 <span class="font-light">No. Resi:</span>
-                                                <span class="font-semibold text-rose-500 font-mono tracking-wide">{{ $order->shipping->tracking_number ?: 'Belum diisi oleh Kurir' }}</span>
+                                                @if($order->shipping->status === 'batal' || $order->status === 'batal')
+                                                    <span class="font-semibold text-gray-400 font-mono">-</span>
+                                                @else
+                                                    @if($order->shipping->tracking_number)
+                                                        <span class="font-semibold text-gray-800 font-mono tracking-wide">{{ $order->shipping->tracking_number }}</span>
+                                                    @else
+                                                        <span class="font-medium text-rose-400 italic text-xs">Menunggu proses input</span>
+                                                    @endif
+                                                @endif
                                             </div>
                                             <div class="flex justify-between items-center">
                                                 <span class="font-light">Status:</span>

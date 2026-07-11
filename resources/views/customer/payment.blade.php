@@ -69,10 +69,17 @@
         </div>
 
         {{-- Tombol Bayar --}}
-        <button id="pay-button"
-            class="w-full bg-rose-400 hover:bg-rose-500 text-white font-medium py-4 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-300 text-lg flex justify-center items-center gap-2">
-            Bayar Sekarang 💳
-        </button>
+        <div class="space-y-3">
+            <button id="pay-button"
+                class="w-full bg-rose-400 hover:bg-rose-500 text-white font-medium py-4 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-300 text-lg flex justify-center items-center gap-2">
+                Bayar Sekarang 💳
+            </button>
+            
+            <a href="{{ route('payment.check-status', $order->id) }}"
+                class="w-full bg-white hover:bg-rose-50 text-rose-500 border border-rose-200 font-semibold py-3.5 rounded-full shadow-xs hover:shadow-sm hover:-translate-y-0.5 transition duration-300 text-sm flex justify-center items-center gap-2">
+                Saya Sudah Bayar (Cek Status) 🔄
+            </a>
+        </div>
 
         <p class="text-center text-xs text-gray-400 mt-6 font-light flex items-center justify-center gap-1.5">
             <span>🔒</span> Pembayaran diproses secara aman oleh Midtrans

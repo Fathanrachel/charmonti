@@ -20,11 +20,14 @@ class OrderObserver
 
             // Custom Order Materials Stock Deduction
             if ($order->customBahanOrder) {
-                // Potong stok manik-manik/charms
-                foreach ($order->customBahanOrder->customBahanOrderItems as $customItem) {
-                    $bahan = $customItem->bahan;
+                // Potong stok manik-manik/charms secara akumulatif (dikelompokkan)
+                $groupedItems = $order->customBahanOrder->customBahanOrderItems->groupBy('bahan_id');
+                foreach ($groupedItems as $bahanId => $items) {
+                    $firstItem = $items->first();
+                    $bahan = $firstItem->bahan;
                     if ($bahan) {
-                        $bahan->deductStock($customItem->qty);
+                        $totalQty = $items->sum('qty');
+                        $bahan->deductStock($totalQty);
                     }
                 }
 
@@ -77,14 +80,17 @@ class OrderObserver
 
                 // Restore Custom Materials
                 if ($order->customBahanOrder) {
-                    // Kembalikan stok manik-manik/charms
-                    foreach ($order->customBahanOrder->customBahanOrderItems as $customItem) {
-                        $bahan = $customItem->bahan;
+                    // Kembalikan stok manik-manik/charms secara akumulatif (dikelompokkan)
+                    $groupedItems = $order->customBahanOrder->customBahanOrderItems->groupBy('bahan_id');
+                    foreach ($groupedItems as $bahanId => $items) {
+                        $firstItem = $items->first();
+                        $bahan = $firstItem->bahan;
                         if ($bahan) {
+                            $totalQty = $items->sum('qty');
                             \App\Models\BahanMasuk::create([
                                 'bahan_id' => $bahan->id,
                                 'nama_bahan' => $bahan->nama_bahan,
-                                'qty_masuk' => $customItem->qty,
+                                'qty_masuk' => $totalQty,
                                 'deskripsi' => 'Pengembalian Stok (Pembatalan Order #' . $order->id . ')',
                                 'tanggal_masuk' => now(),
                             ]);

@@ -13,11 +13,7 @@ class OrdersToProcessWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        $ordersToProcess = Order::where('status', 'pending')
-            ->whereHas('payment', function ($query) {
-                $query->where('payment_status', 'paid');
-            })
-            ->count();
+        $ordersToProcess = Order::where('status', 'diproses')->count();
 
         return [
             Stat::make('Pesanan Perlu Diproses', $ordersToProcess . ' Transaksi')

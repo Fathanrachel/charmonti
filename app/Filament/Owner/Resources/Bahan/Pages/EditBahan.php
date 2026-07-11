@@ -12,7 +12,7 @@ class EditBahan extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            //
+            \Filament\Actions\DeleteAction::make(),
         ];
     }
 

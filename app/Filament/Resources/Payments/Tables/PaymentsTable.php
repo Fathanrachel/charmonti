@@ -113,9 +113,13 @@ class PaymentsTable
                                     ->send();
                             }
                         } catch (\Exception $e) {
+                            $message = $e->getMessage();
+                            if (strpos($message, '404') !== false || strpos($message, "doesn't exist") !== false) {
+                                $message = "Transaksi ini belum pernah dibuka atau diinisialisasi di halaman pembayaran Midtrans oleh pelanggan.";
+                            }
                             \Filament\Notifications\Notification::make()
                                 ->title('Gagal Sinkronisasi')
-                                ->body($e->getMessage())
+                                ->body($message)
                                 ->danger()
                                 ->send();
                         }

@@ -101,7 +101,7 @@ class CustomerController extends Controller
             return redirect()->route('login')->with('info', 'Login dulu untuk memesan.');
         }
 
-        $charms = Bahan::all();
+        $charms = Bahan::where('nama_bahan', 'not like', 'Tali Gelang%')->get();
 
         return view('customer.custom-order', compact('charms'));
     }
@@ -363,11 +363,11 @@ class CustomerController extends Controller
 
         $request->validate([
             'name'         => 'required|string|max:255',
-            'phone'        => 'nullable|string|max:20',
-            'province_id'  => 'nullable|exists:provinces,id',
-            'city_id'      => 'nullable|exists:cities,id',
-            'address_line' => 'nullable|string|max:500',
-            'postal_code'  => 'nullable|string|max:10',
+            'phone'        => 'required|string|max:20',
+            'province_id'  => 'required|exists:provinces,id',
+            'city_id'      => 'required|exists:cities,id',
+            'address_line' => 'required|string|max:500',
+            'postal_code'  => 'required|string|max:10',
         ]);
 
         // Update profile

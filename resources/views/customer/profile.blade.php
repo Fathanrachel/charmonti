@@ -97,13 +97,19 @@
                     </div>
                 @endif
 
+                @if($errors->any())
+                    <div class="mb-6 bg-rose-50 border border-rose-100 text-rose-700 px-6 py-4 rounded-2xl flex items-center shadow-sm">
+                        <span class="text-sm font-medium">⚠️ Terjadi kesalahan! Silakan lengkapi semua kolom yang wajib diisi (*).</span>
+                    </div>
+                @endif
+
                 <form action="{{ route('customer.profile.update') }}" method="POST" class="space-y-6">
                     @csrf
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Nama Lengkap --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>
                             <input type="text" name="name" value="{{ old('name', $profile->name) }}" 
                                    class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition duration-300 bg-gray-50/50" required>
                             @error('name')
@@ -121,8 +127,8 @@
 
                         {{-- Nomor Telepon --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
-                            <input type="text" name="phone" value="{{ old('phone', $profile->phone) }}" placeholder="contoh: 08123456789"
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon <span class="text-rose-500">*</span></label>
+                            <input type="text" name="phone" value="{{ old('phone', $profile->phone) }}" placeholder="contoh: 08123456789" required
                                    class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition duration-300 bg-gray-50/50">
                             @error('phone')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -131,8 +137,8 @@
 
                         {{-- Kode Pos --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Kode Pos</label>
-                            <input type="text" name="postal_code" value="{{ old('postal_code', $profile->postal_code) }}" placeholder="contoh: 12345"
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Kode Pos <span class="text-rose-500">*</span></label>
+                            <input type="text" name="postal_code" value="{{ old('postal_code', $profile->postal_code) }}" placeholder="contoh: 12345" required
                                    class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition duration-300 bg-gray-50/50">
                             @error('postal_code')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -141,8 +147,8 @@
 
                         {{-- Provinsi --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Provinsi</label>
-                            <select name="province_id" id="province-select" 
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Provinsi <span class="text-rose-500">*</span></label>
+                            <select name="province_id" id="province-select" required
                                     class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition duration-300 bg-gray-50/50">
                                 <option value="">-- Pilih Provinsi --</option>
                                 @foreach($provinces as $prov)
@@ -165,8 +171,8 @@
 
                         {{-- Kota --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Kota / Kabupaten</label>
-                            <select name="city_id" id="city-select" 
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Kota / Kabupaten <span class="text-rose-500">*</span></label>
+                            <select name="city_id" id="city-select" required
                                     class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition duration-300 bg-gray-50/50">
                                 <option value="">-- Pilih Kota setelah Provinsi --</option>
                                 @foreach($cities as $city)
@@ -181,8 +187,8 @@
 
                     {{-- Alamat Lengkap --}}
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat Lengkap</label>
-                        <textarea name="address_line" rows="3" placeholder="Nama Jalan, Rt/Rw, Nomor Rumah, Kecamatan"
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat Lengkap <span class="text-rose-500">*</span></label>
+                        <textarea name="address_line" rows="3" placeholder="Nama Jalan, Rt/Rw, Nomor Rumah, Kecamatan" required
                                   class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition duration-300 bg-gray-50/50 leading-relaxed">{{ old('address_line', $profile->address_line) }}</textarea>
                         @error('address_line')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
