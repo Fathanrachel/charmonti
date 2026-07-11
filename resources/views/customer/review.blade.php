@@ -29,7 +29,7 @@
             <h1 class="text-2xl font-bold tracking-tight mb-6">
                 <a href="/" class="inline-flex items-center gap-2.5 hover:opacity-90 transition">
                     <img src="{{ asset('charmonti.png') }}" alt="CharmOnTi Logo" class="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm">
-                    <span class="bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
+                    <span class="bg-gradient-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
                 </a>
             </h1>
             <h2 class="text-3xl font-extrabold text-gray-800 tracking-tight">Tulis Ulasan Produk 🌸</h2>

@@ -20,10 +20,23 @@ class OrderObserver
 
             // Custom Order Materials Stock Deduction
             if ($order->customBahanOrder) {
+                // Potong stok manik-manik/charms
                 foreach ($order->customBahanOrder->customBahanOrderItems as $customItem) {
                     $bahan = $customItem->bahan;
                     if ($bahan) {
                         $bahan->deductStock($customItem->qty);
+                    }
+                }
+
+                // Potong stok Tali Gelang (strap) sesuai warna yang dipilih
+                $customOrders = \App\Models\CustomBahanOrder::where('order_id', $order->id)->get();
+                foreach ($customOrders as $customOrder) {
+                    $colorName = ucfirst(trim($customOrder->warna)); // 'Silver' atau 'Gold'
+                    $bahanName = "Tali Gelang " . $colorName; // "Tali Gelang Silver" atau "Tali Gelang Gold"
+
+                    $taliBahan = \App\Models\Bahan::where('nama_bahan', $bahanName)->first();
+                    if ($taliBahan) {
+                        $taliBahan->deductStock(1);
                     }
                 }
             }
@@ -64,6 +77,7 @@ class OrderObserver
 
                 // Restore Custom Materials
                 if ($order->customBahanOrder) {
+                    // Kembalikan stok manik-manik/charms
                     foreach ($order->customBahanOrder->customBahanOrderItems as $customItem) {
                         $bahan = $customItem->bahan;
                         if ($bahan) {
@@ -71,6 +85,24 @@ class OrderObserver
                                 'bahan_id' => $bahan->id,
                                 'nama_bahan' => $bahan->nama_bahan,
                                 'qty_masuk' => $customItem->qty,
+                                'deskripsi' => 'Pengembalian Stok (Pembatalan Order #' . $order->id . ')',
+                                'tanggal_masuk' => now(),
+                            ]);
+                        }
+                    }
+
+                    // Kembalikan stok Tali Gelang (strap) sesuai warna yang dipilih
+                    $customOrders = \App\Models\CustomBahanOrder::where('order_id', $order->id)->get();
+                    foreach ($customOrders as $customOrder) {
+                        $colorName = ucfirst(trim($customOrder->warna)); // 'Silver' atau 'Gold'
+                        $bahanName = "Tali Gelang " . $colorName;
+
+                        $taliBahan = \App\Models\Bahan::where('nama_bahan', $bahanName)->first();
+                        if ($taliBahan) {
+                            \App\Models\BahanMasuk::create([
+                                'bahan_id' => $taliBahan->id,
+                                'nama_bahan' => $taliBahan->nama_bahan,
+                                'qty_masuk' => 1,
                                 'deskripsi' => 'Pengembalian Stok (Pembatalan Order #' . $order->id . ')',
                                 'tanggal_masuk' => now(),
                             ]);

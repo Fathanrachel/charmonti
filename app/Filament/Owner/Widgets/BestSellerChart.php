@@ -8,59 +8,55 @@ use Illuminate\Support\Facades\DB;
 
 class BestSellerChart extends ChartWidget
 {
-    protected ?string $heading = '5 Produk Gelang Terlaris (Unit Terjual)';
+    protected ?string $heading = 'Performa Penjualan per Kategori (Unit Terjual)';
     protected static ?int $sort = 6;
     protected int | string | array $columnSpan = 6;
 
     protected function getData(): array
     {
-        // 1. Get total sales for catalog products from completed orders
-        $catalogSales = OrderItem::select('product_id', DB::raw('SUM(qty) as total_qty'))
-            ->whereHas('order', function ($query) {
+        // 1. Ambil semua order items dari pesanan yang sukses/selesai
+        $orderItems = OrderItem::whereHas('order', function ($query) {
                 $query->where('status', 'selesai');
             })
-            ->groupBy('product_id')
             ->with('product')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'name' => $item->product?->product_name ?? 'Produk',
-                    'qty' => (int) $item->total_qty
-                ];
-            })->toArray();
+            ->get();
 
-        // 2. Count total custom bracelets sold from completed orders
-        $customSalesCount = \App\Models\CustomBahanOrder::whereHas('order', function ($query) {
-                $query->where('status', 'selesai');
-            })
-            ->count();
+        // 2. Kelompokkan ke dalam kategori bisnis
+        $categorySales = [
+            'Gelang Jadi' => 0,
+            'Gelang Custom' => 0,
+            'Cincin' => 0,
+        ];
 
-        // 3. Combine both sales lists
-        $combinedSales = $catalogSales;
-        if ($customSalesCount > 0) {
-            $combinedSales[] = [
-                'name' => 'Gelang Custom',
-                'qty' => $customSalesCount
-            ];
+        foreach ($orderItems as $item) {
+            $product = $item->product;
+            if (!$product) continue;
+
+            if ($product->id === 4 || $product->product_name === 'Gelang Custom') {
+                $categorySales['Gelang Custom'] += (int) $item->qty;
+            } elseif ($product->category === 'gelang_jadi') {
+                $categorySales['Gelang Jadi'] += (int) $item->qty;
+            } elseif ($product->category === 'cincin') {
+                $categorySales['Cincin'] += (int) $item->qty;
+            }
         }
 
-        // 4. Sort descending by sales quantity and take top 5
-        usort($combinedSales, function ($a, $b) {
-            return $b['qty'] <=> $a['qty'];
-        });
-        $topSales = array_slice($combinedSales, 0, 5);
-
+        // 3. Format data untuk diagram batang
         $labels = [];
         $data = [];
+        $colors = [];
 
-        foreach ($topSales as $item) {
-            $labels[] = $item['name'];
-            $data[] = $item['qty'];
-        }
+        // Definisikan warna yang elegan untuk masing-masing kategori
+        $colorPalette = [
+            'Gelang Jadi' => '#fbbf24',    // Amber-400 (Kuning Emas)
+            'Gelang Custom' => '#ec4899',  // Pink-500 (Pink Soft Khas Charmonti)
+            'Cincin' => '#f97316',         // Orange-500
+        ];
 
-        if (empty($labels)) {
-            $labels = ['Belum ada transaksi selesai'];
-            $data = [0];
+        foreach ($categorySales as $catName => $qty) {
+            $labels[] = $catName;
+            $data[] = $qty;
+            $colors[] = $colorPalette[$catName];
         }
 
         return [
@@ -68,13 +64,7 @@ class BestSellerChart extends ChartWidget
                 [
                     'label' => 'Total Unit Terjual',
                     'data' => $data,
-                    'backgroundColor' => [
-                        '#fbbf24', // Amber-400
-                        '#f59e0b', // Amber-500
-                        '#d97706', // Amber-600
-                        '#b45309', // Amber-700
-                        '#78350f', // Amber-900
-                    ],
+                    'backgroundColor' => $colors,
                 ],
             ],
             'labels' => $labels,
