@@ -19,7 +19,13 @@ class CustomerController extends Controller
     public function index()
     {
         $products = Product::where('product_name', '!=', 'Gelang Custom')->get();
-        return view('customer.products.index', compact('products'));
+        $reviews = Review::with([
+            'user.profile', 
+            'product', 
+            'order.orderItems.product', 
+            'order.customBahanOrder'
+        ])->latest()->take(6)->get();
+        return view('customer.products.index', compact('products', 'reviews'));
     }
 
     public function show(Product $product)

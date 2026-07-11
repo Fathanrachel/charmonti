@@ -150,5 +150,112 @@
         </div>
     </div>
 
+    {{-- Ulasan Pelanggan --}}
+    <div class="max-w-6xl mx-auto px-6 pb-24">
+        <div class="text-center mb-12">
+            <h3 class="text-3xl font-bold text-gray-800 tracking-tight">Ulasan Pelanggan Sayang CharmOnTi 💖</h3>
+            <p class="text-gray-500 mt-2 font-light text-sm">Apa kata mereka yang sudah memiliki koleksi perhiasan cantik dari kami?</p>
+        </div>
+
+        @if($reviews->isEmpty())
+            <div class="text-center py-12 bg-white border border-gray-100/50 rounded-[2rem] shadow-sm max-w-xl mx-auto">
+                <div class="text-5xl mb-3 opacity-60">✨</div>
+                <p class="text-gray-400 font-light text-sm">Belum ada ulasan masuk. Jadilah yang pertama memberikan ulasan cantikmu!</p>
+            </div>
+        @else
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($reviews as $rev)
+                    <div class="bg-white rounded-[2rem] p-6 border border-gray-100/50 shadow-xs hover:shadow-sm transition duration-300 flex flex-col justify-between transform hover:-translate-y-0.5">
+                        <div>
+                            {{-- Rating Stars --}}
+                            <div class="flex gap-0.5 text-amber-400 mb-3 text-sm">
+                                @for($i = 1; $i <= 5; $i++)
+                                    @if($i <= $rev->rating)
+                                        ★
+                                    @else
+                                        ☆
+                                    @endif
+                                @endfor
+                            </div>
+                            
+                            {{-- Comment --}}
+                            <p class="text-gray-600 text-sm italic font-light mb-4 leading-relaxed">
+                                "{{ $rev->comment }}"
+                            </p>
+                        </div>
+
+                        <div class="border-t border-rose-50/50 pt-4 flex items-center gap-3">
+                            <div class="h-9 w-9 rounded-full bg-rose-50 border border-rose-100/50 flex items-center justify-center font-bold text-rose-400 text-sm">
+                                {{ strtoupper(substr($rev->user->profile->name ?? 'P', 0, 1)) }}
+                            </div>
+                            <div class="min-w-0">
+                                <h5 class="text-sm font-semibold text-gray-800 truncate">{{ $rev->user->profile->name ?? 'Pelanggan Cantik' }}</h5>
+                                @php
+                                    $purchasedNames = [];
+                                    if ($rev->order) {
+                                        foreach ($rev->order->orderItems as $item) {
+                                            if ($item->product_id != 4 && $item->product) {
+                                                $purchasedNames[] = $item->product->product_name;
+                                            }
+                                        }
+                                        if ($rev->order->customBahanOrder) {
+                                            $purchasedNames[] = 'Gelang Custom';
+                                        }
+                                    }
+                                    $purchasedText = !empty($purchasedNames) ? implode(', ', $purchasedNames) : ($rev->product->product_name ?? 'Gelang Custom');
+                                @endphp
+                                <p class="text-[10px] text-gray-400">
+                                    Membeli: <span class="font-medium text-rose-400">{{ $purchasedText }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+    {{-- Footer --}}
+    <footer class="bg-white border-t border-gray-100 mt-20 py-12">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            {{-- Brand info --}}
+            <div class="text-center md:text-left">
+                <a href="/" class="flex items-center justify-center md:justify-start gap-2.5 mb-3">
+                    <img src="{{ asset('charmonti.png') }}" alt="CharmOnTi Logo" class="h-8 w-8 rounded-full object-cover border border-rose-100 shadow-xs">
+                    <span class="font-bold text-gray-800 tracking-tight text-lg bg-gradient-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
+                </a>
+                <p class="text-gray-400 text-xs font-light max-w-xs leading-relaxed">
+                    Gelang custom handmade berkualitas tinggi untuk melengkapi keindahan setiap momen berhargamu. 🌸
+                </p>
+            </div>
+
+            {{-- Social Media Links --}}
+            <div class="flex items-center gap-4">
+                {{-- Instagram Link --}}
+                <a href="https://www.instagram.com/charm.onti/?hl=en" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-[#E1306C] transition p-2.5 rounded-full hover:bg-rose-50/50 flex items-center justify-center border border-gray-100 hover:border-[#E1306C]/30 shadow-xs" title="Follow Instagram kami">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                    </svg>
+                </a>
+                
+                {{-- TikTok Link --}}
+                <a href="https://www.tiktok.com/@charm.onti" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-black transition p-2.5 rounded-full hover:bg-gray-50 flex items-center justify-center border border-gray-100 hover:border-black/30 shadow-xs" title="Follow TikTok kami">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.74-3.99-1.72-.08-.07-.15-.15-.24-.22v6.4c.05 1.94-.48 3.97-1.74 5.48-1.52 1.87-3.99 2.87-6.38 2.58-2.92-.37-5.59-2.61-6.19-5.49-.7-3.19.86-6.68 3.93-7.79 1.15-.43 2.39-.51 3.59-.28v4.09c-.87-.27-1.87-.25-2.67.28-1.12.75-1.57 2.21-1.07 3.47.47 1.25 1.83 2.05 3.14 1.84 1.43-.2 2.57-1.47 2.57-2.91V.02h-.83z"/>
+                    </svg>
+                </a>
+            </div>
+
+            {{-- Copyright info --}}
+            <div class="text-center md:text-right">
+                <p class="text-gray-400 text-xs font-light">
+                    &copy; {{ date('Y') }} <span class="font-semibold text-gray-700">CharmOnTi</span>. All rights reserved.
+                </p>
+                <p class="text-[10px] text-rose-300 mt-1 font-light flex items-center justify-center md:justify-end gap-1">
+                    Made with 💖 for your beauty
+                </p>
+            </div>
+        </div>
+    </footer>
+
 </body>
 </html>
