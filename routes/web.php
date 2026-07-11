@@ -57,14 +57,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile', [CustomerController::class, 'updateProfile'])->name('customer.profile.update');
     Route::get('/api/cities/{province_id}', [CustomerController::class, 'getCities'])->name('api.cities');
 
-    // PDF Download Routes
-    Route::get('/owner/reports/sales/pdf', [\App\Http\Controllers\ReportPdfController::class, 'downloadSalesReport'])->name('owner.reports.sales.pdf');
-    Route::get('/owner/reports/financial/pdf', [\App\Http\Controllers\ReportPdfController::class, 'downloadFinancialReport'])->name('owner.reports.financial.pdf');
-
     // Payment routes
     Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');
     Route::get('/payment/{order}/success', [PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/{order}/check-status', [PaymentController::class, 'checkStatus'])->name('payment.check-status');
+});
+
+// PDF Download Routes (Khusus Owner)
+Route::middleware('auth:owner')->group(function () {
+    Route::get('/owner/reports/sales/pdf', [\App\Http\Controllers\ReportPdfController::class, 'downloadSalesReport'])->name('owner.reports.sales.pdf');
+    Route::get('/owner/reports/financial/pdf', [\App\Http\Controllers\ReportPdfController::class, 'downloadFinancialReport'])->name('owner.reports.financial.pdf');
 });
 
 Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
