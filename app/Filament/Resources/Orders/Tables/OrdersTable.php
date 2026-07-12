@@ -49,6 +49,7 @@ class OrdersTable
                     ->label('Pembayaran')
                     ->searchable(),
             ])
+            ->defaultSort('order_date', 'desc')
             ->filters([])
             ->recordActions([
                 EditAction::make(),

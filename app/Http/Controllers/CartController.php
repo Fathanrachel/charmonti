@@ -254,10 +254,13 @@ class CartController extends Controller
                     'price' => $item['price'],
                 ]);
             } elseif ($item['type'] === 'custom') {
+                $customProduct = \App\Models\Product::where('product_name', 'Gelang Custom')->first();
+                $customProductId = $customProduct ? $customProduct->id : 5;
+
                 // Catat di tabel induk barang pesanan (order_product_items)
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'product_id' => 4, // ID 4 adalah Dummy Product 'Gelang Custom'
+                    'product_id' => $customProductId,
                     'qty' => $item['quantity'],
                     'price' => $item['price'],
                 ]);

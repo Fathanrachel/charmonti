@@ -75,8 +75,8 @@
                 Bayar Sekarang 💳
             </button>
             
-            <a href="{{ route('payment.check-status', $order->id) }}"
-                class="w-full bg-white hover:bg-rose-50 text-rose-500 border border-rose-200 font-semibold py-3.5 rounded-full shadow-xs hover:shadow-sm hover:-translate-y-0.5 transition duration-300 text-sm flex justify-center items-center gap-2">
+            <a href="{{ route('payment.check-status', $order->id) }}" id="check-status-btn"
+                class="hidden w-full bg-white hover:bg-rose-50 text-rose-500 border border-rose-200 font-semibold py-3.5 rounded-full shadow-xs hover:shadow-sm hover:-translate-y-0.5 transition duration-300 text-sm flex justify-center items-center gap-2">
                 Saya Sudah Bayar (Cek Status) 🔄
             </a>
         </div>
@@ -133,9 +133,24 @@
             }, 4000);
         }
 
+        // Tampilkan tombol Cek Status jika sebelumnya user sudah pernah mengklik "Bayar Sekarang"
+        document.addEventListener('DOMContentLoaded', function () {
+            const orderId = '{{ $order->id }}';
+            const checkStatusBtn = document.getElementById('check-status-btn');
+            if (localStorage.getItem('payment_initialized_' + orderId) === 'true') {
+                checkStatusBtn.classList.remove('hidden');
+            }
+        });
+
         document.getElementById('pay-button').onclick = function() {
+            const orderId = '{{ $order->id }}';
+            // Simpan status inisialisasi di localStorage agar tetap muncul walau di-refresh
+            localStorage.setItem('payment_initialized_' + orderId, 'true');
+            document.getElementById('check-status-btn').classList.remove('hidden');
+
             snap.pay('{{ $snapToken }}', {
                 onSuccess: function(result) {
+                    localStorage.removeItem('payment_initialized_' + orderId); // Hapus state jika sukses
                     window.location.href = '{{ route('payment.check-status', $order->id) }}';
                 },
                 onPending: function(result) {
@@ -145,7 +160,7 @@
                     showToast('Pembayaran gagal. Silakan coba lagi.', 'error');
                 },
                 onClose: function() {
-                    showToast('Kamu menutup popup pembayaran.', 'info');
+                    showToast('Kamu menutup popup pembayaran. Jika sudah bayar, klik tombol Cek Status di bawah.', 'info');
                 }
             });
         };

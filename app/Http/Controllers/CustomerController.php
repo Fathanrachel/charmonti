@@ -210,7 +210,7 @@ class CustomerController extends Controller
         $profile = Auth::user()->profile;
         $orders = Order::where('profile_id', $profile?->id)
             ->with(['payment', 'shipping', 'orderItems.product'])
-            ->orderBy('id', 'desc')
+            ->orderBy('order_date', 'desc')
             ->get();
 
         return view('customer.orders', compact('orders'));
@@ -252,6 +252,9 @@ class CustomerController extends Controller
         // Gather all products to review (regular orderItems products + custom items)
         $itemsToReview = [];
         foreach ($order->orderItems as $item) {
+            if ($item->product?->product_name === 'Gelang Custom') {
+                continue;
+            }
             $itemsToReview[] = [
                 'id' => $item->product->id,
                 'name' => $item->product->product_name,

@@ -32,7 +32,7 @@ class BestSellerChart extends ChartWidget
             $product = $item->product;
             if (!$product) continue;
 
-            if ($product->id === 4 || $product->product_name === 'Gelang Custom') {
+            if ($product->product_name === 'Gelang Custom') {
                 $categorySales['Gelang Custom'] += (int) $item->qty;
             } elseif ($product->category === 'gelang_jadi') {
                 $categorySales['Gelang Jadi'] += (int) $item->qty;

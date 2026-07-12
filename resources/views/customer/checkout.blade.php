@@ -127,7 +127,7 @@
                 </div>
             </div>
 
-            <button type="submit"
+            <button type="submit" id="checkout-submit-btn"
                 class="w-full mt-2 bg-rose-400 hover:bg-rose-500 text-white font-semibold py-4 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-300 text-base">
                 Buat Pesanan 🛒
             </button>
@@ -171,6 +171,18 @@
 
         // Run initially
         calculateTotal();
+
+        // Anti-double click submit
+        const form = document.querySelector('form');
+        const submitBtn = document.getElementById('checkout-submit-btn');
+        if (form && submitBtn) {
+            form.addEventListener('submit', function () {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'Memproses Pesanan... ⌛';
+                submitBtn.classList.remove('bg-rose-400', 'hover:bg-rose-500');
+                submitBtn.classList.add('bg-gray-300', 'cursor-not-allowed', 'text-gray-500');
+            });
+        }
     </script>
 
 </body>

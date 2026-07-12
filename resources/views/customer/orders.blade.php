@@ -167,7 +167,7 @@
                             <div class="space-y-5 mb-8">
                                 {{-- 1. Regular Product Items --}}
                                 @foreach($order->orderItems as $item)
-                                    @if($item->product_id == 4)
+                                    @if($item->product?->product_name === 'Gelang Custom')
                                         @continue
                                     @endif
                                     <div class="flex items-center gap-5">
