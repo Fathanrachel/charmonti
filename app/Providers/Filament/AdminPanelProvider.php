@@ -45,6 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 \App\Filament\Admin\Widgets\AdminAccountWidget::class,
             ])
+            ->globalSearch(false)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

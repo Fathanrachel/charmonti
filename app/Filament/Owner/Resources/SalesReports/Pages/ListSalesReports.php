@@ -17,8 +17,10 @@ class ListSalesReports extends ListRecords
                 ->label('Unduh PDF Laporan')
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('danger')
-                ->url(route('owner.reports.sales.pdf'))
-                ->openUrlInNewTab(),
+                ->action(function ($livewire) {
+                    $period = data_get($livewire->tableFilters, 'period.value', 'daily');
+                    return redirect()->route('owner.reports.sales.pdf', ['period' => $period]);
+                }),
         ];
     }
 }

@@ -51,10 +51,11 @@
             <td class="kop-left">
                 <h1>CharmOnTi</h1>
                 <p>Spesialis Aksesoris Manik-manik Premium, Gelang Jadi, & Custom<br>
-                Malang, Jawa Timur, Indonesia | Kontak: racheltambunan10@gmail.com</p>
+                Jakarta, Indonesia | Kontak: racheltambunan10@gmail.com</p>
             </td>
             <td class="kop-right">
                 <div class="doc-title">Laporan Penjualan</div>
+                <p>Penyajian: <strong>Per {{ $periodLabel }}</strong></p>
                 <p>Dicetak: {{ $date }}</p>
             </td>
         </tr>
@@ -79,7 +80,7 @@
                 @endphp
                 <tr>
                     <td class="align-center">{{ $index + 1 }}</td>
-                    <td>{{ \Carbon\Carbon::parse($report->date)->translatedFormat('d F Y') }}</td>
+                    <td>{{ $report->formatted_date ?? \Carbon\Carbon::parse($report->date)->translatedFormat('d F Y') }}</td>
                     <td class="align-center">{{ $report->total_orders }} Transaksi</td>
                     <td class="align-right font-bold">Rp {{ number_format($report->total_revenue, 0, ',', '.') }}</td>
                 </tr>
@@ -114,7 +115,7 @@
         <tr>
             <td style="width: 65%;"></td>
             <td style="width: 35%; text-align: center;" class="sig-text">
-                Malang, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
+                Jakarta, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
                 <strong>Owner CharmOnTi</strong>
             </td>
         </tr>

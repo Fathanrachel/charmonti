@@ -53,7 +53,7 @@
             <td class="kop-left">
                 <h1>CharmOnTi</h1>
                 <p>Spesialis Aksesoris Manik-manik Premium, Gelang Jadi, & Custom<br>
-                Malang, Jawa Timur, Indonesia | Kontak: racheltambunan10@gmail.com</p>
+                Jakarta, Indonesia | Kontak: racheltambunan10@gmail.com</p>
             </td>
             <td class="kop-right">
                 <div class="doc-title">Laporan Keuangan</div>
@@ -129,7 +129,7 @@
         <tr>
             <td style="width: 65%;"></td>
             <td style="width: 35%; text-align: center;" class="sig-text">
-                Malang, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
+                Jakarta, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
                 <strong>Owner CharmOnTi</strong>
             </td>
         </tr>

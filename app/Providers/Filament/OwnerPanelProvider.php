@@ -44,6 +44,7 @@ class OwnerPanelProvider extends PanelProvider
             ->widgets([
                 \App\Filament\Owner\Widgets\OwnerAccountWidget::class,
             ])
+            ->globalSearch(false)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

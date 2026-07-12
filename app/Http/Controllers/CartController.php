@@ -56,6 +56,15 @@ class CartController extends Controller
 
         $cartId = 'regular_' . $product->id;
 
+        // Validasi stok produk reguler
+        if ($product->product_name !== 'Gelang Custom') {
+            $currentQtyInCart = isset($cart[$cartId]) ? $cart[$cartId]['quantity'] : 0;
+            $requestedQty = $currentQtyInCart + $qty;
+            if ($requestedQty > $product->dynamic_stock) {
+                return redirect()->back()->with('error', 'Stok tidak mencukupi. Tersedia: ' . $product->dynamic_stock . ' pcs.');
+            }
+        }
+
         if (isset($cart[$cartId])) {
             $cart[$cartId]['quantity'] += $qty;
         } else {
@@ -86,6 +95,12 @@ class CartController extends Controller
         // Filter out items with 0 quantity
         $selectedCharmsInput = array_filter($charmsInput, fn($qty) => $qty > 0);
 
+        // Validasi stok tali gelang
+        $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
+        if ($strapBahan && $strapBahan->dynamic_stock <= 0) {
+            return redirect()->back()->withErrors(['warna' => 'Stok tali gelang warna ' . $request->warna . ' sedang habis.'])->withInput();
+        }
+
         // Validate aggregate quantity max 15
         $totalQty = array_sum($selectedCharmsInput);
         if ($totalQty > 15) {
@@ -100,6 +115,14 @@ class CartController extends Controller
 
             if (count($charmsModels) !== count($bahanIds)) {
                 return redirect()->back()->withErrors(['charms' => 'Terdapat charm pilihan yang tidak valid.'])->withInput();
+            }
+
+            // Validasi stok manik-manik (charms)
+            foreach ($selectedCharmsInput as $id => $qty) {
+                $model = $charmsModels[$id];
+                if ($qty > $model->dynamic_stock) {
+                    return redirect()->back()->withErrors(['charms' => 'Stok untuk manik "' . $model->nama_bahan . '" tidak mencukupi. Tersisa: ' . $model->dynamic_stock . ' pcs.'])->withInput();
+                }
             }
         }
 
@@ -152,6 +175,36 @@ class CartController extends Controller
         $quantity = intval($request->input('quantity', 1));
 
         if (isset($cart[$id]) && $quantity > 0) {
+            // Validasi stok saat update kuantitas di keranjang
+            if ($cart[$id]['type'] === 'regular') {
+                $product = Product::find($cart[$id]['id']);
+                if ($product && $product->product_name !== 'Gelang Custom') {
+                    if ($quantity > $product->dynamic_stock) {
+                        return redirect()->back()->with('error', 'Stok tidak mencukupi untuk "' . $product->product_name . '". Tersedia: ' . $product->dynamic_stock . ' pcs.');
+                    }
+                }
+            } elseif ($cart[$id]['type'] === 'custom') {
+                // Validasi stok tali gelang
+                $warna = $cart[$id]['warna'];
+                $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($warna))->first();
+                if ($strapBahan) {
+                    if ($quantity > $strapBahan->dynamic_stock) {
+                        return redirect()->back()->with('error', 'Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.');
+                    }
+                }
+
+                $charmsQuantities = $cart[$id]['charms_quantities'] ?? [];
+                foreach ($charmsQuantities as $bahanId => $qtyPerBracelet) {
+                    $bahan = Bahan::find($bahanId);
+                    if ($bahan) {
+                        $totalRequired = $qtyPerBracelet * $quantity;
+                        if ($totalRequired > $bahan->dynamic_stock) {
+                            return redirect()->back()->with('error', 'Stok manik "' . $bahan->nama_bahan . '" tidak mencukupi untuk jumlah gelang tersebut. Tersisa: ' . $bahan->dynamic_stock . ' pcs.');
+                        }
+                    }
+                }
+            }
+
             $cart[$id]['quantity'] = $quantity;
             Session::put('cart', $cart);
         }
@@ -211,6 +264,62 @@ class CartController extends Controller
             'shipping_address' => 'required|string',
             'courier' => 'required|string',
         ]);
+
+        // 1. Validasi stok akhir produk reguler
+        foreach ($cart as $item) {
+            if ($item['type'] === 'regular') {
+                $product = Product::find($item['id']);
+                if ($product && $product->product_name !== 'Gelang Custom') {
+                    if ($item['quantity'] > $product->dynamic_stock) {
+                        return redirect()->back()->with('error', 'Stok produk "' . $product->product_name . '" tidak mencukupi. Tersedia: ' . $product->dynamic_stock . ' pcs.');
+                    }
+                }
+            }
+        }
+
+        // 2. Validasi stok akhir manik-manik (charms) secara akumulatif
+        $requiredCharms = [];
+        $requiredStraps = [
+            'silver' => 0,
+            'gold' => 0,
+        ];
+        foreach ($cart as $item) {
+            if ($item['type'] === 'custom') {
+                // Akumulasi tali gelang
+                $warna = strtolower($item['warna']);
+                if (isset($requiredStraps[$warna])) {
+                    $requiredStraps[$warna] += $item['quantity'];
+                }
+
+                $charmsQuantities = $item['charms_quantities'] ?? [];
+                foreach ($charmsQuantities as $bahanId => $qtyPerBracelet) {
+                    if (!isset($requiredCharms[$bahanId])) {
+                        $requiredCharms[$bahanId] = 0;
+                    }
+                    $requiredCharms[$bahanId] += $qtyPerBracelet * $item['quantity'];
+                }
+            }
+        }
+
+        // Verifikasi stok manik-manik
+        foreach ($requiredCharms as $bahanId => $totalQty) {
+            $bahan = Bahan::find($bahanId);
+            if ($bahan) {
+                if ($totalQty > $bahan->dynamic_stock) {
+                    return redirect()->back()->with('error', 'Stok manik-manik "' . $bahan->nama_bahan . '" tidak mencukupi untuk pesanan gelang custom Anda. Tersisa: ' . $bahan->dynamic_stock . ' pcs.');
+                }
+            }
+        }
+
+        // Verifikasi stok tali gelang
+        foreach ($requiredStraps as $warna => $totalQty) {
+            if ($totalQty > 0) {
+                $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($warna))->first();
+                if ($strapBahan && $totalQty > $strapBahan->dynamic_stock) {
+                    return redirect()->back()->with('error', 'Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.');
+                }
+            }
+        }
 
         // Calculate item total
         $itemTotal = 0;

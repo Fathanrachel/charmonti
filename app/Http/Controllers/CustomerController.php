@@ -49,6 +49,13 @@ class CustomerController extends Controller
             'courier'          => 'required|string|in:JNE,J&T,SiCepat',
         ]);
 
+        // Validasi stok produk reguler
+        if ($product->product_name !== 'Gelang Custom') {
+            if ($request->quantity > $product->dynamic_stock) {
+                return redirect()->back()->with('error', 'Stok tidak mencukupi. Tersedia: ' . $product->dynamic_stock . ' pcs.')->withInput();
+            }
+        }
+
         $itemTotal = $product->price * $request->quantity;
 
         // Map shipping cost and estimated arrival
@@ -108,8 +115,10 @@ class CustomerController extends Controller
         }
 
         $charms = Bahan::where('nama_bahan', 'not like', 'Tali Gelang%')->get();
+        $strapSilver = Bahan::where('nama_bahan', 'Tali Gelang Silver')->first();
+        $strapGold = Bahan::where('nama_bahan', 'Tali Gelang Gold')->first();
 
-        return view('customer.custom-order', compact('charms'));
+        return view('customer.custom-order', compact('charms', 'strapSilver', 'strapGold'));
     }
 
     public function storeCustomOrder(Request $request)
@@ -122,6 +131,24 @@ class CustomerController extends Controller
             'shipping_address'   => 'required|string',
             'courier'            => 'required|string|in:JNE,J&T,SiCepat',
         ]);
+
+        // Validasi stok manik-manik kustom
+        $charmsInput = $request->charms ?? [];
+        $charmsCounts = array_count_values($charmsInput);
+        foreach ($charmsCounts as $charmId => $qtyRequired) {
+            $charm = Bahan::find($charmId);
+            if ($charm) {
+                if ($qtyRequired > $charm->dynamic_stock) {
+                    return redirect()->back()->with('error', 'Stok manik-manik "' . $charm->nama_bahan . '" tidak mencukupi. Tersisa: ' . $charm->dynamic_stock . ' pcs.')->withInput();
+                }
+            }
+        }
+
+        // Validasi stok tali gelang
+        $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
+        if ($strapBahan && $strapBahan->dynamic_stock <= 0) {
+            return redirect()->back()->with('error', 'Stok tali gelang warna ' . $request->warna . ' sedang habis.')->withInput();
+        }
 
         $selectedCharms = Bahan::whereIn('id', $request->charms)->get();
         $itemTotal = $selectedCharms->sum('price');

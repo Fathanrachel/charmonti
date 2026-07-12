@@ -41,18 +41,40 @@
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8">
                 <h3 class="font-bold text-lg text-gray-800 mb-5">1. Pilih Warna Strap</h3>
                 <div class="flex gap-4">
-                    <label class="flex-1 cursor-pointer group">
-                        <input type="radio" name="warna" value="silver" class="hidden peer" required>
-                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 group-hover:bg-gray-50 shadow-sm">
+                    @php
+                        $isSilverOut = ($strapSilver && $strapSilver->dynamic_stock <= 0);
+                        $isGoldOut = ($strapGold && $strapGold->dynamic_stock <= 0);
+                    @endphp
+                    
+                    {{-- Silver Strap --}}
+                    <label class="flex-1 cursor-pointer group {{ $isSilverOut ? 'opacity-50 cursor-not-allowed' : '' }}">
+                        <input type="radio" name="warna" value="silver" class="hidden peer" required {{ $isSilverOut ? 'disabled' : '' }}>
+                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 {{ $isSilverOut ? 'bg-gray-100' : 'group-hover:bg-gray-50' }} shadow-sm">
                             <div class="text-4xl mb-3">⚪</div>
-                            <span class="font-semibold text-gray-700">Silver</span>
+                            <span class="font-semibold text-gray-700 block">Silver</span>
+                            <span class="text-xs text-gray-400 block mt-1">
+                                @if($isSilverOut)
+                                    <strong class="text-red-500">Stok Habis</strong>
+                                @else
+                                    Stok: <strong class="text-gray-600">{{ $strapSilver->dynamic_stock }}</strong>
+                                @endif
+                            </span>
                         </div>
                     </label>
-                    <label class="flex-1 cursor-pointer group">
-                        <input type="radio" name="warna" value="gold" class="hidden peer">
-                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 group-hover:bg-gray-50 shadow-sm">
+                    
+                    {{-- Gold Strap --}}
+                    <label class="flex-1 cursor-pointer group {{ $isGoldOut ? 'opacity-50 cursor-not-allowed' : '' }}">
+                        <input type="radio" name="warna" value="gold" class="hidden peer" {{ $isGoldOut ? 'disabled' : '' }}>
+                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 {{ $isGoldOut ? 'bg-gray-100' : 'group-hover:bg-gray-50' }} shadow-sm">
                             <div class="text-4xl mb-3">🟡</div>
-                            <span class="font-semibold text-gray-700">Gold</span>
+                            <span class="font-semibold text-gray-700 block">Gold</span>
+                            <span class="text-xs text-gray-400 block mt-1">
+                                @if($isGoldOut)
+                                    <strong class="text-red-500">Stok Habis</strong>
+                                @else
+                                    Stok: <strong class="text-gray-600">{{ $strapGold->dynamic_stock }}</strong>
+                                @endif
+                            </span>
                         </div>
                     </label>
                 </div>
@@ -70,9 +92,18 @@
                 @else
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         @foreach($charms as $charm)
-                        <div class="charm-card-container group">
-                            <div class="charm-card border-2 border-gray-100 rounded-2xl p-4 text-center transition duration-300 group-hover:border-rose-200">
-                                <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden">
+                        @php
+                            $charmStock = $charm->dynamic_stock;
+                            $isCharmOutOfStock = $charmStock <= 0;
+                        @endphp
+                        <div class="charm-card-container group {{ $isCharmOutOfStock ? 'opacity-65' : '' }}">
+                            <div class="charm-card border-2 border-gray-100 rounded-2xl p-4 text-center transition duration-300 {{ $isCharmOutOfStock ? 'bg-gray-50/50' : 'group-hover:border-rose-200' }}">
+                                <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden relative">
+                                    @if($isCharmOutOfStock)
+                                        <div class="absolute inset-0 bg-black/5 flex items-center justify-center z-10">
+                                            <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Habis</span>
+                                        </div>
+                                    @endif
                                     @if($charm->image)
                                         <img src="{{ Storage::url($charm->image) }}"
                                             alt="{{ $charm->nama_bahan }}"
@@ -82,15 +113,25 @@
                                     @endif
                                 </div>
                                 <p class="text-sm font-medium text-gray-800 leading-tight mb-1">{{ $charm->nama_bahan }}</p>
-                                <p class="text-xs text-rose-500 font-bold mb-3">
-                                    Rp {{ number_format($charm->price, 0, ',', '.') }}
-                                </p>
+                                <div class="flex flex-col gap-0.5 mb-3">
+                                    <span class="text-xs text-rose-500 font-bold">
+                                        Rp {{ number_format($charm->price, 0, ',', '.') }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-400">
+                                        @if($isCharmOutOfStock)
+                                            <strong class="text-red-500">Stok Habis</strong>
+                                        @else
+                                            Stok: <strong class="text-gray-600">{{ $charmStock }}</strong>
+                                        @endif
+                                    </span>
+                                </div>
 
                                 {{-- Counter Buttons --}}
                                 <div class="flex items-center justify-center gap-3">
                                     <button type="button" 
                                         onclick="adjustQty({{ $charm->id }}, -1)"
-                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none">-</button>
+                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none disabled:opacity-40"
+                                        {{ $isCharmOutOfStock ? 'disabled' : '' }}>-</button>
                                     
                                     <span id="qty-display-{{ $charm->id }}" class="font-bold text-gray-700 w-6 text-center text-sm">0</span>
                                     
@@ -98,7 +139,8 @@
 
                                     <button type="button" 
                                         onclick="adjustQty({{ $charm->id }}, 1)"
-                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none">+</button>
+                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none disabled:opacity-40"
+                                        {{ $isCharmOutOfStock ? 'disabled' : '' }}>+</button>
                                 </div>
                             </div>
                         </div>
@@ -150,6 +192,12 @@
             @endforeach
         };
 
+        const stocks = {
+            @foreach($charms as $charm)
+                {{ $charm->id }}: {{ $charm->dynamic_stock }},
+            @endforeach
+        };
+
         const countEl = document.getElementById('charm-count');
         const subtotalEl = document.getElementById('subtotal-price');
         const totalEl = document.getElementById('total-price');
@@ -162,10 +210,16 @@
             let currentVal = parseInt(input.value) || 0;
             let currentTotal = getTotalQty();
 
-            // Check max 15 charms limit for additions
-            if (delta > 0 && currentTotal >= 15) {
-                alert('Maksimal manik/charm yang dapat dimasukkan adalah 15.');
-                return;
+            // Validate against stock limit and max charms limit
+            if (delta > 0) {
+                if (currentVal >= stocks[charmId]) {
+                    alert('Stok untuk manik-manik ini tidak mencukupi (Tersisa: ' + stocks[charmId] + ')');
+                    return;
+                }
+                if (currentTotal >= 15) {
+                    alert('Maksimal manik/charm yang dapat dimasukkan adalah 15.');
+                    return;
+                }
             }
 
             let newVal = currentVal + delta;
