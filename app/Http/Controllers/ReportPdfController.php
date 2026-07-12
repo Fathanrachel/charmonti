@@ -18,7 +18,7 @@ class ReportPdfController extends Controller
         if ($period === 'weekly') {
             $reports = $query->selectRaw("
                 MIN(date) as date,
-                CONCAT('Minggu ke-', TO_CHAR(date, 'WW, YYYY')) as formatted_date,
+                CONCAT('Minggu ke-', TO_CHAR(MIN(date), 'WW, YYYY')) as formatted_date,
                 SUM(total_orders) as total_orders,
                 SUM(total_revenue) as total_revenue
             ")
@@ -29,7 +29,7 @@ class ReportPdfController extends Controller
         } elseif ($period === 'monthly') {
             $reports = $query->selectRaw("
                 MIN(date) as date,
-                TO_CHAR(date, 'Month YYYY') as formatted_date,
+                TO_CHAR(MIN(date), 'Month YYYY') as formatted_date,
                 SUM(total_orders) as total_orders,
                 SUM(total_revenue) as total_revenue
             ")
@@ -40,7 +40,7 @@ class ReportPdfController extends Controller
         } elseif ($period === 'yearly') {
             $reports = $query->selectRaw("
                 MIN(date) as date,
-                TO_CHAR(date, 'YYYY') as formatted_date,
+                TO_CHAR(MIN(date), 'YYYY') as formatted_date,
                 SUM(total_orders) as total_orders,
                 SUM(total_revenue) as total_revenue
             ")
@@ -72,7 +72,7 @@ class ReportPdfController extends Controller
         if ($period === 'weekly') {
             $reports = $query->selectRaw("
                 MIN(date) as date,
-                CONCAT('Minggu ke-', TO_CHAR(date, 'WW, YYYY')) as formatted_date,
+                CONCAT('Minggu ke-', TO_CHAR(MIN(date), 'WW, YYYY')) as formatted_date,
                 SUM(income) as income,
                 SUM(expense) as expense,
                 SUM(profit) as profit
@@ -84,7 +84,7 @@ class ReportPdfController extends Controller
         } elseif ($period === 'monthly') {
             $reports = $query->selectRaw("
                 MIN(date) as date,
-                TO_CHAR(date, 'Month YYYY') as formatted_date,
+                TO_CHAR(MIN(date), 'Month YYYY') as formatted_date,
                 SUM(income) as income,
                 SUM(expense) as expense,
                 SUM(profit) as profit
@@ -96,7 +96,7 @@ class ReportPdfController extends Controller
         } elseif ($period === 'yearly') {
             $reports = $query->selectRaw("
                 MIN(date) as date,
-                TO_CHAR(date, 'YYYY') as formatted_date,
+                TO_CHAR(MIN(date), 'YYYY') as formatted_date,
                 SUM(income) as income,
                 SUM(expense) as expense,
                 SUM(profit) as profit
