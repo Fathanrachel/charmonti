@@ -35,7 +35,7 @@ class BahanKeluarTable
 
                 TextColumn::make('tanggal_keluar')
                     ->label('Tanggal Keluar')
-                    ->dateTime('d M Y H:i')
+                    ->dateTime('d M Y')
                     ->sortable(),
             ])
             ->filters([])

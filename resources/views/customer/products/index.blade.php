@@ -99,7 +99,7 @@
         <h3 class="text-2xl font-bold text-gray-800 tracking-tight mb-8">Semua Produk ✨</h3>
 
         @if($products->isEmpty())
-            <div class="text-center py-16 bg-white border border-gray-100 rounded-[2rem] shadow-sm">
+            <div class="text-center py-16 bg-white border border-gray-100 rounded-4xl shadow-sm">
                 <div class="text-6xl mb-4 opacity-50">📿</div>
                 <p class="text-gray-500 font-light">Belum ada produk tersedia saat ini.</p>
             </div>
@@ -107,7 +107,7 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                 @foreach($products as $product)
                 <a href="{{ route('produk.show', $product) }}"
-                   class="bg-white rounded-[2rem] shadow-sm hover:shadow-md transition duration-300 p-5 block border border-gray-100/50 group transform hover:-translate-y-1">
+                   class="bg-white rounded-4xl shadow-sm hover:shadow-md transition duration-300 p-5 block border border-gray-100/50 group transform hover:-translate-y-1">
                     <div class="bg-rose-50/50 rounded-2xl h-48 flex items-center justify-center mb-4 overflow-hidden border border-rose-100/50">
                         @if($product->image)
                             <img src="{{ Storage::url($product->image) }}"
@@ -134,7 +134,7 @@
 
     {{-- Tombol Custom Order --}}
     <div class="max-w-4xl mx-auto px-6 pb-16">
-        <div class="bg-rose-50/80 border border-rose-100 rounded-[2rem] p-10 md:p-12 text-center shadow-sm relative overflow-hidden">
+        <div class="bg-rose-50/80 border border-rose-100 rounded-4xl p-10 md:p-12 text-center shadow-sm relative overflow-hidden">
             {{-- Decorative circles --}}
             <div class="absolute -top-10 -right-10 w-32 h-32 bg-pink-200/40 rounded-full blur-2xl"></div>
             <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-rose-200/40 rounded-full blur-2xl"></div>
@@ -158,14 +158,14 @@
         </div>
 
         @if($reviews->isEmpty())
-            <div class="text-center py-12 bg-white border border-gray-100/50 rounded-[2rem] shadow-sm max-w-xl mx-auto">
+            <div class="text-center py-12 bg-white border border-gray-100/50 rounded-4xl shadow-sm max-w-xl mx-auto">
                 <div class="text-5xl mb-3 opacity-60">✨</div>
                 <p class="text-gray-400 font-light text-sm">Belum ada ulasan masuk. Jadilah yang pertama memberikan ulasan cantikmu!</p>
             </div>
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($reviews as $rev)
-                    <div class="bg-white rounded-[2rem] p-6 border border-gray-100/50 shadow-xs hover:shadow-sm transition duration-300 flex flex-col justify-between transform hover:-translate-y-0.5">
+                    <div class="bg-white rounded-4xl p-6 border border-gray-100/50 shadow-xs hover:shadow-sm transition duration-300 flex flex-col justify-between transform hover:-translate-y-0.5">
                         <div>
                             {{-- Rating Stars --}}
                             <div class="flex gap-0.5 text-amber-400 mb-3 text-sm">
@@ -215,13 +215,13 @@
         @endif
     </div>
     {{-- Footer --}}
-    <footer class="bg-white border-t border-gray-100 mt-20 py-12">
+    <footer class="bg-white border-t border-gray-200 mt-20 py-12">
         <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
             {{-- Brand info --}}
             <div class="text-center md:text-left">
                 <a href="/" class="flex items-center justify-center md:justify-start gap-2.5 mb-3">
                     <img src="{{ asset('charmonti.png') }}" alt="CharmOnTi Logo" class="h-8 w-8 rounded-full object-cover border border-rose-100 shadow-xs">
-                    <span class="font-bold text-gray-800 tracking-tight text-lg bg-gradient-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
+                    <span class="font-bold tracking-tight text-lg bg-linear-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">CharmOnTi</span>
                 </a>
                 <p class="text-gray-400 text-xs font-light max-w-xs leading-relaxed">
                     Gelang custom handmade berkualitas tinggi untuk melengkapi keindahan setiap momen berhargamu. 🌸

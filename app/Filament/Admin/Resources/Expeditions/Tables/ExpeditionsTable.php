@@ -29,12 +29,12 @@ class ExpeditionsTable
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Tanggal Ditambahkan')
-                    ->dateTime('d M Y H:i')
+                    ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
                     ->label('Terakhir Diperbarui')
-                    ->dateTime('d M Y H:i')
+                    ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

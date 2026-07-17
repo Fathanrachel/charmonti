@@ -34,23 +34,22 @@ class LatestOrdersWidget extends BaseWidget
 
                 TextColumn::make('order_date')
                     ->label('Tanggal Order')
-                    ->dateTime('d M Y H:i')
+                    ->dateTime('d M Y')
                     ->sortable(),
 
                 TextColumn::make('payment.payment_status')
                     ->label('Status Bayar')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->placeholder('-')
+                    ->color(fn ($state): string => match ($state) {
                         'paid' => 'success',
-                        'pending' => 'warning',
                         'failed' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state): string => match ($state) {
                         'paid' => 'Lunas',
-                        'pending' => 'Pending',
                         'failed' => 'Gagal',
-                        default => $state,
+                        default => '-',
                     }),
 
                 TextColumn::make('shipping.status')

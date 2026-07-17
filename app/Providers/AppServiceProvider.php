@@ -29,5 +29,11 @@ class AppServiceProvider extends AuthServiceProvider
     {
         $this->registerPolicies();
         Order::observe(OrderObserver::class);
+
+        // Konfigurasi Global Format Tanggal di Tabel Filament (Admin & Owner)
+        \Filament\Tables\Table::configureUsing(function (\Filament\Tables\Table $table): void {
+            $table->defaultDateTimeDisplayFormat('d M Y');
+            $table->defaultDateDisplayFormat('d M Y');
+        });
     }
 }
