@@ -399,10 +399,30 @@ class CartController extends Controller
                 ]);
 
                 for ($i = 0; $i < $item['quantity']; $i++) {
+                    // Rangkai rincian catatan per-charm agar tersimpan di request_note tanpa ubah DB
+                    $combinedNotes = [];
+                    if (!empty($item['charms_details'])) {
+                        $charmNoteLines = [];
+                        foreach ($item['charms_details'] as $cd) {
+                            if (!empty($cd['note'])) {
+                                $charmNoteLines[] = '• ' . $cd['name'] . ' (x' . $cd['quantity'] . '): "' . $cd['note'] . '"';
+                            }
+                        }
+                        if (!empty($charmNoteLines)) {
+                            $combinedNotes[] = "📌 [Rincian Charm]:\n" . implode("\n", $charmNoteLines);
+                        }
+                    }
+
+                    if (!empty($item['request_note'])) {
+                        $combinedNotes[] = "📝 [Catatan Desain]: " . $item['request_note'];
+                    }
+
+                    $finalRequestNote = !empty($combinedNotes) ? implode("\n\n", $combinedNotes) : null;
+
                     $customBahanOrder = CustomBahanOrder::create([
                         'order_id' => $order->id,
                         'warna' => $item['warna'],
-                        'request_note' => $item['request_note'],
+                        'request_note' => $finalRequestNote,
                         'status' => 'pending',
                     ]);
 
