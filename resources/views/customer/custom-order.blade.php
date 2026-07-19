@@ -186,14 +186,16 @@
                                         {{ $isCharmOutOfStock ? 'disabled' : '' }}>+</button>
                                 </div>
 
-                                {{-- Notes per charm (muncul otomatis saat qty > 0) --}}
-                                <div id="notes-wrap-{{ $charm->id }}" class="hidden mt-3">
-                                    <input type="text"
-                                        name="charm_notes[{{ $charm->id }}]"
-                                        id="notes-input-{{ $charm->id }}"
-                                        maxlength="100"
-                                        placeholder="Tulis variasi charm ini..."
-                                        class="w-full px-3 py-2 text-xs border border-rose-200 bg-rose-50/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition placeholder-gray-400">
+                                {{-- Notes per charm (muncul otomatis & smooth saat qty > 0) --}}
+                                <div id="notes-wrap-{{ $charm->id }}" class="overflow-hidden max-h-0 opacity-0 transform -translate-y-2 transition-all duration-300 ease-out">
+                                    <div class="pt-3">
+                                        <input type="text"
+                                            name="charm_notes[{{ $charm->id }}]"
+                                            id="notes-input-{{ $charm->id }}"
+                                            maxlength="100"
+                                            placeholder="Tulis variasi charm ini..."
+                                            class="w-full px-3 py-2 text-xs border border-rose-200 bg-rose-50/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition placeholder-gray-400">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -246,6 +248,21 @@
             </div>
 
         </form>
+    </div>
+
+    {{-- ✨ Custom Notification Modal --}}
+    <div id="custom-alert-modal" class="fixed inset-0 z-[100] items-center justify-center p-4 hidden" onclick="closeCustomAlertModal(event)">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div id="custom-alert-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center transform scale-90 opacity-0 transition-all duration-300">
+            <div class="w-14 h-14 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100 text-2xl">
+                ⚠️
+            </div>
+            <h4 class="font-bold text-gray-800 text-lg mb-1">Informasi Stok</h4>
+            <p id="custom-alert-modal-msg" class="text-sm text-gray-500 font-light leading-relaxed mb-6"></p>
+            <button onclick="closeCustomAlertModal()" class="w-full bg-rose-400 hover:bg-rose-500 text-white font-semibold py-3 rounded-full shadow-sm hover:shadow-md transition">
+                Mengerti 👍
+            </button>
+        </div>
     </div>
 
     {{-- ✨ Strap Detail Modal --}}
@@ -314,14 +331,16 @@
                         +
                     </button>
                 </div>
-                {{-- Notes per charm di dalam modal (sync dengan card) --}}
-                <div id="modal-notes-wrap" class="hidden mt-5">
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">✏️ Variasi charm yang kamu inginkan:</label>
-                    <input type="text"
-                        id="modal-notes-input"
-                        maxlength="100"
-                        placeholder="Contoh: huruf &quot;R&quot;, warna biru, motif kucing..."
-                        class="w-full px-4 py-2.5 text-sm border border-rose-200 bg-rose-50/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition placeholder-gray-400">
+                {{-- Notes per charm di dalam modal (sync dengan card & smooth transition) --}}
+                <div id="modal-notes-wrap" class="overflow-hidden max-h-0 opacity-0 transform -translate-y-2 transition-all duration-300 ease-out">
+                    <div class="pt-5">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">✏️ Variasi charm yang kamu inginkan:</label>
+                        <input type="text"
+                            id="modal-notes-input"
+                            maxlength="100"
+                            placeholder="Contoh: huruf &quot;R&quot;, warna biru, motif kucing..."
+                            class="w-full px-4 py-2.5 text-sm border border-rose-200 bg-rose-50/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition placeholder-gray-400">
+                    </div>
                 </div>
                 <div id="modal-outofstock-msg" class="hidden text-center text-red-400 text-base font-medium mt-4">Stok manik-manik ini sedang habis</div>
             </div>
@@ -356,11 +375,11 @@
             // Validate against stock limit and max charms limit
             if (delta > 0) {
                 if (currentVal >= stocks[charmId]) {
-                    alert('Stok untuk manik-manik ini tidak mencukupi (Tersisa: ' + stocks[charmId] + ')');
+                    showCustomAlert('Stok untuk manik-manik ini tidak mencukupi (Tersisa: ' + stocks[charmId] + ' pcs)');
                     return;
                 }
                 if (currentTotal >= 15) {
-                    alert('Maksimal manik/charm yang dapat dimasukkan adalah 15.');
+                    showCustomAlert('Maksimal manik/charm yang dapat dimasukkan adalah 15 pcs.');
                     return;
                 }
             }
@@ -371,27 +390,37 @@
             input.value = newVal;
             display.textContent = newVal;
 
-            // Update Card Highlight Styles
+            // Update Card Highlight Styles & Smooth Notes Animation
+            const notesWrap = document.getElementById('notes-wrap-' + charmId);
+            const notesInput = document.getElementById('notes-input-' + charmId);
+
             if (newVal > 0) {
                 card.classList.add('border-rose-400', 'bg-rose-50/30');
-                // Tampilkan notes input
-                document.getElementById('notes-wrap-' + charmId).classList.remove('hidden');
+                // Smooth Expand
+                notesWrap.classList.remove('max-h-0', 'opacity-0', '-translate-y-2');
+                notesWrap.classList.add('max-h-24', 'opacity-100', 'translate-y-0');
             } else {
                 card.classList.remove('border-rose-400', 'bg-rose-50/30');
-                // Sembunyikan & kosongkan notes input saat qty = 0
-                const notesWrap = document.getElementById('notes-wrap-' + charmId);
-                notesWrap.classList.add('hidden');
-                document.getElementById('notes-input-' + charmId).value = '';
+                // Smooth Collapse & Reset
+                notesWrap.classList.remove('max-h-24', 'opacity-100', 'translate-y-0');
+                notesWrap.classList.add('max-h-0', 'opacity-0', '-translate-y-2');
+                setTimeout(() => {
+                    if (parseInt(input.value) === 0) {
+                        notesInput.value = '';
+                    }
+                }, 300);
             }
 
-            // Sync modal qty display jika modal sedang terbuka untuk charm ini
+            // Sync modal qty display & smooth modal notes transition
             if (typeof _modalCharmId !== 'undefined' && _modalCharmId == charmId) {
                 document.getElementById('modal-qty').textContent = newVal;
                 const modalNotesWrap = document.getElementById('modal-notes-wrap');
                 if (newVal > 0) {
-                    modalNotesWrap.classList.remove('hidden');
+                    modalNotesWrap.classList.remove('max-h-0', 'opacity-0', '-translate-y-2');
+                    modalNotesWrap.classList.add('max-h-32', 'opacity-100', 'translate-y-0');
                 } else {
-                    modalNotesWrap.classList.add('hidden');
+                    modalNotesWrap.classList.remove('max-h-32', 'opacity-100', 'translate-y-0');
+                    modalNotesWrap.classList.add('max-h-0', 'opacity-0', '-translate-y-2');
                 }
             }
 
@@ -489,9 +518,11 @@
             const cardNotesInput  = document.getElementById('notes-input-' + id);
 
             if (currentQty > 0) {
-                modalNotesWrap.classList.remove('hidden');
+                modalNotesWrap.classList.remove('max-h-0', 'opacity-0', '-translate-y-2');
+                modalNotesWrap.classList.add('max-h-32', 'opacity-100', 'translate-y-0');
             } else {
-                modalNotesWrap.classList.add('hidden');
+                modalNotesWrap.classList.remove('max-h-32', 'opacity-100', 'translate-y-0');
+                modalNotesWrap.classList.add('max-h-0', 'opacity-0', '-translate-y-2');
             }
 
             // Isi nilai notes dari card ke modal
@@ -565,6 +596,32 @@
             if (e && e.target.closest('#strap-modal-card')) return;
             const modal = document.getElementById('strap-modal');
             const card  = document.getElementById('strap-modal-card');
+            if (!card) return;
+            card.classList.add('scale-90', 'opacity-0');
+            card.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 280);
+        }
+
+        // ── Custom Alert Modal ──────────────────────────────────────
+        function showCustomAlert(msg) {
+            document.getElementById('custom-alert-modal-msg').textContent = msg;
+            const modal = document.getElementById('custom-alert-modal');
+            const card  = document.getElementById('custom-alert-modal-card');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                card.classList.remove('scale-90', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function closeCustomAlertModal(e) {
+            if (e && e.target.closest('#custom-alert-modal-card')) return;
+            const modal = document.getElementById('custom-alert-modal');
+            const card  = document.getElementById('custom-alert-modal-card');
             if (!card) return;
             card.classList.add('scale-90', 'opacity-0');
             card.classList.remove('scale-100', 'opacity-100');

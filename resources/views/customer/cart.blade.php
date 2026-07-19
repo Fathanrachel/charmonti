@@ -83,10 +83,23 @@
                                 @endif
 
                                 {{-- Update Qty Form --}}
-                                <form action="{{ route('cart.update', $id) }}" method="POST" class="flex items-center gap-2 mt-3">
+                                <form action="{{ route('cart.update', $id) }}" method="POST" id="qty-form-{{ $id }}" class="flex items-center gap-3 mt-3">
                                     @csrf
-                                    <label class="text-[11px] font-medium text-gray-400 uppercase">Qty:</label>
-                                    <input type="number" name="quantity" value="{{ $item['quantity'] }}" min="1" class="w-16 border border-gray-200 rounded-lg px-2 py-1 text-sm text-center font-bold focus:border-rose-400 focus:outline-none" onchange="this.form.submit()">
+                                    <span class="text-xs font-semibold text-gray-400 uppercase">Qty:</span>
+                                    <div class="flex items-center gap-2 border border-gray-200 rounded-full px-2 py-1 bg-gray-50/50">
+                                        <button type="button" 
+                                            onclick="updateCartQty('{{ $id }}', -1)"
+                                            class="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-xs shadow-2xs select-none">
+                                            −
+                                        </button>
+                                        <span id="qty-disp-{{ $id }}" class="font-bold text-gray-800 text-sm px-1.5 select-none">{{ $item['quantity'] }}</span>
+                                        <input type="hidden" name="quantity" id="qty-val-{{ $id }}" value="{{ $item['quantity'] }}">
+                                        <button type="button" 
+                                            onclick="updateCartQty('{{ $id }}', 1)"
+                                            class="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-xs shadow-2xs select-none">
+                                            +
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
 
@@ -101,7 +114,7 @@
                                         </svg>
                                     </button>
                                 </form>
-                                <span class="font-bold text-gray-800 text-base mt-auto">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
+                                <span id="item-subtotal-{{ $id }}" class="font-bold text-gray-800 text-base mt-auto">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
                             </div>
                         </div>
                     @endforeach
@@ -112,7 +125,7 @@
                     <h3 class="font-bold text-gray-800 text-lg border-b border-gray-50 pb-4">Ringkasan Belanja</h3>
                     <div class="flex justify-between items-center text-sm">
                         <span class="font-light text-gray-500">Subtotal Barang</span>
-                        <span class="font-bold text-gray-800">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
+                        <span id="cart-grand-total" class="font-bold text-gray-800">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
                     </div>
 
                     <div class="bg-rose-50/30 border border-rose-100/50 rounded-2xl p-4 text-xs text-rose-700 leading-relaxed font-light">
@@ -127,5 +140,50 @@
         @endif
     </div>
 
+    <script>
+        function updateCartQty(id, delta) {
+            const input = document.getElementById('qty-val-' + id);
+            const disp = document.getElementById('qty-disp-' + id);
+            let current = parseInt(input.value) || 1;
+            let next = current + delta;
+            if (next < 1) return;
+
+            const form = document.getElementById('qty-form-' + id);
+            const token = form.querySelector('input[name="_token"]').value;
+
+            // Update UI temp
+            disp.textContent = next;
+            input.value = next;
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ quantity: next })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    disp.textContent = data.quantity;
+                    input.value = data.quantity;
+                    document.getElementById('item-subtotal-' + id).textContent = data.itemSubtotal;
+                    document.getElementById('cart-grand-total').textContent = data.grandTotal;
+                } else {
+                    alert(data.message || 'Gagal mengubah kuantitas.');
+                    disp.textContent = current;
+                    input.value = current;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                disp.textContent = current;
+                input.value = current;
+            });
+        }
+    </script>
 </body>
 </html>

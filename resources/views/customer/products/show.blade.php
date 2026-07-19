@@ -164,9 +164,22 @@
                     @endphp
                     <div class="flex items-center gap-3">
                         <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Jumlah:</label>
-                        <input type="number" name="quantity" value="{{ $isOutOfStock ? 0 : 1 }}" min="{{ $isOutOfStock ? 0 : 1 }}" max="{{ $product->product_name === 'Gelang Custom' ? '' : $product->dynamic_stock }}"
-                            {{ $isOutOfStock ? 'disabled' : '' }}
-                            class="w-20 border border-gray-200 rounded-xl px-3 py-2 text-center text-sm font-bold focus:border-rose-400 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400">
+                        <div class="flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1.5 bg-gray-50/50">
+                            <button type="button" 
+                                onclick="adjustDetailQty(-1)"
+                                class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-sm shadow-2xs select-none disabled:opacity-40"
+                                {{ $isOutOfStock ? 'disabled' : '' }}>
+                                −
+                            </button>
+                            <span id="detail-qty-disp" class="font-bold text-gray-800 text-base w-8 text-center select-none">{{ $isOutOfStock ? 0 : 1 }}</span>
+                            <input type="hidden" name="quantity" id="detail-qty-val" value="{{ $isOutOfStock ? 0 : 1 }}">
+                            <button type="button" 
+                                onclick="adjustDetailQty(1)"
+                                class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-sm shadow-2xs select-none disabled:opacity-40"
+                                {{ $isOutOfStock ? 'disabled' : '' }}>
+                                +
+                            </button>
+                        </div>
                     </div>
                     @if($isOutOfStock)
                         <button type="button" disabled
@@ -227,5 +240,70 @@
         </div>
     </div>
 
+    {{-- ✨ Custom Notification Modal --}}
+    <div id="alert-modal" class="fixed inset-0 z-50 items-center justify-center p-4 hidden" onclick="closeAlertModal(event)">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div id="alert-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center transform scale-90 opacity-0 transition-all duration-300">
+            <div class="w-14 h-14 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100 text-2xl">
+                ⚠️
+            </div>
+            <h4 class="font-bold text-gray-800 text-lg mb-1">Informasi Stok</h4>
+            <p id="alert-modal-msg" class="text-sm text-gray-500 font-light leading-relaxed mb-6"></p>
+            <button onclick="closeAlertModal()" class="w-full bg-rose-400 hover:bg-rose-500 text-white font-semibold py-3 rounded-full shadow-sm hover:shadow-md transition">
+                Mengerti 👍
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const maxStock = {{ $product->product_name === 'Gelang Custom' ? 999 : $product->dynamic_stock }};
+        const isOutOfStock = {{ $isOutOfStock ? 'true' : 'false' }};
+
+        function showCustomAlert(msg) {
+            document.getElementById('alert-modal-msg').textContent = msg;
+            const modal = document.getElementById('alert-modal');
+            const card  = document.getElementById('alert-modal-card');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                card.classList.remove('scale-90', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function closeAlertModal(e) {
+            if (e && e.target.closest('#alert-modal-card')) return;
+            const modal = document.getElementById('alert-modal');
+            const card  = document.getElementById('alert-modal-card');
+            if (!card) return;
+            card.classList.add('scale-90', 'opacity-0');
+            card.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 280);
+        }
+
+        function adjustDetailQty(delta) {
+            if (isOutOfStock) return;
+            const input = document.getElementById('detail-qty-val');
+            const disp = document.getElementById('detail-qty-disp');
+            let current = parseInt(input.value) || 1;
+            let next = current + delta;
+
+            if (next < 1) next = 1;
+            if (next > maxStock) {
+                showCustomAlert('Stok yang tersedia untuk produk ini hanya ' + maxStock + ' pcs.');
+                next = maxStock;
+            }
+
+            input.value = next;
+            disp.textContent = next;
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeAlertModal();
+        });
+    </script>
 </body>
 </html>

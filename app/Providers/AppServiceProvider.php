@@ -25,6 +25,17 @@ class AppServiceProvider extends AuthServiceProvider
         SalesReport::class    => SalesReportPolicy::class,
     ];
 
+    public function register(): void
+    {
+        parent::register();
+
+        if (str_starts_with(PHP_OS, 'WIN')) {
+            $this->app->singleton('files', function () {
+                return new \App\Services\SafeFilesystem;
+            });
+        }
+    }
+
     public function boot(): void
     {
         $this->registerPolicies();

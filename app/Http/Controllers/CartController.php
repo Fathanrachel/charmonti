@@ -211,6 +211,26 @@ class CartController extends Controller
 
             $cart[$id]['quantity'] = $quantity;
             Session::put('cart', $cart);
+
+            if ($request->wantsJson() || $request->ajax()) {
+                $itemSubtotal = $cart[$id]['price'] * $cart[$id]['quantity'];
+                $grandTotal = 0;
+                foreach ($cart as $item) {
+                    $grandTotal += $item['price'] * $item['quantity'];
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'quantity' => $cart[$id]['quantity'],
+                    'itemSubtotal' => 'Rp ' . number_format($itemSubtotal, 0, ',', '.'),
+                    'grandTotal' => 'Rp ' . number_format($grandTotal, 0, ',', '.'),
+                    'message' => 'Kuantitas berhasil diperbarui.'
+                ]);
+            }
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => false, 'message' => 'Gagal memperbarui kuantitas.'], 400);
         }
 
         return redirect()->route('cart.index')->with('success', 'Jumlah barang berhasil diperbarui.');
