@@ -50,7 +50,20 @@
                     <label class="flex-1 cursor-pointer group {{ $isSilverOut ? 'opacity-50 cursor-not-allowed' : '' }}">
                         <input type="radio" name="warna" value="silver" class="hidden peer" required {{ $isSilverOut ? 'disabled' : '' }}>
                         <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 {{ $isSilverOut ? 'bg-gray-100' : 'group-hover:bg-gray-50' }} shadow-sm">
-                            <div class="text-4xl mb-3">⚪</div>
+                            <div class="h-28 flex items-center justify-center mb-3 overflow-hidden rounded-2xl bg-rose-50/40 relative cursor-pointer group/img"
+                                 onclick="openStrapModal('Silver', '{{ $strapSilver && $strapSilver->image ? Storage::url($strapSilver->image) : '' }}', {{ $strapSilver ? $strapSilver->dynamic_stock : 0 }}, {{ $isSilverOut ? 'true' : 'false' }})"
+                                 title="Lihat detail model strap">
+                                @if($strapSilver && $strapSilver->image)
+                                    <img src="{{ Storage::url($strapSilver->image) }}" alt="Tali Gelang Silver" class="w-full h-full object-cover rounded-2xl group-hover/img:scale-105 transition duration-500">
+                                @else
+                                    <span class="text-4xl">⚪</span>
+                                @endif
+                                <div class="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition duration-300 rounded-2xl flex items-center justify-center">
+                                    <span class="opacity-0 group-hover/img:opacity-100 transition duration-300 bg-white/90 rounded-full p-1.5 shadow text-gray-600 text-xs">
+                                        🔍 Zoom
+                                    </span>
+                                </div>
+                            </div>
                             <span class="font-semibold text-gray-700 block">Silver</span>
                             <span class="text-xs text-gray-400 block mt-1">
                                 @if($isSilverOut)
@@ -66,7 +79,20 @@
                     <label class="flex-1 cursor-pointer group {{ $isGoldOut ? 'opacity-50 cursor-not-allowed' : '' }}">
                         <input type="radio" name="warna" value="gold" class="hidden peer" {{ $isGoldOut ? 'disabled' : '' }}>
                         <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 {{ $isGoldOut ? 'bg-gray-100' : 'group-hover:bg-gray-50' }} shadow-sm">
-                            <div class="text-4xl mb-3">🟡</div>
+                            <div class="h-28 flex items-center justify-center mb-3 overflow-hidden rounded-2xl bg-rose-50/40 relative cursor-pointer group/img"
+                                 onclick="openStrapModal('Gold', '{{ $strapGold && $strapGold->image ? Storage::url($strapGold->image) : '' }}', {{ $strapGold ? $strapGold->dynamic_stock : 0 }}, {{ $isGoldOut ? 'true' : 'false' }})"
+                                 title="Lihat detail model strap">
+                                @if($strapGold && $strapGold->image)
+                                    <img src="{{ Storage::url($strapGold->image) }}" alt="Tali Gelang Gold" class="w-full h-full object-cover rounded-2xl group-hover/img:scale-105 transition duration-500">
+                                @else
+                                    <span class="text-4xl">🟡</span>
+                                @endif
+                                <div class="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition duration-300 rounded-2xl flex items-center justify-center">
+                                    <span class="opacity-0 group-hover/img:opacity-100 transition duration-300 bg-white/90 rounded-full p-1.5 shadow text-gray-600 text-xs">
+                                        🔍 Zoom
+                                    </span>
+                                </div>
+                            </div>
                             <span class="font-semibold text-gray-700 block">Gold</span>
                             <span class="text-xs text-gray-400 block mt-1">
                                 @if($isGoldOut)
@@ -82,9 +108,18 @@
 
             {{-- Pilih Charm --}}
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-lg text-gray-800">2. Pilih Charm</h3>
                     <span class="text-sm font-medium bg-rose-50 text-rose-500 px-4 py-1.5 rounded-full border border-rose-100">Dipilih: <span id="charm-count" class="font-bold">0</span>/15</span>
+                </div>
+
+                {{-- Info Notice: foto berisi banyak charm --}}
+                <div class="flex items-start gap-3 bg-amber-50 border border-amber-200/70 rounded-2xl px-4 py-3 mb-6">
+                    <span class="text-amber-500 text-lg mt-0.5 shrink-0">💡</span>
+                    <p class="text-amber-700 text-xs leading-relaxed">
+                        <strong class="font-semibold">Perhatian:</strong> Setiap foto charm mungkin menampilkan <strong>banyak variasi</strong> dalam 1 gambar (contoh: A–Z, berbagai motif, dll.).
+                        Setelah memilih jumlah, harap tuliskan <strong>charm spesifik yang diinginkan</strong> di kolom <strong>Catatan Desain</strong> di bawah.
+                    </p>
                 </div>
 
                 @if($charms->isEmpty())
@@ -150,6 +185,16 @@
                                         class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none disabled:opacity-40"
                                         {{ $isCharmOutOfStock ? 'disabled' : '' }}>+</button>
                                 </div>
+
+                                {{-- Notes per charm (muncul otomatis saat qty > 0) --}}
+                                <div id="notes-wrap-{{ $charm->id }}" class="hidden mt-3">
+                                    <input type="text"
+                                        name="charm_notes[{{ $charm->id }}]"
+                                        id="notes-input-{{ $charm->id }}"
+                                        maxlength="100"
+                                        placeholder="Tulis variasi charm ini..."
+                                        class="w-full px-3 py-2 text-xs border border-rose-200 bg-rose-50/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition placeholder-gray-400">
+                                </div>
                             </div>
                         </div>
                         @endforeach
@@ -160,11 +205,21 @@
             {{-- Catatan --}}
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 space-y-6">
                 <h3 class="font-bold text-lg text-gray-800 mb-2">3. Catatan Desain</h3>
+
+                {{-- Reminder untuk spesifikasi charm --}}
+                <div class="flex items-start gap-3 bg-rose-50/60 border border-rose-100 rounded-2xl px-4 py-3">
+                    <span class="text-rose-400 text-base shrink-0 mt-0.5">✏️</span>
+                    <p class="text-rose-600 text-xs leading-relaxed">
+                        <strong class="font-semibold">Wajib diisi jika kamu memilih charm yang memiliki banyak variasi</strong> dalam satu foto (contoh: charm huruf, charm motif, dll.).
+                        Tuliskan dengan jelas charm mana yang kamu inginkan agar pesananmu bisa kami proses dengan tepat. 🌸
+                    </p>
+                </div>
+
                 <div>
-                    <label class="text-sm font-semibold text-gray-700 block mb-2">Catatan Tambahan <span class="text-gray-400 font-normal">(opsional)</span></label>
-                    <textarea name="request_note" rows="2"
+                    <label class="text-sm font-semibold text-gray-700 block mb-2">Catatan Tambahan <span class="text-rose-400 font-normal text-xs">(isi jika ada variasi charm yang dipilih)</span></label>
+                    <textarea name="request_note" rows="3"
                         class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
-                        placeholder="Contoh: tolong diurutkan bintang, bulat, bintang ya..."></textarea>
+                        placeholder="Contoh: charm huruf 'R', 'A', 'C' — charm anjing, kucing, bintang — diurutkan bintang, bulat, bintang ya..."></textarea>
                 </div>
             </div>
 
@@ -193,8 +248,34 @@
         </form>
     </div>
 
+    {{-- ✨ Strap Detail Modal --}}
+    <div id="strap-modal" class="fixed inset-0 z-50 items-center justify-center p-4 hidden" onclick="closeStrapModal(event)">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div id="strap-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-90 opacity-0 transition-all duration-300">
+            <button onclick="closeStrapModal()" 
+                class="absolute top-4 right-4 z-10 bg-white/90 hover:bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center text-gray-500 shadow transition text-base">
+                ✕
+            </button>
+            <div class="bg-rose-50/60 h-80 flex items-center justify-center overflow-hidden relative p-6">
+                <img id="strap-modal-img" src="" alt="" class="w-full h-full object-contain rounded-2xl">
+                <span id="strap-modal-placeholder" class="text-8xl hidden">⚪</span>
+                <div id="strap-modal-stock-badge" class="hidden absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full">Stok Habis</div>
+            </div>
+            <div class="p-8">
+                <h3 id="strap-modal-name" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-rose-500 font-bold text-xl">Model Strap Gelang</span>
+                    <span id="strap-modal-stock" class="text-sm text-gray-400 bg-gray-50 border border-gray-100 px-4 py-1.5 rounded-full"></span>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed bg-gray-50 border border-gray-100 p-4 rounded-2xl">
+                    Tali gelang dapat disesuaikan (adjustable size) dan terbuat dari bahan berkualitas tinggi. Pilih warna favoritmu untuk memulai merangkai gelang custom! ✨
+                </p>
+            </div>
+        </div>
+    </div>
+
     {{-- ✨ Charm Detail Modal --}}
-    <div id="charm-modal" class="fixed inset-0 z-[999] flex items-center justify-center p-4 hidden" onclick="closeCharmModal(event)">
+    <div id="charm-modal" class="fixed inset-0 z-50 items-center justify-center p-4 hidden" onclick="closeCharmModal(event)">
         {{-- Backdrop --}}
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
 
@@ -232,6 +313,15 @@
                         class="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-2xl select-none">
                         +
                     </button>
+                </div>
+                {{-- Notes per charm di dalam modal (sync dengan card) --}}
+                <div id="modal-notes-wrap" class="hidden mt-5">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">✏️ Variasi charm yang kamu inginkan:</label>
+                    <input type="text"
+                        id="modal-notes-input"
+                        maxlength="100"
+                        placeholder="Contoh: huruf &quot;R&quot;, warna biru, motif kucing..."
+                        class="w-full px-4 py-2.5 text-sm border border-rose-200 bg-rose-50/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition placeholder-gray-400">
                 </div>
                 <div id="modal-outofstock-msg" class="hidden text-center text-red-400 text-base font-medium mt-4">Stok manik-manik ini sedang habis</div>
             </div>
@@ -284,8 +374,25 @@
             // Update Card Highlight Styles
             if (newVal > 0) {
                 card.classList.add('border-rose-400', 'bg-rose-50/30');
+                // Tampilkan notes input
+                document.getElementById('notes-wrap-' + charmId).classList.remove('hidden');
             } else {
                 card.classList.remove('border-rose-400', 'bg-rose-50/30');
+                // Sembunyikan & kosongkan notes input saat qty = 0
+                const notesWrap = document.getElementById('notes-wrap-' + charmId);
+                notesWrap.classList.add('hidden');
+                document.getElementById('notes-input-' + charmId).value = '';
+            }
+
+            // Sync modal qty display jika modal sedang terbuka untuk charm ini
+            if (typeof _modalCharmId !== 'undefined' && _modalCharmId == charmId) {
+                document.getElementById('modal-qty').textContent = newVal;
+                const modalNotesWrap = document.getElementById('modal-notes-wrap');
+                if (newVal > 0) {
+                    modalNotesWrap.classList.remove('hidden');
+                } else {
+                    modalNotesWrap.classList.add('hidden');
+                }
             }
 
             calculateTotal();
@@ -376,10 +483,30 @@
                     parseInt(document.getElementById('qty-input-' + _modalCharmId).value) || 0;
             };
 
+            // Sync notes: tampilkan field notes di modal jika qty > 0
+            const modalNotesWrap = document.getElementById('modal-notes-wrap');
+            const modalNotesInput = document.getElementById('modal-notes-input');
+            const cardNotesInput  = document.getElementById('notes-input-' + id);
+
+            if (currentQty > 0) {
+                modalNotesWrap.classList.remove('hidden');
+            } else {
+                modalNotesWrap.classList.add('hidden');
+            }
+
+            // Isi nilai notes dari card ke modal
+            modalNotesInput.value = cardNotesInput ? cardNotesInput.value : '';
+
+            // Saat notes di modal berubah → update card notes juga (two-way sync)
+            modalNotesInput.oninput = () => {
+                if (cardNotesInput) cardNotesInput.value = modalNotesInput.value;
+            };
+
             // Show with animation
             const modal = document.getElementById('charm-modal');
             const card  = document.getElementById('charm-modal-card');
             modal.classList.remove('hidden');
+            modal.classList.add('flex');
             requestAnimationFrame(() => {
                 card.classList.remove('scale-90', 'opacity-0');
                 card.classList.add('scale-100', 'opacity-100');
@@ -393,13 +520,59 @@
             const card  = document.getElementById('charm-modal-card');
             card.classList.add('scale-90', 'opacity-0');
             card.classList.remove('scale-100', 'opacity-100');
-            setTimeout(() => modal.classList.add('hidden'), 280);
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 280);
         }
 
         // Close on Escape key
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeCharmModal();
+            if (e.key === 'Escape') {
+                closeCharmModal();
+                closeStrapModal();
+            }
         });
+
+        // ── Strap Detail Modal ──────────────────────────────────────
+        function openStrapModal(colorName, imgUrl, stock, outOfStock) {
+            const img = document.getElementById('strap-modal-img');
+            const placeholder = document.getElementById('strap-modal-placeholder');
+            if (imgUrl) {
+                img.src = imgUrl;
+                img.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+
+            document.getElementById('strap-modal-name').textContent = 'Tali Gelang ' + colorName;
+            document.getElementById('strap-modal-stock').textContent = outOfStock ? 'Stok Habis' : 'Stok: ' + stock;
+            document.getElementById('strap-modal-stock-badge').classList.toggle('hidden', !outOfStock);
+
+            const modal = document.getElementById('strap-modal');
+            const card  = document.getElementById('strap-modal-card');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                card.classList.remove('scale-90', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function closeStrapModal(e) {
+            if (e && e.target.closest('#strap-modal-card')) return;
+            const modal = document.getElementById('strap-modal');
+            const card  = document.getElementById('strap-modal-card');
+            if (!card) return;
+            card.classList.add('scale-90', 'opacity-0');
+            card.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 280);
+        }
     </script>
 
 </body>

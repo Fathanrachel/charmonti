@@ -85,12 +85,15 @@ class CartController extends Controller
     public function addCustom(Request $request)
     {
         $request->validate([
-            'warna' => 'required|in:silver,gold',
-            'charms' => 'nullable|array',
+            'warna'        => 'required|in:silver,gold',
+            'charms'       => 'nullable|array',
+            'charm_notes'  => 'nullable|array',
+            'charm_notes.*'=> 'nullable|string|max:200',
             'request_note' => 'nullable|string|max:500',
         ]);
 
         $charmsInput = $request->charms ?? [];
+        $charmNotes  = $request->charm_notes ?? [];
 
         // Filter out items with 0 quantity
         $selectedCharmsInput = array_filter($charmsInput, fn($qty) => $qty > 0);
@@ -135,11 +138,12 @@ class CartController extends Controller
             $model = $charmsModels[$id];
             $charmsPrice += $model->price * $qty;
             $charmsDetails[] = [
-                'id' => $model->id,
-                'name' => $model->nama_bahan,
-                'price' => $model->price,
+                'id'       => $model->id,
+                'name'     => $model->nama_bahan,
+                'price'    => $model->price,
                 'quantity' => $qty,
-                'image' => $model->image
+                'image'    => $model->image,
+                'note'     => trim($charmNotes[$id] ?? ''), // notes spesifik per charm
             ];
 
             // Flatten charms array for compatibility

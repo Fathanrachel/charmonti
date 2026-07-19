@@ -70,9 +70,14 @@
                                 <p class="text-xs text-rose-400 font-semibold mt-1">Rp {{ number_format($item['price'], 0, ',', '.') }}</p>
 
                                 @if($item['type'] === 'custom' && isset($item['charms_details']))
-                                    <div class="mt-2 text-[10px] text-gray-400 font-light flex flex-wrap gap-1">
+                                    <div class="mt-2 text-[10px] text-gray-400 font-light flex flex-col gap-1">
                                         @foreach($item['charms_details'] as $charm)
-                                            <span class="bg-rose-50 px-2 py-0.5 rounded border border-rose-100">{{ $charm['name'] }}</span>
+                                            <div class="flex items-start gap-1.5">
+                                                <span class="bg-rose-50 px-2 py-0.5 rounded border border-rose-100 shrink-0">{{ $charm['name'] }} ×{{ $charm['quantity'] }}</span>
+                                                @if(!empty($charm['note']))
+                                                    <span class="text-rose-400 italic">→ "{{ $charm['note'] }}"</span>
+                                                @endif
+                                            </div>
                                         @endforeach
                                     </div>
                                 @endif
