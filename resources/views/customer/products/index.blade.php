@@ -121,11 +121,24 @@
                     <p class="text-rose-500 font-bold text-sm tracking-wide">
                         Rp {{ number_format($product->price, 0, ',', '.') }}
                     </p>
-                    @if($product->is_custom)
-                        <span class="text-xs bg-rose-100/50 text-rose-600 font-medium px-3 py-1 rounded-full mt-2 inline-block border border-rose-200/50">
-                            Custom 💖
-                        </span>
-                    @endif
+                    <div class="flex items-center justify-between mt-2">
+                        @if($product->is_custom)
+                            <span class="text-[11px] bg-rose-50 text-rose-500 font-semibold px-2.5 py-0.5 rounded-full border border-rose-100 flex items-center gap-1">
+                                ✨ Custom Order
+                            </span>
+                        @else
+                            <span class="text-[11px] text-gray-400 font-light">
+                                Ready Item
+                            </span>
+                        @endif
+
+                        @php $avg = $product->reviews->avg('rating'); @endphp
+                        @if($avg)
+                            <span class="text-xs font-semibold text-amber-500 flex items-center gap-0.5">
+                                ★ {{ number_format($avg, 1) }}
+                            </span>
+                        @endif
+                    </div>
                 </a>
                 @endforeach
             </div>
