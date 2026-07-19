@@ -98,7 +98,9 @@
                         @endphp
                         <div class="charm-card-container group {{ $isCharmOutOfStock ? 'opacity-65' : '' }}">
                             <div class="charm-card border-2 border-gray-100 rounded-2xl p-4 text-center transition duration-300 {{ $isCharmOutOfStock ? 'bg-gray-50/50' : 'group-hover:border-rose-200' }}">
-                                <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden relative">
+                                <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden relative cursor-pointer"
+                                     onclick="openCharmModal({{ $charm->id }}, '{{ addslashes($charm->nama_bahan) }}', {{ $charm->price }}, {{ $charmStock }}, {{ $isCharmOutOfStock ? 'true' : 'false' }}, '{{ $charm->image ? Storage::url($charm->image) : '' }}')"
+                                     title="Lihat detail charm">
                                     @if($isCharmOutOfStock)
                                         <div class="absolute inset-0 bg-black/5 flex items-center justify-center z-10">
                                             <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Habis</span>
@@ -111,6 +113,12 @@
                                     @else
                                         <span class="text-3xl text-rose-300">📿</span>
                                     @endif
+                                    {{-- Zoom hint overlay --}}
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition duration-300 rounded-xl flex items-center justify-center">
+                                        <span class="opacity-0 group-hover:opacity-100 transition duration-300 bg-white/90 rounded-full p-1 shadow text-gray-600 text-xs">
+                                            🔍
+                                        </span>
+                                    </div>
                                 </div>
                                 <p class="text-sm font-medium text-gray-800 leading-tight mb-1">{{ $charm->nama_bahan }}</p>
                                 <div class="flex flex-col gap-0.5 mb-3">
@@ -183,6 +191,51 @@
             </div>
 
         </form>
+    </div>
+
+    {{-- ✨ Charm Detail Modal --}}
+    <div id="charm-modal" class="fixed inset-0 z-[999] flex items-center justify-center p-4 hidden" onclick="closeCharmModal(event)">
+        {{-- Backdrop --}}
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+        {{-- Modal Card --}}
+        <div id="charm-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-90 opacity-0 transition-all duration-300">
+            {{-- Close Button --}}
+            <button onclick="document.getElementById('charm-modal').classList.add('hidden')" 
+                class="absolute top-4 right-4 z-10 bg-white/90 hover:bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center text-gray-500 shadow transition text-base">
+                ✕
+            </button>
+
+            {{-- Image --}}
+            <div class="bg-rose-50/60 h-80 flex items-center justify-center overflow-hidden relative" id="modal-img-wrap">
+                <img id="modal-img" src="" alt="" class="w-full h-full object-contain p-6">
+                <span id="modal-img-placeholder" class="text-8xl hidden">📿</span>
+                <div id="modal-stock-badge" class="hidden absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full">Stok Habis</div>
+            </div>
+
+            {{-- Detail --}}
+            <div class="p-8">
+                <h3 id="modal-name" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                <div class="flex items-center justify-between mb-6">
+                    <span id="modal-price" class="text-rose-500 font-bold text-xl"></span>
+                    <span id="modal-stock" class="text-sm text-gray-400 bg-gray-50 border border-gray-100 px-4 py-1.5 rounded-full"></span>
+                </div>
+
+                {{-- Counter inside modal --}}
+                <div id="modal-actions" class="flex items-center justify-center gap-6 mt-2">
+                    <button type="button" id="modal-btn-minus"
+                        class="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-2xl select-none">
+                        −
+                    </button>
+                    <span id="modal-qty" class="font-bold text-gray-700 text-2xl w-10 text-center">0</span>
+                    <button type="button" id="modal-btn-plus"
+                        class="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-2xl select-none">
+                        +
+                    </button>
+                </div>
+                <div id="modal-outofstock-msg" class="hidden text-center text-red-400 text-base font-medium mt-4">Stok manik-manik ini sedang habis</div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -265,6 +318,88 @@
 
         // Run initially
         calculateTotal();
+
+        // ── Charm Detail Modal ──────────────────────────────────────
+        let _modalCharmId = null;
+
+        function openCharmModal(id, name, price, stock, outOfStock, imgUrl) {
+            _modalCharmId = id;
+
+            // Populate image
+            const img = document.getElementById('modal-img');
+            const placeholder = document.getElementById('modal-img-placeholder');
+            if (imgUrl) {
+                img.src = imgUrl;
+                img.alt = name;
+                img.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+
+            // Stock badge
+            const badge = document.getElementById('modal-stock-badge');
+            badge.classList.toggle('hidden', !outOfStock);
+
+            // Info text
+            document.getElementById('modal-name').textContent = name;
+            document.getElementById('modal-price').textContent =
+                'Rp ' + price.toLocaleString('id-ID');
+            document.getElementById('modal-stock').textContent =
+                outOfStock ? 'Stok Habis' : 'Stok: ' + stock;
+
+            // Counter sync
+            const currentQty = parseInt(document.getElementById('qty-input-' + id).value) || 0;
+            document.getElementById('modal-qty').textContent = currentQty;
+
+            // Out of stock state
+            const actions = document.getElementById('modal-actions');
+            const oos = document.getElementById('modal-outofstock-msg');
+            if (outOfStock) {
+                actions.classList.add('opacity-40', 'pointer-events-none');
+                oos.classList.remove('hidden');
+            } else {
+                actions.classList.remove('opacity-40', 'pointer-events-none');
+                oos.classList.add('hidden');
+            }
+
+            // Wire buttons
+            document.getElementById('modal-btn-minus').onclick = () => {
+                adjustQty(_modalCharmId, -1);
+                document.getElementById('modal-qty').textContent =
+                    parseInt(document.getElementById('qty-input-' + _modalCharmId).value) || 0;
+            };
+            document.getElementById('modal-btn-plus').onclick = () => {
+                adjustQty(_modalCharmId, 1);
+                document.getElementById('modal-qty').textContent =
+                    parseInt(document.getElementById('qty-input-' + _modalCharmId).value) || 0;
+            };
+
+            // Show with animation
+            const modal = document.getElementById('charm-modal');
+            const card  = document.getElementById('charm-modal-card');
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                card.classList.remove('scale-90', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function closeCharmModal(e) {
+            // Only close if clicking the backdrop (not the card itself)
+            if (e && e.target.closest('#charm-modal-card')) return;
+            const modal = document.getElementById('charm-modal');
+            const card  = document.getElementById('charm-modal-card');
+            card.classList.add('scale-90', 'opacity-0');
+            card.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => modal.classList.add('hidden'), 280);
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeCharmModal();
+        });
     </script>
 
 </body>
