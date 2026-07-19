@@ -14,26 +14,34 @@ class OrderItemsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order_id')
-                    ->numeric()
+                TextColumn::make('order.id')
+                    ->label('ID Order')
+                    ->getStateUsing(fn ($record) => '#' . $record->order_id)
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('product_id')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('order.profile.name')
+                    ->label('Nama Pelanggan')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('Guest'),
+                TextColumn::make('product.product_name')
+                    ->label('Nama Produk')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('Gelang Custom'),
                 TextColumn::make('price')
+                    ->label('Harga Satuan')
                     ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('qty')
+                    ->label('Jumlah (Qty)')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('total')
+                    ->label('Total Harga')
+                    ->money('IDR', locale: 'id')
+                    ->getStateUsing(fn ($record) => $record->qty * $record->price)
+                    ->sortable(),
             ])
             ->filters([
                 //

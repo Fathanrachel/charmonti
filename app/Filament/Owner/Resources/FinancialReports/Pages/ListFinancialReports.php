@@ -17,8 +17,10 @@ class ListFinancialReports extends ListRecords
                 ->label('Unduh PDF Laporan')
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('danger')
-                ->url(fn () => route('owner.reports.financial.pdf', ['period' => request()->input('tableFilters.period.value', 'daily')]))
-                ->openUrlInNewTab(),
+                ->action(function ($livewire) {
+                    $period = data_get($livewire->tableFilters, 'period.value', 'daily');
+                    return redirect()->route('owner.reports.financial.pdf', ['period' => $period]);
+                }),
         ];
     }
 }

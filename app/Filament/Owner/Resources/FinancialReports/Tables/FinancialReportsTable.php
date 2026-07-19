@@ -79,6 +79,7 @@ class FinancialReportsTable
                         }
                     })
             ])
+            ->filtersApplyAction(null)
             ->recordActions([])
             ->toolbarActions([]);
     }

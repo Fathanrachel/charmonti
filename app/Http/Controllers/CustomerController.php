@@ -18,8 +18,14 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $products = Product::all();
-        return view('customer.products.index', compact('products'));
+        $products = Product::where('product_name', '!=', 'Gelang Custom')->get();
+        $reviews = Review::with([
+            'user.profile', 
+            'product', 
+            'order.orderItems.product', 
+            'order.customBahanOrder'
+        ])->latest()->take(6)->get();
+        return view('customer.products.index', compact('products', 'reviews'));
     }
 
     public function show(Product $product)
@@ -42,6 +48,13 @@ class CustomerController extends Controller
             'shipping_address' => 'required|string',
             'courier'          => 'required|string|in:JNE,J&T,SiCepat',
         ]);
+
+        // Validasi stok produk reguler
+        if ($product->product_name !== 'Gelang Custom') {
+            if ($request->quantity > $product->dynamic_stock) {
+                return redirect()->back()->with('error', 'Stok tidak mencukupi. Tersedia: ' . $product->dynamic_stock . ' pcs.')->withInput();
+            }
+        }
 
         $itemTotal = $product->price * $request->quantity;
 
@@ -101,9 +114,11 @@ class CustomerController extends Controller
             return redirect()->route('login')->with('info', 'Login dulu untuk memesan.');
         }
 
-        $charms = Bahan::all();
+        $charms = Bahan::where('nama_bahan', 'not like', 'Tali Gelang%')->get();
+        $strapSilver = Bahan::where('nama_bahan', 'Tali Gelang Silver')->first();
+        $strapGold = Bahan::where('nama_bahan', 'Tali Gelang Gold')->first();
 
-        return view('customer.custom-order', compact('charms'));
+        return view('customer.custom-order', compact('charms', 'strapSilver', 'strapGold'));
     }
 
     public function storeCustomOrder(Request $request)
@@ -116,6 +131,24 @@ class CustomerController extends Controller
             'shipping_address'   => 'required|string',
             'courier'            => 'required|string|in:JNE,J&T,SiCepat',
         ]);
+
+        // Validasi stok manik-manik kustom
+        $charmsInput = $request->charms ?? [];
+        $charmsCounts = array_count_values($charmsInput);
+        foreach ($charmsCounts as $charmId => $qtyRequired) {
+            $charm = Bahan::find($charmId);
+            if ($charm) {
+                if ($qtyRequired > $charm->dynamic_stock) {
+                    return redirect()->back()->with('error', 'Stok manik-manik "' . $charm->nama_bahan . '" tidak mencukupi. Tersisa: ' . $charm->dynamic_stock . ' pcs.')->withInput();
+                }
+            }
+        }
+
+        // Validasi stok tali gelang
+        $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
+        if ($strapBahan && $strapBahan->dynamic_stock <= 0) {
+            return redirect()->back()->with('error', 'Stok tali gelang warna ' . $request->warna . ' sedang habis.')->withInput();
+        }
 
         $selectedCharms = Bahan::whereIn('id', $request->charms)->get();
         $itemTotal = $selectedCharms->sum('price');
@@ -204,7 +237,7 @@ class CustomerController extends Controller
         $profile = Auth::user()->profile;
         $orders = Order::where('profile_id', $profile?->id)
             ->with(['payment', 'shipping', 'orderItems.product'])
-            ->orderBy('id', 'desc')
+            ->orderBy('order_date', 'desc')
             ->get();
 
         return view('customer.orders', compact('orders'));
@@ -225,17 +258,49 @@ class CustomerController extends Controller
             return redirect()->back()->with('success', 'Pesanan Anda berhasil dibatalkan.');
         }
 
-        return redirect()->back()->with('error', 'Pesanan ini sudah diproses atau dibayar, tidak dapat dibatalkan.');
+            return redirect()->back()->with('error', 'Pesanan ini sudah diproses atau dibayar, tidak dapat dibatalkan.');
     }
 
     public function createReview(Order $order)
     {
-        // Pastikan kepemilikan pesanan
         abort_if($order->profile?->users_id !== Auth::id(), 403);
-        // Hanya pesanan yang selesai yang bisa diulas
         abort_if($order->status !== 'selesai', 403);
 
-        return view('customer.review', compact('order'));
+        // Ensure the dummy "Gelang Custom" product exists in catalog for review anchor
+        $customProductDummy = Product::firstOrCreate(
+            ['product_name' => 'Gelang Custom'],
+            [
+                'description' => 'Produk ulasan gelang custom rancangan pengguna.',
+                'price' => 0.00,
+                'category' => 'gelang_jadi',
+            ]
+        );
+
+        // Gather all products to review (regular orderItems products + custom items)
+        $itemsToReview = [];
+        foreach ($order->orderItems as $item) {
+            if ($item->product?->product_name === 'Gelang Custom') {
+                continue;
+            }
+            $itemsToReview[] = [
+                'id' => $item->product->id,
+                'name' => $item->product->product_name,
+                'category' => $item->product->category,
+                'image' => $item->product->image,
+            ];
+        }
+
+        // If this order has custom bracelets, add a single review slot for "Gelang Custom"
+        if ($order->customBahanOrder()->exists()) {
+            $itemsToReview[] = [
+                'id' => $customProductDummy->id,
+                'name' => 'Gelang Custom (' . ucfirst($order->customBahanOrder->warna ?? '') . ')',
+                'category' => 'Gelang Custom',
+                'image' => null, // Display default bracelet emoji/logo
+            ];
+        }
+
+        return view('customer.review', compact('order', 'itemsToReview'));
     }
 
     public function storeReview(Request $request, Order $order)
@@ -250,9 +315,14 @@ class CustomerController extends Controller
             'comments.*' => 'nullable|string|max:1000',
         ]);
 
+        $customProductDummy = Product::where('product_name', 'Gelang Custom')->first();
+
         foreach ($request->ratings as $productId => $rating) {
-            // Pastikan produk tersebut ada di pesanan ini
-            if ($order->orderItems()->where('product_id', $productId)->exists()) {
+            // Validate that the product was indeed in the order (or it's the dummy custom product and the order has custom bracelet)
+            $isRegularItem = $order->orderItems()->where('product_id', $productId)->exists();
+            $isCustomItem = ($customProductDummy && $productId == $customProductDummy->id && $order->customBahanOrder()->exists());
+
+            if ($isRegularItem || $isCustomItem) {
                 Review::updateOrCreate(
                     [
                         'order_id' => $order->id,
@@ -329,11 +399,11 @@ class CustomerController extends Controller
 
         $request->validate([
             'name'         => 'required|string|max:255',
-            'phone'        => 'nullable|string|max:20',
-            'province_id'  => 'nullable|exists:provinces,id',
-            'city_id'      => 'nullable|exists:cities,id',
-            'address_line' => 'nullable|string|max:500',
-            'postal_code'  => 'nullable|string|max:10',
+            'phone'        => 'required|string|max:20',
+            'province_id'  => 'required|exists:provinces,id',
+            'city_id'      => 'required|exists:cities,id',
+            'address_line' => 'required|string|max:500',
+            'postal_code'  => 'required|string|max:10',
         ]);
 
         // Update profile
@@ -352,5 +422,27 @@ class CustomerController extends Controller
     {
         $cities = \App\Models\City::where('province_id', $provinceId)->orderBy('city')->get(['id', 'city']);
         return response()->json($cities);
+    }
+
+    public function replyComplaint(Request $request, Complaint $complaint)
+    {
+        abort_if($complaint->user_id !== Auth::id(), 403);
+        abort_if($complaint->status === 'selesai', 403);
+
+        $request->validate([
+            'reply_message' => 'required|string|max:1000',
+        ]);
+
+        $formattedTime = now()->translatedFormat('d M H:i');
+        $senderName = Auth::user()->profile?->name ?? 'Pelanggan';
+
+        // Append customer reply to the main conversation thread text
+        $updatedMessage = $complaint->message . "\n\n[" . $formattedTime . " - " . $senderName . "]: " . $request->reply_message;
+
+        $complaint->update([
+            'message' => $updatedMessage
+        ]);
+
+        return redirect()->back()->with('success', 'Balasan Anda berhasil dikirim! 💬');
     }
 }

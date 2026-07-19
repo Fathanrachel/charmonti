@@ -12,7 +12,12 @@ class EditBahan extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            //
+            \Filament\Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

@@ -167,6 +167,9 @@
                             <div class="space-y-5 mb-8">
                                 {{-- 1. Regular Product Items --}}
                                 @foreach($order->orderItems as $item)
+                                    @if($item->product?->product_name === 'Gelang Custom')
+                                        @continue
+                                    @endif
                                     <div class="flex items-center gap-5">
                                         <div class="bg-rose-50/50 rounded-2xl h-16 w-16 flex items-center justify-center shrink-0 border border-rose-50">
                                             @if($item->product->image)
@@ -187,16 +190,27 @@
 
                                 {{-- 2. Custom Gelang Order --}}
                                 @if($order->customBahanOrder)
+                                    @php
+                                        $customPrice = 20000; // Base price tali strap
+                                        foreach($order->customBahanOrder->customBahanOrderItems as $customItem) {
+                                            $customPrice += ($customItem->bahan->price ?? 0) * ($customItem->qty ?? 1);
+                                        }
+                                    @endphp
                                     <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5">
-                                        <div class="flex items-center gap-4 mb-4">
-                                            <div class="bg-rose-100 rounded-xl h-12 w-12 flex items-center justify-center text-2xl shrink-0">
-                                                ✨
+                                        <div class="flex items-center justify-between gap-4 mb-4">
+                                            <div class="flex items-center gap-4">
+                                                <div class="bg-rose-100 rounded-xl h-12 w-12 flex items-center justify-center text-2xl shrink-0">
+                                                    ✨
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</h4>
+                                                    @if($order->customBahanOrder->request_note)
+                                                        <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $order->customBahanOrder->request_note }}"</p>
+                                                    @endif
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</h4>
-                                                @if($order->customBahanOrder->request_note)
-                                                    <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $order->customBahanOrder->request_note }}"</p>
-                                                @endif
+                                            <div class="text-right shrink-0">
+                                                <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($customPrice, 0, ',', '.') }}</span>
                                             </div>
                                         </div>
                                         
@@ -204,18 +218,30 @@
                                         <div class="border-t border-rose-100/40 pt-3">
                                             <p class="text-xs font-semibold text-gray-400 mb-2.5 uppercase tracking-wide">Bahan / Charm yang Digunakan:</p>
                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                                @foreach($order->customBahanOrder->customBahanOrderItems as $customItem)
+                                                @php
+                                                    $groupedCharms = $order->customBahanOrder->customBahanOrderItems->groupBy('bahan_id');
+                                                @endphp
+                                                @foreach($groupedCharms as $bahanId => $items)
+                                                    @php
+                                                        $firstItem = $items->first();
+                                                        $totalQty = $items->sum('qty');
+                                                    @endphp
                                                     <div class="flex items-center gap-3">
                                                         <div class="h-8 w-8 rounded-lg bg-white border border-rose-50 flex items-center justify-center shrink-0">
-                                                            @if($customItem->bahan->image)
-                                                                <img src="{{ Storage::url($customItem->bahan->image) }}" alt="{{ $customItem->bahan->nama_bahan }}" class="h-full w-full object-cover rounded-lg">
+                                                            @if($firstItem->bahan->image)
+                                                                <img src="{{ Storage::url($firstItem->bahan->image) }}" alt="{{ $firstItem->bahan->nama_bahan }}" class="h-full w-full object-cover rounded-lg">
                                                             @else
                                                                 <span class="text-sm">💎</span>
                                                             @endif
                                                         </div>
                                                         <div class="min-w-0 flex-1">
-                                                            <p class="text-xs font-medium text-gray-700 truncate">{{ $customItem->bahan->nama_bahan }}</p>
-                                                            <p class="text-[10px] text-gray-400 font-light">Rp {{ number_format($customItem->bahan->price, 0, ',', '.') }}</p>
+                                                            <p class="text-xs font-semibold text-gray-700 truncate">
+                                                                {{ $firstItem->bahan->nama_bahan }}
+                                                                <span class="ml-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-100/50">
+                                                                    {{ $totalQty }}x
+                                                                </span>
+                                                            </p>
+                                                            <p class="text-[10px] text-gray-400 font-light">Rp {{ number_format($firstItem->bahan->price, 0, ',', '.') }} /pcs</p>
                                                         </div>
                                                     </div>
                                                 @endforeach
@@ -276,7 +302,15 @@
                                             </div>
                                             <div class="flex justify-between">
                                                 <span class="font-light">No. Resi:</span>
-                                                <span class="font-semibold text-rose-500 font-mono tracking-wide">{{ $order->shipping->tracking_number ?: 'Belum diisi oleh Kurir' }}</span>
+                                                @if($order->shipping->status === 'batal' || $order->status === 'batal')
+                                                    <span class="font-semibold text-gray-400 font-mono">-</span>
+                                                @else
+                                                    @if($order->shipping->tracking_number)
+                                                        <span class="font-semibold text-gray-800 font-mono tracking-wide">{{ $order->shipping->tracking_number }}</span>
+                                                    @else
+                                                        <span class="font-medium text-rose-400 italic text-xs">Menunggu proses input</span>
+                                                    @endif
+                                                @endif
                                             </div>
                                             <div class="flex justify-between items-center">
                                                 <span class="font-light">Status:</span>
@@ -321,30 +355,87 @@
                             @if($order->complaints->isNotEmpty())
                                 <div class="bg-red-50/50 border border-red-100 rounded-2xl p-5 mb-6">
                                     <h6 class="text-xs font-bold text-red-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <span>⚠️</span> Riwayat Komplain Pesanan:
+                                        <span>⚠️</span> Riwayat Obrolan Keluhan:
                                     </h6>
-                                    <div class="space-y-4">
+                                    <div class="space-y-5">
                                         @foreach($order->complaints as $complaint)
-                                            <div class="flex justify-between items-start gap-4 text-xs border-b border-red-100/50 last:border-0 pb-3 last:pb-0">
-                                                <div class="text-gray-600">
-                                                    <span class="font-semibold text-gray-800 capitalize bg-white px-2.5 py-1 rounded-md border border-red-100 mr-2 shadow-sm">{{ $complaint->category }}</span>
-                                                    <span class="italic font-light leading-relaxed">"{{ $complaint->message }}"</span>
+                                            <div class="border-b border-red-100/50 last:border-0 pb-5 last:pb-0 space-y-4">
+                                                <div class="flex justify-between items-center bg-white/60 p-2.5 rounded-xl border border-red-100/30">
+                                                    <span class="font-bold text-gray-800 text-xs capitalize">Kategori: {{ $complaint->category }}</span>
+                                                    @php
+                                                        $compColors = [
+                                                            'open' => 'bg-red-50 text-red-600 border-red-200',
+                                                            'diproses' => 'bg-rose-50 text-rose-600 border-rose-200',
+                                                            'selesai' => 'bg-green-50 text-green-600 border-green-200',
+                                                        ];
+                                                        $compLabels = [
+                                                            'open' => 'Baru / Menunggu',
+                                                            'diproses' => 'Diproses Toko',
+                                                            'selesai' => 'Selesai / Teratasi',
+                                                        ];
+                                                    @endphp
+                                                    <span class="px-3 py-1 rounded-full border text-[10px] font-bold {{ $compColors[$complaint->status] ?? 'bg-gray-50 text-gray-600' }}">
+                                                        {{ $compLabels[$complaint->status] ?? $complaint->status }}
+                                                    </span>
                                                 </div>
-                                                @php
-                                                    $compColors = [
-                                                        'open' => 'bg-red-50 text-red-600 border-red-200',
-                                                        'diproses' => 'bg-rose-50 text-rose-600 border-rose-200',
-                                                        'selesai' => 'bg-green-50 text-green-600 border-green-200',
-                                                    ];
-                                                    $compLabels = [
-                                                        'open' => 'Baru / Menunggu',
-                                                        'diproses' => 'Diproses Toko',
-                                                        'selesai' => 'Selesai / Teratasi',
-                                                    ];
-                                                @endphp
-                                                <span class="px-3 py-1 rounded-full border text-[10px] font-bold shrink-0 {{ $compColors[$complaint->status] ?? 'bg-gray-50 text-gray-600' }}">
-                                                    {{ $compLabels[$complaint->status] ?? $complaint->status }}
-                                                </span>
+
+                                                {{-- Chat Thread list --}}
+                                                <div class="space-y-3.5 pl-2">
+                                                    @php
+                                                        // Split by double newline to parse separate messages
+                                                        $chatLines = explode("\n\n", $complaint->message);
+                                                    @endphp
+                                                    @foreach($chatLines as $index => $line)
+                                                        @if(trim($line))
+                                                            @php
+                                                                $isUserMessage = !str_starts_with(trim($line), '[Admin]') && !str_contains($line, '- Owner') && !str_contains($line, '- Admin');
+                                                            @endphp
+                                                            <div class="flex {{ $isUserMessage ? 'justify-end' : 'justify-start' }}">
+                                                                <div class="rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-xs border {{ $isUserMessage ? 'bg-white border-red-100/60 rounded-br-none text-gray-800' : 'bg-gray-100 border-gray-200 rounded-bl-none text-gray-700' }}">
+                                                                    <p class="leading-relaxed whitespace-pre-line">{{ $line }}</p>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                                
+                                                {{-- Store Reply (Tanggapan Toko - main reply field) --}}
+                                                @if($complaint->reply_message)
+                                                    <div class="ml-2 bg-rose-50/70 border border-rose-100/40 rounded-2xl p-4 text-xs text-gray-700 relative">
+                                                        <div class="absolute -top-1.5 left-6 w-3 h-3 bg-rose-50 border-t border-l border-rose-100/40 transform rotate-45"></div>
+                                                        <div class="flex items-center gap-1.5 font-bold text-rose-500 mb-1">
+                                                            <span>💬</span> Tanggapan Toko:
+                                                        </div>
+                                                        <p class="font-light leading-relaxed">{{ $complaint->reply_message }}</p>
+                                                    </div>
+                                                @endif
+
+                                                {{-- Quick Reply Form for customer --}}
+                                                @if($complaint->status !== 'selesai')
+                                                    <div class="pt-2 pl-2">
+                                                        <button type="button" onclick="toggleReplyForm({{ $complaint->id }})" 
+                                                                class="text-[11px] font-semibold text-rose-500 hover:text-rose-600 transition flex items-center gap-1 hover:underline">
+                                                            <span>💬</span> Kirim Balasan Baru
+                                                        </button>
+                                                        
+                                                        <form id="reply-form-{{ $complaint->id }}" method="POST" action="{{ route('customer.complaint.reply', $complaint->id) }}" class="hidden mt-3 space-y-2.5">
+                                                            @csrf
+                                                            <textarea name="reply_message" rows="2" required 
+                                                                      placeholder="Tulis balasan atau penjelasan tambahan di sini..." 
+                                                                      class="w-full bg-white border border-red-100/60 rounded-2xl p-3 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-200 placeholder-gray-400 transition shadow-xs"></textarea>
+                                                            <div class="flex justify-end gap-2">
+                                                                <button type="button" onclick="toggleReplyForm({{ $complaint->id }})" 
+                                                                        class="bg-white border border-gray-200 text-gray-400 font-semibold px-4 py-1.5 rounded-full text-[10px] transition">
+                                                                    Batal
+                                                                </button>
+                                                                <button type="submit" 
+                                                                        class="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-4 py-1.5 rounded-full text-[10px] transition shadow-xs">
+                                                                    Kirim Balasan
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endforeach
                                     </div>
@@ -360,9 +451,9 @@
 
                                 @if($orderStatus === 'pending' && $payStatus === 'pending')
                                     <div class="flex items-center gap-3">
-                                        <form method="POST" action="{{ route('customer.order.cancel', $order->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?');" class="inline">
+                                        <form method="POST" action="{{ route('customer.order.cancel', $order->id) }}" class="inline">
                                             @csrf
-                                            <button type="submit"
+                                            <button type="submit" onclick="openCancelModal(event, this.closest('form'))"
                                                     class="bg-white border border-gray-200 hover:bg-gray-50 hover:border-red-200 hover:text-red-500 text-gray-500 font-medium px-5 py-3 rounded-full text-center transition duration-300 text-sm flex items-center justify-center shadow-sm">
                                                 Batalkan
                                             </button>
@@ -454,7 +545,87 @@
             updateTimers();
             setInterval(updateTimers, 1000);
         });
+
+        let activeCancelForm = null;
+
+        function openCancelModal(event, form) {
+            event.preventDefault();
+            activeCancelForm = form;
+            
+            const modal = document.getElementById('cancel-modal');
+            const content = document.getElementById('cancel-modal-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeCancelModal() {
+            const modal = document.getElementById('cancel-modal');
+            const content = document.getElementById('cancel-modal-content');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                activeCancelForm = null;
+            }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('confirm-cancel-btn').addEventListener('click', function() {
+                if (activeCancelForm) {
+                    activeCancelForm.submit();
+                }
+            });
+        });
+
+        function toggleReplyForm(complaintId) {
+            const form = document.getElementById(`reply-form-${complaintId}`);
+            if (form) {
+                form.classList.toggle('hidden');
+                if (!form.classList.contains('hidden')) {
+                    form.querySelector('textarea').focus();
+                }
+            }
+        }
     </script>
+
+    <!-- Custom Cancel Modal -->
+    <div id="cancel-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <!-- Backdrop overlay -->
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-xs transition-opacity duration-300" onclick="closeCancelModal()"></div>
+        
+        <!-- Modal Content Box -->
+        <div class="bg-white/95 backdrop-blur-md rounded-[2rem] border border-gray-100 p-8 max-w-sm w-[90%] relative z-10 shadow-[0_20px_50px_rgba(244,114,182,0.12)] transform scale-95 opacity-0 transition-all duration-300 ease-out" id="cancel-modal-content">
+            <!-- Icon Warning -->
+            <div class="flex justify-center mb-5">
+                <div class="bg-rose-50 h-14 w-14 rounded-full flex items-center justify-center text-rose-500 border border-rose-100/50 shadow-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-800 text-center mb-2 tracking-tight">Batalkan Pesanan?</h3>
+            <p class="text-sm text-gray-500 font-light text-center mb-6 leading-relaxed">Apakah Anda yakin ingin membatalkan pesanan ini? Stok barang akan otomatis dikembalikan ke gudang.</p>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button type="button" onclick="closeCancelModal()"
+                    class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 font-semibold py-3 rounded-full text-center transition text-sm">
+                    Kembali
+                </button>
+                <button type="button" id="confirm-cancel-btn"
+                    class="flex-1 bg-rose-400 hover:bg-rose-500 text-white font-semibold py-3 rounded-full text-center transition duration-300 shadow-[0_4px_15px_rgba(244,114,182,0.2)] text-sm">
+                    Ya, Batalkan
+                </button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

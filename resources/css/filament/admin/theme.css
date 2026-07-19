@@ -213,18 +213,28 @@
     border-radius: 16px !important;
 }
 
-/* --- Scrollbar Styling --- */
-.fi-sidebar::-webkit-scrollbar {
-    width: 4px;
+/* --- Hide Scrollbar (sidebar & body) --- */
+.fi-sidebar,
+.fi-sidebar-nav,
+.fi-body,
+.fi-main,
+.fi-sidebar *,
+.fi-body *,
+.fi-main * {
+    scrollbar-width: none !important;     /* Firefox */
+    -ms-overflow-style: none !important;  /* IE & Edge */
 }
 
-.fi-sidebar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.fi-sidebar::-webkit-scrollbar-thumb {
-    background: rgba(244, 63, 94, 0.2);
-    border-radius: 100px;
+.fi-sidebar::-webkit-scrollbar,
+.fi-sidebar-nav::-webkit-scrollbar,
+.fi-body::-webkit-scrollbar,
+.fi-main::-webkit-scrollbar,
+.fi-sidebar *::-webkit-scrollbar,
+.fi-body *::-webkit-scrollbar,
+.fi-main *::-webkit-scrollbar {
+    display: none !important;             /* Chrome, Safari, Opera */
+    width: 0 !important;
+    height: 0 !important;
 }
 
 /* --- Login Page Customization --- */

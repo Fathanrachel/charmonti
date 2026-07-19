@@ -48,6 +48,47 @@ class PaymentController extends Controller
         // Simpan order_id ke session supaya bisa dipakai checkStatus
         session(['midtrans_order_id_' . $order->id => $orderId]);
 
+        $itemDetails = [];
+        
+        // 1. Add regular items
+        foreach ($order->orderItems as $item) {
+            $itemDetails[] = [
+                'id'       => 'prod-' . $item->product_id,
+                'price'    => (int) $item->price,
+                'quantity' => $item->qty,
+                'name'     => $item->product->product_name,
+            ];
+        }
+
+        // 2. Add custom bracelets if any
+        if ($order->customBahanOrder) {
+            $customOrder = $order->customBahanOrder;
+            // Calculate custom order total (Base strap 20,000 + charms)
+            $charmsTotal = 0;
+            foreach ($customOrder->customBahanOrderItems as $charmItem) {
+                $charmsTotal += ($charmItem->bahan?->price ?? 0) * ($charmItem->qty ?? 1);
+            }
+            $customPrice = 20000 + $charmsTotal;
+
+            $itemDetails[] = [
+                'id'       => 'cust-' . $customOrder->id,
+                'price'    => (int) $customPrice,
+                'quantity' => 1,
+                'name'     => 'Gelang Custom (' . ucfirst($customOrder->warna ?? '') . ')',
+            ];
+        }
+
+        // 3. Add Shipping Cost row
+        $shippingCost = $order->shipping?->shipping_cost ?? 0;
+        if ($shippingCost > 0) {
+            $itemDetails[] = [
+                'id'       => 'shipping-cost',
+                'price'    => (int) $shippingCost,
+                'quantity' => 1,
+                'name'     => 'Ongkos Kirim (' . ($order->shipping?->expedition?->name_expedition ?? 'Kurir') . ')',
+            ];
+        }
+
         $params = [
             'transaction_details' => [
                 'order_id'     => $orderId,
@@ -57,14 +98,7 @@ class PaymentController extends Controller
                 'first_name' => $order->profile?->name,
                 'email'      => $order->profile?->user?->email,
             ],
-            'item_details' => $order->orderItems->map(function ($item) {
-                return [
-                    'id'       => (string) $item->product_id,
-                    'price'    => (int) $item->price,
-                    'quantity' => $item->qty,
-                    'name'     => $item->product->product_name,
-                ];
-            })->toArray(),
+            'item_details' => $itemDetails,
         ];
 
         return Snap::getSnapToken($params);
@@ -94,8 +128,8 @@ class PaymentController extends Controller
         }
 
         $payment = Payment::firstOrNew(['order_id' => $order->id]);
-        $payment->payment_type   = $request->payment_type ?? 'midtrans';
-        $payment->transaction_id = $request->transaction_id ?? $request->order_id;
+        $payment->payment_type   = in_array($request->payment_type ?? '', ['transfer', 'QRIS']) ? $request->payment_type : 'midtrans';
+        $payment->transaction_id = $request->order_id ?? $request->transaction_id;
 
         $transactionStatus = $request->transaction_status ?? 'pending';
 
@@ -145,8 +179,8 @@ class PaymentController extends Controller
             $status  = \Midtrans\Transaction::status($orderId);
 
             $payment = Payment::firstOrNew(['order_id' => $order->id]);
-            $payment->payment_type   = $status->payment_type ?? 'midtrans';
-            $payment->transaction_id = $status->transaction_id ?? $orderId;
+            $payment->payment_type   = in_array($status->payment_type ?? '', ['transfer', 'QRIS']) ? $status->payment_type : 'midtrans';
+            $payment->transaction_id = $status->order_id ?? $orderId;
 
             $transactionStatus = $status->transaction_status ?? 'pending';
 

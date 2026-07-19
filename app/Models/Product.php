@@ -68,10 +68,10 @@ class Product extends Model
         return $quantity - $needed;
     }
 
-    public function getStockAttribute()
+    public function getDynamicStockAttribute()
     {
         $masuk = $this->productMasuk()->sum('qty_masuk');
         $keluar = $this->productKeluar()->sum('qty_keluar');
-        return $masuk - $keluar;
+        return (int) ($masuk - $keluar);
     }
 }

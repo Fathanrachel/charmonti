@@ -12,6 +12,7 @@ class Complaint extends Model
         'category',
         'message',
         'status',
+        'reply_message',
     ];
 
     public function user()

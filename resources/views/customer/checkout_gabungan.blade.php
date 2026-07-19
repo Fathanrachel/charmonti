@@ -44,45 +44,46 @@
                     <h3 class="font-bold text-gray-800 text-lg mb-4">🚚 Pilihan Ekspedisi</h3>
                     
                     <div class="grid grid-cols-3 gap-4">
-                        {{-- J&T --}}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="courier" value="J&T" class="hidden peer" required checked>
-                            <div class="border border-gray-200 peer-checked:border-rose-400 peer-checked:bg-rose-50/20 rounded-2xl p-4 text-center hover:border-gray-300 transition">
-                                <span class="block font-bold text-sm text-gray-800">J&T Express</span>
-                                <span class="block text-xs text-gray-400 mt-1">Rp 10.000 (3 Hari)</span>
-                            </div>
-                        </label>
-
-                        {{-- JNE --}}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="courier" value="JNE" class="hidden peer">
-                            <div class="border border-gray-200 peer-checked:border-rose-400 peer-checked:bg-rose-50/20 rounded-2xl p-4 text-center hover:border-gray-300 transition">
-                                <span class="block font-bold text-sm text-gray-800">JNE REG</span>
-                                <span class="block text-xs text-gray-400 mt-1">Rp 12.000 (2 Hari)</span>
-                            </div>
-                        </label>
-
-                        {{-- SiCepat --}}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="courier" value="SiCepat" class="hidden peer">
-                            <div class="border border-gray-200 peer-checked:border-rose-400 peer-checked:bg-rose-50/20 rounded-2xl p-4 text-center hover:border-gray-300 transition">
-                                <span class="block font-bold text-sm text-gray-800">SiCepat</span>
-                                <span class="block text-xs text-gray-400 mt-1">Rp 8.000 (5 Hari)</span>
-                            </div>
-                        </label>
+                        @foreach($expeditions as $index => $exp)
+                            <label class="cursor-pointer">
+                                <input type="radio" name="courier" value="{{ $exp->name_expedition }}" data-cost="{{ $exp->shipping_cost }}" class="hidden peer" required {{ $index === 0 ? 'checked' : '' }}>
+                                <div class="border border-gray-200 peer-checked:border-rose-400 peer-checked:bg-rose-50/20 rounded-2xl p-4 text-center hover:border-gray-300 transition h-full flex flex-col justify-center items-center">
+                                    <span class="block font-bold text-sm text-gray-800">{{ $exp->name_expedition }}</span>
+                                    <span class="block text-xs text-gray-400 mt-1">Rp {{ number_format($exp->shipping_cost, 0, ',', '.') }} ({{ $exp->estimated_days }} Hari)</span>
+                                </div>
+                            </label>
+                        @endforeach
                     </div>
                 </div>
 
                 {{-- Summary List --}}
                 <div class="bg-white border border-gray-100/50 rounded-3xl p-6 shadow-sm space-y-4">
-                    <h3 class="font-bold text-gray-800 text-lg mb-2">🛍️ Rincian Pembelian</h3>
+                    <h3 class="font-bold text-gray-800 text-lg mb-2 flex items-center gap-2">
+                        <span>🛍️</span> Rincian Pembelian
+                    </h3>
                     @foreach($cart as $item)
-                        <div class="flex justify-between items-center border-b border-gray-50 pb-3 last:border-0">
-                            <div>
-                                <span class="font-semibold text-sm text-gray-700 block">{{ $item['name'] }}</span>
-                                <span class="text-xs text-gray-400 font-light">Jumlah: {{ $item['quantity'] }}x &bull; Rp {{ number_format($item['price'], 0, ',', '.') }}</span>
+                        <div class="flex items-center justify-between border-b border-gray-50 pb-4 last:border-0 last:pb-0 gap-4">
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <div class="bg-rose-50/50 rounded-xl h-14 w-14 flex items-center justify-center shrink-0 border border-rose-50 overflow-hidden">
+                                    @if(isset($item['image']) && $item['image'])
+                                        <img src="{{ Storage::url($item['image']) }}" alt="{{ $item['name'] }}" class="w-full h-full object-cover rounded-xl">
+                                    @else
+                                        <span class="text-2xl">📿</span>
+                                    @endif
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="font-bold text-sm text-gray-800 block truncate">{{ $item['name'] }}</span>
+                                    <span class="text-xs text-rose-500 font-medium mt-0.5 block">Rp {{ number_format($item['price'], 0, ',', '.') }} <span class="text-gray-400 font-normal">× {{ $item['quantity'] }}</span></span>
+                                    @if($item['type'] === 'custom' && isset($item['charms_details']))
+                                        <div class="mt-1 text-[10px] text-gray-400 font-light flex flex-col gap-0.5">
+                                            @foreach($item['charms_details'] as $charm)
+                                                <span class="text-gray-500">• {{ $charm['name'] }} (×{{ $charm['quantity'] }}) @if(!empty($charm['note'])) <span class="text-rose-400 italic">"{{ $charm['note'] }}"</span> @endif</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
-                            <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
+                            <span class="font-bold text-gray-800 text-sm shrink-0">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -106,21 +107,37 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="font-light">Ongkos Kirim</span>
-                        <span class="font-bold text-gray-800" id="shipping-cost-label">Rp 10.000</span>
+                        <span class="font-bold text-gray-800" id="shipping-cost-label">Rp {{ number_format($expeditions->first()->shipping_cost ?? 10000, 0, ',', '.') }}</span>
                     </div>
                     <hr class="border-gray-50">
                     <div class="flex justify-between text-base">
                         <span class="font-semibold text-gray-800">Total Harga</span>
-                        <span class="font-bold text-rose-500" id="total-price-label">Rp {{ number_format($itemTotal + 10000, 0, ',', '.') }}</span>
+                        <span class="font-bold text-rose-500" id="total-price-label">Rp {{ number_format($itemTotal + ($expeditions->first()->shipping_cost ?? 10000), 0, ',', '.') }}</span>
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-center font-semibold py-4 rounded-full transition shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                <button type="submit" id="checkout-submit-btn" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-center font-semibold py-4 rounded-full transition shadow-sm hover:shadow-md hover:-translate-y-0.5">
                     Buat Pesanan & Bayar 💳
                 </button>
             </div>
         </form>
     </div>
+
+    {{-- Script anti-double click submit --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const submitBtn = document.getElementById('checkout-submit-btn');
+            if (form && submitBtn) {
+                form.addEventListener('submit', function () {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = 'Memproses Pesanan... ⌛';
+                    submitBtn.classList.remove('bg-rose-400', 'hover:bg-rose-500');
+                    submitBtn.classList.add('bg-gray-300', 'cursor-not-allowed', 'text-gray-500');
+                });
+            }
+        });
+    </script>
 
     {{-- Script hitung ongkir dinamis --}}
     <script>
@@ -130,19 +147,15 @@
             const totalPriceLabel = document.getElementById('total-price-label');
 
             const itemTotal = {{ $itemTotal }};
-            const shippingCosts = {
-                'J&T': 10000,
-                'JNE': 12000,
-                'SiCepat': 8000
-            };
 
             function updatePricing() {
-                let selectedCourier = 'J&T';
+                let shippingCost = 10000;
                 courierRadios.forEach(radio => {
-                    if (radio.checked) selectedCourier = radio.value;
+                    if (radio.checked) {
+                        shippingCost = parseInt(radio.getAttribute('data-cost')) || 0;
+                    }
                 });
 
-                const shippingCost = shippingCosts[selectedCourier];
                 const total = itemTotal + shippingCost;
 
                 shippingCostLabel.innerHTML = 'Rp ' + shippingCost.toLocaleString('id-ID');

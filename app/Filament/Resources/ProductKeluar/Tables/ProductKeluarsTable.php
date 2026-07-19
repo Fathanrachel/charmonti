@@ -20,9 +20,8 @@ class ProductKeluarsTable
                     ->label('Produk')
                     ->searchable(),
 
-                TextColumn::make('productMasuk.id')
+                TextColumn::make('productMasuk.nama_product')
                     ->label('Batch Masuk')
-                    ->description(fn ($record) => $record->productMasuk?->tanggal_masuk ? 'Masuk: ' . $record->productMasuk->tanggal_masuk->translatedFormat('d M Y H:i') : '-')
                     ->sortable(),
 
                 TextColumn::make('qty_keluar')

@@ -12,7 +12,7 @@ class ListProductKeluars extends ListRecords
 
     public function getSubheading(): ?string
     {
-        return 'Alur keluar barang dipotong secara otomatis menggunakan metode FIFO (First In First Out) — stok dari batch paling lama dikeluarkan terlebih dahulu.';
+        return 'Stok otomatis dipotong dari batch terlama terlebih dahulu.';
     }
 
     protected function getHeaderActions(): array

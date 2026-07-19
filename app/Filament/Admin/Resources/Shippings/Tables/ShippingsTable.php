@@ -14,8 +14,14 @@ class ShippingsTable
     {
         return $table
             ->columns([
+                TextColumn::make('order.profile.name')
+                    ->label('Nama Penerima')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('order.id')
-                    ->label('Order #')
+                    ->label('ID Order')
+                    ->formatStateUsing(fn ($state) => "#{$state}")
                     ->sortable(),
 
                 TextColumn::make('expedition.name_expedition')
@@ -44,6 +50,7 @@ class ShippingsTable
                         'pending'  => 'warning',
                         'dikirim'  => 'info',
                         'sampai'   => 'success',
+                        'batal'    => 'danger',
                     }),
             ])
             ->filters([])

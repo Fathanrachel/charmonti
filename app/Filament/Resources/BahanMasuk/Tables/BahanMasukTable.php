@@ -41,7 +41,7 @@ class BahanMasukTable
 
                 TextColumn::make('tanggal_masuk')
                     ->label('Tanggal Masuk')
-                    ->dateTime('d M Y H:i')
+                    ->dateTime('d M Y')
                     ->sortable(),
 
                 TextColumn::make('deskripsi')

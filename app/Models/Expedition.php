@@ -10,6 +10,8 @@ class Expedition extends Model
 
     protected $fillable = [
         'name_expedition',
+        'shipping_cost',
+        'estimated_days',
     ];
 
     public function shippings()

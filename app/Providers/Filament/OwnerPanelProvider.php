@@ -38,12 +38,13 @@ class OwnerPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Owner/Resources'), for: 'App\\Filament\\Owner\\Resources')
             ->discoverPages(in: app_path('Filament/Owner/Pages'), for: 'App\\Filament\\Owner\\Pages')
             ->pages([
-                Dashboard::class,
+                \App\Filament\Owner\Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Owner/Widgets'), for: 'App\\Filament\\Owner\\Widgets')
             ->widgets([
-                AccountWidget::class,
+                \App\Filament\Owner\Widgets\OwnerAccountWidget::class,
             ])
+            ->globalSearch(false)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

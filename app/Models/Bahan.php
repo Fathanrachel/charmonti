@@ -35,11 +35,11 @@ class Bahan extends Model
     }
 
     // Dynamic stock accessor (FIFO/batch sum of qty_masuk - sum of qty_keluar)
-    public function getStockAttribute()
+    public function getDynamicStockAttribute()
     {
         $masuk = $this->bahanMasuk()->sum('qty_masuk');
         $keluar = $this->bahanKeluar()->sum('qty_keluar');
-        return $masuk - $keluar;
+        return (int) ($masuk - $keluar);
     }
 
     public function deductStock(int $quantity): int

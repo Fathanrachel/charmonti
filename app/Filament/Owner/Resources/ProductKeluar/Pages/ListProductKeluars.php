@@ -10,6 +10,11 @@ class ListProductKeluars extends ListRecords
 {
     protected static string $resource = ProductKeluarResource::class;
 
+    public function getSubheading(): ?string
+    {
+        return 'Stok otomatis dipotong dari batch terlama terlebih dahulu.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
