@@ -51,7 +51,7 @@
                         <input type="radio" name="warna" value="silver" class="hidden peer" required {{ $isSilverOut ? 'disabled' : '' }}>
                         <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 {{ $isSilverOut ? 'bg-gray-100' : 'group-hover:bg-gray-50' }} shadow-sm">
                             <div class="h-28 flex items-center justify-center mb-3 overflow-hidden rounded-2xl bg-rose-50/40 relative cursor-pointer group/img"
-                                 onclick="openStrapModal('Silver', '{{ $strapSilver && $strapSilver->image ? Storage::url($strapSilver->image) : '' }}', {{ $strapSilver ? $strapSilver->dynamic_stock : 0 }}, {{ $isSilverOut ? 'true' : 'false' }})"
+                                 onclick="openStrapModal('Silver', '{{ $strapSilver && $strapSilver->image ? Storage::url($strapSilver->image) : '' }}', {{ $strapSilver ? $strapSilver->dynamic_stock : 0 }}, {{ $isSilverOut ? 'true' : 'false' }}, @json($strapSilver?->description ?? ''))"
                                  title="Lihat detail model strap">
                                 @if($strapSilver && $strapSilver->image)
                                     <img src="{{ Storage::url($strapSilver->image) }}" alt="Tali Gelang Silver" class="w-full h-full object-cover rounded-2xl group-hover/img:scale-105 transition duration-500">
@@ -80,7 +80,7 @@
                         <input type="radio" name="warna" value="gold" class="hidden peer" {{ $isGoldOut ? 'disabled' : '' }}>
                         <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 {{ $isGoldOut ? 'bg-gray-100' : 'group-hover:bg-gray-50' }} shadow-sm">
                             <div class="h-28 flex items-center justify-center mb-3 overflow-hidden rounded-2xl bg-rose-50/40 relative cursor-pointer group/img"
-                                 onclick="openStrapModal('Gold', '{{ $strapGold && $strapGold->image ? Storage::url($strapGold->image) : '' }}', {{ $strapGold ? $strapGold->dynamic_stock : 0 }}, {{ $isGoldOut ? 'true' : 'false' }})"
+                                 onclick="openStrapModal('Gold', '{{ $strapGold && $strapGold->image ? Storage::url($strapGold->image) : '' }}', {{ $strapGold ? $strapGold->dynamic_stock : 0 }}, {{ $isGoldOut ? 'true' : 'false' }}, @json($strapGold?->description ?? ''))"
                                  title="Lihat detail model strap">
                                 @if($strapGold && $strapGold->image)
                                     <img src="{{ Storage::url($strapGold->image) }}" alt="Tali Gelang Gold" class="w-full h-full object-cover rounded-2xl group-hover/img:scale-105 transition duration-500">
@@ -131,70 +131,75 @@
                             $charmStock = $charm->dynamic_stock;
                             $isCharmOutOfStock = $charmStock <= 0;
                         @endphp
-                        <div class="charm-card-container group {{ $isCharmOutOfStock ? 'opacity-65' : '' }}">
-                            <div class="charm-card border-2 border-gray-100 rounded-2xl p-4 text-center transition duration-300 {{ $isCharmOutOfStock ? 'bg-gray-50/50' : 'group-hover:border-rose-200' }}">
-                                <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden relative cursor-pointer"
-                                     onclick="openCharmModal({{ $charm->id }}, '{{ addslashes($charm->nama_bahan) }}', {{ $charm->price }}, {{ $charmStock }}, {{ $isCharmOutOfStock ? 'true' : 'false' }}, '{{ $charm->image ? Storage::url($charm->image) : '' }}')"
-                                     title="Lihat detail charm">
-                                    @if($isCharmOutOfStock)
-                                        <div class="absolute inset-0 bg-black/5 flex items-center justify-center z-10">
-                                            <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Habis</span>
+                        <div class="charm-card-container group {{ $isCharmOutOfStock ? 'opacity-65' : '' }} flex flex-col h-full">
+                            <div class="charm-card border-2 border-gray-100 rounded-2xl p-4 text-center transition duration-300 flex flex-col justify-between h-full {{ $isCharmOutOfStock ? 'bg-gray-50/50' : 'group-hover:border-rose-200' }}">
+                                <div>
+                                    <div class="bg-rose-50/50 rounded-xl h-20 flex items-center justify-center mb-3 overflow-hidden relative cursor-pointer"
+                                         onclick="openCharmModal({{ $charm->id }}, '{{ addslashes($charm->nama_bahan) }}', {{ $charm->price }}, {{ $charmStock }}, {{ $isCharmOutOfStock ? 'true' : 'false' }}, '{{ $charm->image ? Storage::url($charm->image) : '' }}')"
+                                         title="Lihat detail charm">
+                                        @if($isCharmOutOfStock)
+                                            <div class="absolute inset-0 bg-black/5 flex items-center justify-center z-10">
+                                                <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Habis</span>
+                                            </div>
+                                        @endif
+                                        @if($charm->image)
+                                            <img src="{{ Storage::url($charm->image) }}"
+                                                alt="{{ $charm->nama_bahan }}"
+                                                class="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500">
+                                        @else
+                                            <span class="text-3xl text-rose-300">📿</span>
+                                        @endif
+                                        {{-- Zoom hint overlay --}}
+                                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition duration-300 rounded-xl flex items-center justify-center">
+                                            <span class="opacity-0 group-hover:opacity-100 transition duration-300 bg-white/90 rounded-full p-1 shadow text-gray-600 text-xs">
+                                                🔍
+                                            </span>
                                         </div>
-                                    @endif
-                                    @if($charm->image)
-                                        <img src="{{ Storage::url($charm->image) }}"
-                                            alt="{{ $charm->nama_bahan }}"
-                                            class="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500">
-                                    @else
-                                        <span class="text-3xl text-rose-300">📿</span>
-                                    @endif
-                                    {{-- Zoom hint overlay --}}
-                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition duration-300 rounded-xl flex items-center justify-center">
-                                        <span class="opacity-0 group-hover:opacity-100 transition duration-300 bg-white/90 rounded-full p-1 shadow text-gray-600 text-xs">
-                                            🔍
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-800 leading-tight mb-2 min-h-[2.5rem] flex items-center justify-center text-center">{{ $charm->nama_bahan }}</p>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <div class="flex flex-col gap-0.5 mb-3">
+                                        <span class="text-xs text-rose-500 font-bold">
+                                            Rp {{ number_format($charm->price, 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-[10px] text-gray-400">
+                                            @if($isCharmOutOfStock)
+                                                <strong class="text-red-500">Stok Habis</strong>
+                                            @else
+                                                Stok: <strong class="text-gray-600">{{ $charmStock }}</strong>
+                                            @endif
                                         </span>
                                     </div>
-                                </div>
-                                <p class="text-sm font-medium text-gray-800 leading-tight mb-1">{{ $charm->nama_bahan }}</p>
-                                <div class="flex flex-col gap-0.5 mb-3">
-                                    <span class="text-xs text-rose-500 font-bold">
-                                        Rp {{ number_format($charm->price, 0, ',', '.') }}
-                                    </span>
-                                    <span class="text-[10px] text-gray-400">
-                                        @if($isCharmOutOfStock)
-                                            <strong class="text-red-500">Stok Habis</strong>
-                                        @else
-                                            Stok: <strong class="text-gray-600">{{ $charmStock }}</strong>
-                                        @endif
-                                    </span>
-                                </div>
 
-                                {{-- Counter Buttons --}}
-                                <div class="flex items-center justify-center gap-3">
-                                    <button type="button" 
-                                        onclick="adjustQty({{ $charm->id }}, -1)"
-                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none disabled:opacity-40"
-                                        {{ $isCharmOutOfStock ? 'disabled' : '' }}>-</button>
-                                    
-                                    <span id="qty-display-{{ $charm->id }}" class="font-bold text-gray-700 w-6 text-center text-sm">0</span>
-                                    
-                                    <input type="hidden" name="charms[{{ $charm->id }}]" id="qty-input-{{ $charm->id }}" value="0" class="charm-qty-input">
+                                    {{-- Counter Buttons --}}
+                                    <div class="flex items-center justify-center gap-3">
+                                        <button type="button" 
+                                            onclick="adjustQty({{ $charm->id }}, -1)"
+                                            class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none disabled:opacity-40"
+                                            {{ $isCharmOutOfStock ? 'disabled' : '' }}>-</button>
+                                        
+                                        <span id="qty-display-{{ $charm->id }}" class="font-bold text-gray-700 w-6 text-center text-sm">0</span>
+                                        
+                                        <input type="hidden" name="charms[{{ $charm->id }}]" id="qty-input-{{ $charm->id }}" value="0" class="charm-qty-input">
 
-                                    <button type="button" 
-                                        onclick="adjustQty({{ $charm->id }}, 1)"
-                                        class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none disabled:opacity-40"
-                                        {{ $isCharmOutOfStock ? 'disabled' : '' }}>+</button>
-                                </div>
+                                        <button type="button" 
+                                            onclick="adjustQty({{ $charm->id }}, 1)"
+                                            class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-500 transition font-bold select-none disabled:opacity-40"
+                                            {{ $isCharmOutOfStock ? 'disabled' : '' }}>+</button>
+                                    </div>
 
-                                {{-- Notes per charm (muncul otomatis & smooth saat qty > 0) --}}
-                                <div id="notes-wrap-{{ $charm->id }}" class="overflow-hidden max-h-0 opacity-0 transform -translate-y-2 transition-all duration-300 ease-out">
-                                    <div class="pt-3">
-                                        <input type="text"
-                                            name="charm_notes[{{ $charm->id }}]"
-                                            id="notes-input-{{ $charm->id }}"
-                                            maxlength="100"
-                                            placeholder="Tulis variasi charm ini..."
-                                            class="w-full px-3 py-2 text-xs border border-rose-200 bg-rose-50/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition placeholder-gray-400">
+                                    {{-- Notes per charm (muncul otomatis & smooth saat qty > 0) --}}
+                                    <div id="notes-wrap-{{ $charm->id }}" class="overflow-hidden max-h-0 opacity-0 transform -translate-y-2 transition-all duration-300 ease-out">
+                                        <div class="pt-3">
+                                            <input type="text"
+                                                name="charm_notes[{{ $charm->id }}]"
+                                                id="notes-input-{{ $charm->id }}"
+                                                maxlength="100"
+                                                placeholder="Tulis variasi charm ini..."
+                                                class="w-full px-3 py-2 text-xs border border-rose-200 bg-rose-50/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition placeholder-gray-400">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -268,23 +273,23 @@
     {{-- ✨ Strap Detail Modal --}}
     <div id="strap-modal" class="fixed inset-0 z-50 items-center justify-center p-4 hidden" onclick="closeStrapModal(event)">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-        <div id="strap-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-90 opacity-0 transition-all duration-300">
+        <div id="strap-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[88vh] flex flex-col overflow-hidden transform scale-90 opacity-0 transition-all duration-300">
             <button onclick="closeStrapModal()" 
-                class="absolute top-4 right-4 z-10 bg-white/90 hover:bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center text-gray-500 shadow transition text-base">
+                class="absolute top-4 right-4 z-20 bg-white/90 hover:bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center text-gray-500 shadow transition text-base">
                 ✕
             </button>
-            <div class="bg-rose-50/60 h-80 flex items-center justify-center overflow-hidden relative p-6">
+            <div class="bg-rose-50/60 h-60 sm:h-72 shrink-0 flex items-center justify-center overflow-hidden relative p-6">
                 <img id="strap-modal-img" src="" alt="" class="w-full h-full object-contain rounded-2xl">
                 <span id="strap-modal-placeholder" class="text-8xl hidden">⚪</span>
                 <div id="strap-modal-stock-badge" class="hidden absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full">Stok Habis</div>
             </div>
-            <div class="p-8">
-                <h3 id="strap-modal-name" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+            <div class="p-6 sm:p-8 overflow-y-auto flex-1">
+                <h3 id="strap-modal-name" class="text-xl sm:text-2xl font-bold text-gray-800 mb-2"></h3>
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-rose-500 font-bold text-xl">Model Strap Gelang</span>
-                    <span id="strap-modal-stock" class="text-sm text-gray-400 bg-gray-50 border border-gray-100 px-4 py-1.5 rounded-full"></span>
+                    <span class="text-rose-500 font-bold text-lg sm:text-xl">Model Strap Gelang</span>
+                    <span id="strap-modal-stock" class="text-xs sm:text-sm text-gray-400 bg-gray-50 border border-gray-100 px-3.5 py-1.5 rounded-full"></span>
                 </div>
-                <p class="text-xs text-gray-500 leading-relaxed bg-gray-50 border border-gray-100 p-4 rounded-2xl">
+                <p id="strap-modal-desc" class="text-xs text-gray-500 leading-relaxed bg-gray-50 border border-gray-100 p-4 rounded-2xl whitespace-pre-line">
                     Tali gelang dapat disesuaikan (adjustable size) dan terbuat dari bahan berkualitas tinggi. Pilih warna favoritmu untuk memulai merangkai gelang custom! ✨
                 </p>
             </div>
@@ -297,37 +302,45 @@
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
 
         {{-- Modal Card --}}
-        <div id="charm-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-90 opacity-0 transition-all duration-300">
+        <div id="charm-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[88vh] flex flex-col overflow-hidden transform scale-90 opacity-0 transition-all duration-300">
             {{-- Close Button --}}
             <button onclick="document.getElementById('charm-modal').classList.add('hidden')" 
-                class="absolute top-4 right-4 z-10 bg-white/90 hover:bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center text-gray-500 shadow transition text-base">
+                class="absolute top-4 right-4 z-20 bg-white/90 hover:bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center text-gray-500 shadow transition text-base">
                 ✕
             </button>
 
             {{-- Image --}}
-            <div class="bg-rose-50/60 h-80 flex items-center justify-center overflow-hidden relative" id="modal-img-wrap">
-                <img id="modal-img" src="" alt="" class="w-full h-full object-contain p-6">
+            <div class="bg-rose-50/60 h-56 sm:h-64 shrink-0 flex items-center justify-center overflow-hidden relative" id="modal-img-wrap">
+                <img id="modal-img" src="" alt="" class="w-full h-full object-contain p-5">
                 <span id="modal-img-placeholder" class="text-8xl hidden">📿</span>
                 <div id="modal-stock-badge" class="hidden absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full">Stok Habis</div>
             </div>
 
-            {{-- Detail --}}
-            <div class="p-8">
-                <h3 id="modal-name" class="text-2xl font-bold text-gray-800 mb-2"></h3>
-                <div class="flex items-center justify-between mb-6">
-                    <span id="modal-price" class="text-rose-500 font-bold text-xl"></span>
-                    <span id="modal-stock" class="text-sm text-gray-400 bg-gray-50 border border-gray-100 px-4 py-1.5 rounded-full"></span>
+            {{-- Detail (Scrollable Body) --}}
+            <div class="p-6 sm:p-8 overflow-y-auto flex-1">
+                <h3 id="modal-name" class="text-xl sm:text-2xl font-bold text-gray-800 mb-2"></h3>
+                <div class="flex items-center justify-between mb-4">
+                    <span id="modal-price" class="text-rose-500 font-bold text-lg sm:text-xl"></span>
+                    <span id="modal-stock" class="text-xs sm:text-sm text-gray-400 bg-gray-50 border border-gray-100 px-3.5 py-1.5 rounded-full"></span>
+                </div>
+
+                {{-- Deskripsi Bahan --}}
+                <div id="modal-desc-wrap" class="hidden mb-6 bg-rose-50/50 border border-rose-100/60 p-4 rounded-2xl text-left">
+                    <p class="text-[11px] font-semibold text-rose-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                        <span>📝 Deskripsi Bahan</span>
+                    </p>
+                    <p id="modal-desc" class="text-xs text-gray-600 font-light leading-relaxed whitespace-pre-line"></p>
                 </div>
 
                 {{-- Counter inside modal --}}
                 <div id="modal-actions" class="flex items-center justify-center gap-6 mt-2">
                     <button type="button" id="modal-btn-minus"
-                        class="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-2xl select-none">
+                        class="w-11 h-11 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-2xl select-none">
                         −
                     </button>
                     <span id="modal-qty" class="font-bold text-gray-700 text-2xl w-10 text-center">0</span>
                     <button type="button" id="modal-btn-plus"
-                        class="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-2xl select-none">
+                        class="w-11 h-11 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-500 transition font-bold text-2xl select-none">
                         +
                     </button>
                 </div>
@@ -357,6 +370,12 @@
         const stocks = {
             @foreach($charms as $charm)
                 {{ $charm->id }}: {{ $charm->dynamic_stock }},
+            @endforeach
+        };
+
+        const descriptions = {
+            @foreach($charms as $charm)
+                {{ $charm->id }}: @json($charm->description ?? ''),
             @endforeach
         };
 
@@ -485,6 +504,17 @@
             document.getElementById('modal-stock').textContent =
                 outOfStock ? 'Stok Habis' : 'Stok: ' + stock;
 
+            // Deskripsi bahan
+            const desc = (descriptions[id] || '').trim();
+            const descWrap = document.getElementById('modal-desc-wrap');
+            const descEl = document.getElementById('modal-desc');
+            if (desc) {
+                descEl.textContent = desc;
+                descWrap.classList.remove('hidden');
+            } else {
+                descWrap.classList.add('hidden');
+            }
+
             // Counter sync
             const currentQty = parseInt(document.getElementById('qty-input-' + id).value) || 0;
             document.getElementById('modal-qty').textContent = currentQty;
@@ -566,7 +596,7 @@
         });
 
         // ── Strap Detail Modal ──────────────────────────────────────
-        function openStrapModal(colorName, imgUrl, stock, outOfStock) {
+        function openStrapModal(colorName, imgUrl, stock, outOfStock, desc) {
             const img = document.getElementById('strap-modal-img');
             const placeholder = document.getElementById('strap-modal-placeholder');
             if (imgUrl) {
@@ -581,6 +611,12 @@
             document.getElementById('strap-modal-name').textContent = 'Tali Gelang ' + colorName;
             document.getElementById('strap-modal-stock').textContent = outOfStock ? 'Stok Habis' : 'Stok: ' + stock;
             document.getElementById('strap-modal-stock-badge').classList.toggle('hidden', !outOfStock);
+
+            const defaultDesc = 'Tali gelang dapat disesuaikan (adjustable size) dan terbuat dari bahan berkualitas tinggi. Pilih warna favoritmu untuk memulai merangkai gelang custom! ✨';
+            const descEl = document.getElementById('strap-modal-desc');
+            if (descEl) {
+                descEl.textContent = (desc && desc.trim()) ? desc : defaultDesc;
+            }
 
             const modal = document.getElementById('strap-modal');
             const card  = document.getElementById('strap-modal-card');
