@@ -2,6 +2,7 @@
 
 namespace App\Filament\Owner\Widgets;
 
+use App\Filament\Owner\Resources\FinancialReports\FinancialReportResource;
 use App\Models\Order;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -19,7 +20,8 @@ class OwnerRevenueWidget extends BaseWidget
             Stat::make('Total Omzet Penjualan', 'Rp ' . number_format($totalRevenue, 0, ',', '.'))
                 ->description('Total omzet dari pesanan selesai')
                 ->descriptionIcon('heroicon-m-banknotes')
-                ->color('success'),
+                ->color('success')
+                ->url(FinancialReportResource::getUrl('index')),
         ];
     }
 }

@@ -32,6 +32,11 @@ class ProductResource extends Resource
         return ProductsTable::configure($table);
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('product_name', '!=', 'Gelang Custom');
+    }
+
     public static function getRelations(): array
     {
         return [

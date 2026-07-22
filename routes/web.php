@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
     // Riwayat Pesanan
     Route::get('/orders', [CustomerController::class, 'orders'])->name('customer.orders');
     Route::post('/orders/{order}/cancel', [CustomerController::class, 'cancel'])->name('customer.order.cancel');
+    Route::post('/orders/{order}/confirm-received', [CustomerController::class, 'confirmReceived'])->name('customer.order.confirm-received');
 
     // Ulasan (Review)
     Route::get('/orders/{order}/review', [CustomerController::class, 'createReview'])->name('customer.order.review');

@@ -22,21 +22,17 @@
             <div class="text-6xl mb-6 animate-bounce">🎉</div>
             <h2 class="text-3xl font-bold text-gray-800 mb-3 tracking-tight">Pesanan Berhasil!</h2>
             <p class="text-gray-500 text-base mb-8 leading-relaxed font-light">
-                Pesanan <span class="font-semibold text-rose-500">#{{ $order->id }}</span> kamu sudah kami terima.<br>
+                Pesanan kamu sudah kami terima.<br>
                 Segera selesaikan pembayaran untuk memproses pesananmu.
             </p>
 
             <div class="bg-rose-50/40 backdrop-blur-sm border border-rose-100/50 rounded-3xl p-6 text-left mb-8">
                 <div class="flex justify-between text-sm text-gray-500 mb-3">
-                    <span class="font-light">Order ID</span>
-                    <span class="font-semibold text-gray-800">#{{ $order->id }}</span>
-                </div>
-                <div class="flex justify-between text-sm text-gray-500 mb-3">
                     <span class="font-light">Status</span>
                     <span class="text-rose-500 font-medium bg-rose-100/50 px-2.5 py-0.5 rounded-full border border-rose-200/50 text-xs">Menunggu Pembayaran</span>
                 </div>
                 <div class="flex justify-between text-sm text-gray-500 pt-3 border-t border-dashed border-rose-200/60 mt-1">
-                    <span class="font-semibold text-gray-800">Total</span>
+                    <span class="font-semibold text-gray-800">Total Pembayaran</span>
                     <span class="font-bold text-rose-500 text-lg tracking-tight">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
                 </div>
             </div>

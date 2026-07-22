@@ -2,6 +2,7 @@
 
 namespace App\Filament\Owner\Widgets;
 
+use App\Filament\Owner\Resources\Orders\OrderResource;
 use App\Models\Order;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -19,7 +20,8 @@ class OwnerCompletedOrdersWidget extends BaseWidget
             Stat::make('Pesanan Selesai', $completedOrdersCount . ' Transaksi')
                 ->description('Jumlah pesanan berhasil dikirim')
                 ->descriptionIcon('heroicon-m-shopping-bag')
-                ->color('info'),
+                ->color('info')
+                ->url(OrderResource::getUrl('index')),
         ];
     }
 }

@@ -195,15 +195,21 @@
                                         foreach($order->customBahanOrder->customBahanOrderItems as $customItem) {
                                             $customPrice += ($customItem->bahan->price ?? 0) * ($customItem->qty ?? 1);
                                         }
+                                        $strapColor = ucfirst(trim($order->customBahanOrder->warna));
+                                        $strapBahan = \App\Models\Bahan::where('nama_bahan', 'Tali Gelang ' . $strapColor)->first();
                                     @endphp
                                     <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5">
                                         <div class="flex items-center justify-between gap-4 mb-4">
                                             <div class="flex items-center gap-4">
-                                                <div class="bg-rose-100 rounded-xl h-12 w-12 flex items-center justify-center text-2xl shrink-0">
-                                                    ✨
+                                                <div class="bg-rose-50/80 rounded-xl h-14 w-14 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
+                                                    @if($strapBahan && $strapBahan->image)
+                                                        <img src="{{ Storage::url($strapBahan->image) }}" alt="Tali Gelang {{ $strapColor }}" class="w-full h-full object-cover rounded-xl">
+                                                    @else
+                                                        <span class="text-2xl">✨</span>
+                                                    @endif
                                                 </div>
                                                 <div>
-                                                    <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</h4>
+                                                    <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ $strapColor }})</h4>
                                                     @if($order->customBahanOrder->request_note)
                                                         <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $order->customBahanOrder->request_note }}"</p>
                                                     @endif
@@ -464,20 +470,36 @@
                                         </a>
                                     </div>
                                 @elseif($orderStatus === 'pending' && $payStatus === 'paid')
-                                    <span class="text-xs font-medium text-green-600 bg-green-50/80 border border-green-100 px-4 py-2 rounded-full self-start sm:self-center shadow-sm">
-                                        Pembayaran Lunas, Menunggu Konfirmasi Toko
-                                    </span>
+                                    <div class="flex items-center gap-3">
+                                        @if($order->shipping?->status === 'dikirim')
+                                            <form method="POST" action="{{ route('customer.order.confirm-received', $order->id) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" onclick="openConfirmReceivedModal(event, this.closest('form'))"
+                                                        class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2.5 rounded-full text-xs transition shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center gap-1.5">
+                                                    <span>Pesanan Diterima ✅</span>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="text-xs font-medium text-green-600 bg-green-50/80 border border-green-100 px-4 py-2.5 rounded-full self-start sm:self-center shadow-sm">
+                                                Pembayaran Lunas, Menunggu Konfirmasi Toko
+                                            </span>
+                                        @endif
+                                    </div>
                                 @elseif($orderStatus === 'diproses')
                                     <div class="flex items-center gap-3">
-                                        @if($payStatus === 'paid')
-                                            <a href="{{ route('customer.order.complaint', $order->id) }}"
-                                               class="bg-white border border-gray-200 hover:border-red-200 hover:text-red-500 text-gray-500 font-medium px-4 py-2.5 rounded-full text-xs transition shadow-sm">
-                                                Ajukan Komplain
-                                            </a>
+                                        @if($order->shipping?->status === 'dikirim')
+                                            <form method="POST" action="{{ route('customer.order.confirm-received', $order->id) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" onclick="openConfirmReceivedModal(event, this.closest('form'))"
+                                                        class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2.5 rounded-full text-xs transition shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center gap-1.5">
+                                                    <span>Pesanan Diterima ✅</span>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="text-xs font-medium text-blue-600 bg-blue-50/80 border border-blue-100 px-4 py-2.5 rounded-full self-start sm:self-center shadow-sm">
+                                                Penjual sedang mempersiapkan pesananmu 💖
+                                            </span>
                                         @endif
-                                        <span class="text-xs font-medium text-blue-600 bg-blue-50/80 border border-blue-100 px-4 py-2.5 rounded-full self-start sm:self-center shadow-sm">
-                                            Penjual sedang mempersiapkan pesananmu 💖
-                                        </span>
                                     </div>
                                 @elseif($orderStatus === 'selesai')
                                     @php
@@ -490,7 +512,15 @@
                                                 Ajukan Komplain
                                             </a>
                                         @endif
-                                        @if($hasReviewed)
+                                        @if($order->shipping?->status === 'dikirim')
+                                            <form method="POST" action="{{ route('customer.order.confirm-received', $order->id) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" onclick="openConfirmReceivedModal(event, this.closest('form'))"
+                                                        class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2.5 rounded-full text-xs transition shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center gap-1.5">
+                                                    <span>Pesanan Diterima ✅</span>
+                                                </button>
+                                            </form>
+                                        @elseif($hasReviewed)
                                             <span class="text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 px-5 py-2.5 rounded-full shadow-sm">
                                                 Ulasan Terkirim ✓
                                             </span>
@@ -575,12 +605,53 @@
             }, 300);
         }
 
+        let activeConfirmReceivedForm = null;
+
+        function openConfirmReceivedModal(event, form) {
+            event.preventDefault();
+            activeConfirmReceivedForm = form;
+            
+            const modal = document.getElementById('confirm-received-modal');
+            const content = document.getElementById('confirm-received-modal-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeConfirmReceivedModal() {
+            const modal = document.getElementById('confirm-received-modal');
+            const content = document.getElementById('confirm-received-modal-content');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                activeConfirmReceivedForm = null;
+            }, 300);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('confirm-cancel-btn').addEventListener('click', function() {
-                if (activeCancelForm) {
-                    activeCancelForm.submit();
-                }
-            });
+            const cancelBtn = document.getElementById('confirm-cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function() {
+                    if (activeCancelForm) {
+                        activeCancelForm.submit();
+                    }
+                });
+            }
+
+            const confirmReceivedBtn = document.getElementById('confirm-received-btn');
+            if (confirmReceivedBtn) {
+                confirmReceivedBtn.addEventListener('click', function() {
+                    if (activeConfirmReceivedForm) {
+                        activeConfirmReceivedForm.submit();
+                    }
+                });
+            }
         });
 
         function toggleReplyForm(complaintId) {
@@ -622,6 +693,39 @@
                 <button type="button" id="confirm-cancel-btn"
                     class="flex-1 bg-rose-400 hover:bg-rose-500 text-white font-semibold py-3 rounded-full text-center transition duration-300 shadow-[0_4px_15px_rgba(244,114,182,0.2)] text-sm">
                     Ya, Batalkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Received Modal -->
+    <div id="confirm-received-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <!-- Backdrop overlay -->
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-xs transition-opacity duration-300" onclick="closeConfirmReceivedModal()"></div>
+        
+        <!-- Modal Content Box -->
+        <div class="bg-white/95 backdrop-blur-md rounded-[2rem] border border-emerald-100 p-8 max-w-sm w-[90%] relative z-10 shadow-[0_20px_50px_rgba(16,185,129,0.15)] transform scale-95 opacity-0 transition-all duration-300 ease-out" id="confirm-received-modal-content">
+            <!-- Icon Check -->
+            <div class="flex justify-center mb-5">
+                <div class="bg-emerald-50 h-16 w-16 rounded-full flex items-center justify-center text-emerald-500 border border-emerald-100/60 shadow-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-800 text-center mb-2 tracking-tight">Pesanan Sudah Diterima? 📦</h3>
+            <p class="text-sm text-gray-500 font-light text-center mb-6 leading-relaxed">Apakah Anda yakin pesanan ini sudah Anda terima dengan baik? Setelah dikonfirmasi, Anda dapat memberikan ulasan cantikmu!</p>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button type="button" onclick="closeConfirmReceivedModal()"
+                    class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 font-semibold py-3 rounded-full text-center transition text-sm">
+                    Batal
+                </button>
+                <button type="button" id="confirm-received-btn"
+                    class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-full text-center transition duration-300 shadow-[0_4px_15px_rgba(16,185,129,0.3)] text-sm">
+                    Ya, Diterima! 🎉
                 </button>
             </div>
         </div>

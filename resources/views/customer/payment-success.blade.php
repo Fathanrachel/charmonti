@@ -26,14 +26,10 @@
 
             <h2 class="text-3xl font-bold text-gray-800 mb-3 tracking-tight">Pembayaran Berhasil! 🌸</h2>
             <p class="text-gray-500 text-base mb-8 leading-relaxed font-light">
-                Terima kasih! Pembayaran untuk pesanan <span class="font-semibold text-rose-500">#{{ $order->id }}</span> telah kami terima. Pesanan Anda kini sedang kami proses dengan penuh cinta.
+                Terima kasih! Pembayaran untuk pesanan Anda telah kami terima. Pesanan Anda kini sedang kami proses dengan penuh cinta.
             </p>
 
             <div class="bg-rose-50/40 backdrop-blur-sm border border-rose-100/50 rounded-3xl p-7 text-left mb-10 space-y-4">
-                <div class="flex justify-between text-sm text-gray-500">
-                    <span class="font-light">Order ID</span>
-                    <span class="font-semibold text-gray-800">#{{ $order->id }}</span>
-                </div>
                 <div class="flex justify-between text-sm text-gray-500">
                     <span class="font-light">Tanggal Pembayaran</span>
                     <span class="font-medium text-gray-800">{{ $order->payment?->payment_date ? \Carbon\Carbon::parse($order->payment->payment_date)->translatedFormat('d F Y H:i') : now()->translatedFormat('d F Y H:i') }} WIB</span>

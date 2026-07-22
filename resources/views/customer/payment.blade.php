@@ -33,7 +33,7 @@
         {{-- Info Order --}}
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 mb-8">
             <div class="flex justify-between items-center mb-5">
-                <span class="text-gray-400 font-medium">Order <span class="text-gray-600">#{{ $order->id }}</span></span>
+                <span class="text-gray-700 font-bold text-base">Rincian Pesanan</span>
                 <span class="text-rose-500 font-bold text-xl tracking-tight">
                     Rp {{ number_format($order->total_price, 0, ',', '.') }}
                 </span>
@@ -43,15 +43,29 @@
                 @foreach($order->orderItems as $item)
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
-                        <div class="bg-rose-50/50 rounded-xl h-12 w-12 flex items-center justify-center shrink-0 border border-rose-100/50">
-                            @if($item->product->image)
+                        <div class="bg-rose-50/50 rounded-xl h-12 w-12 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
+                            @if($item->product->product_name === 'Gelang Custom' && $order->customBahanOrder)
+                                @php
+                                    $strapColor = ucfirst(trim($order->customBahanOrder->warna ?? ''));
+                                    $strapBahan = \App\Models\Bahan::where('nama_bahan', 'Tali Gelang ' . $strapColor)->first();
+                                @endphp
+                                @if($strapBahan && $strapBahan->image)
+                                    <img src="{{ Storage::url($strapBahan->image) }}" alt="Tali Gelang {{ $strapColor }}" class="w-full h-full object-cover rounded-xl">
+                                @else
+                                    <span class="text-xl text-rose-300">✨</span>
+                                @endif
+                            @elseif($item->product->image)
                                 <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->product_name }}" class="w-full h-full object-cover rounded-xl">
                             @else
                                 <span class="text-xl text-rose-300">📿</span>
                             @endif
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-gray-700">{{ $item->product->product_name }}</p>
+                            @if($item->product->product_name === 'Gelang Custom' && $order->customBahanOrder)
+                                <p class="text-sm font-semibold text-gray-700">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</p>
+                            @else
+                                <p class="text-sm font-semibold text-gray-700">{{ $item->product->product_name }}</p>
+                            @endif
                             <p class="text-xs text-gray-400 font-light">{{ $item->qty }}x</p>
                         </div>
                     </div>

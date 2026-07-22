@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Resources\Complaints\ComplaintResource;
 use App\Models\Complaint;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -19,7 +20,8 @@ class ActiveComplaintsWidget extends BaseWidget
             Stat::make('Keluhan Aktif (Komplain)', $activeComplaints . ' Kasus')
                 ->description('Keluhan pelanggan yang belum selesai ditindaklanjuti')
                 ->descriptionIcon('heroicon-m-chat-bubble-left-right')
-                ->color($activeComplaints > 0 ? 'danger' : 'success'),
+                ->color($activeComplaints > 0 ? 'danger' : 'success')
+                ->url(ComplaintResource::getUrl('index')),
         ];
     }
 }
