@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Resources\Shippings\ShippingResource;
 use App\Models\Shipping;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -19,7 +20,8 @@ class ActiveShippingsWidget extends BaseWidget
             Stat::make('Pengiriman Aktif', $activeShippings . ' Paket')
                 ->description('Paket pesanan sedang dikirim oleh kurir di jalan')
                 ->descriptionIcon('heroicon-m-truck')
-                ->color('info'),
+                ->color('info')
+                ->url(ShippingResource::getUrl('index')),
         ];
     }
 }

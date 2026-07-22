@@ -261,6 +261,28 @@ class CustomerController extends Controller
             return redirect()->back()->with('error', 'Pesanan ini sudah diproses atau dibayar, tidak dapat dibatalkan.');
     }
 
+    public function confirmReceived(Order $order)
+    {
+        abort_if($order->profile?->users_id !== Auth::id(), 403);
+
+        // Hanya bisa dikonfirmasi jika status pengiriman sudah 'dikirim' atau status pesanan masih diproses/pending
+        if ($order->shipping?->status === 'dikirim' || in_array($order->status, ['diproses', 'pending'])) {
+            $order->update(['status' => 'selesai']);
+
+            if ($order->shipping) {
+                $order->shipping->update(['status' => 'sampai']);
+            }
+
+            if ($order->customBahanOrder && $order->customBahanOrder->status === 'pending') {
+                $order->customBahanOrder->update(['status' => 'disetujui']);
+            }
+
+            return redirect()->back()->with('success', 'Pesanan telah berhasil dikonfirmasi diterima. Terima kasih sudah berbelanja di CharmOnTi! 💖');
+        }
+
+        return redirect()->back()->with('error', 'Pesanan belum dapat dikonfirmasi diterima.');
+    }
+
     public function createReview(Order $order)
     {
         abort_if($order->profile?->users_id !== Auth::id(), 403);
@@ -292,11 +314,14 @@ class CustomerController extends Controller
 
         // If this order has custom bracelets, add a single review slot for "Gelang Custom"
         if ($order->customBahanOrder()->exists()) {
+            $strapColor = ucfirst(trim($order->customBahanOrder->warna ?? ''));
+            $strapBahan = \App\Models\Bahan::where('nama_bahan', 'Tali Gelang ' . $strapColor)->first();
+
             $itemsToReview[] = [
                 'id' => $customProductDummy->id,
-                'name' => 'Gelang Custom (' . ucfirst($order->customBahanOrder->warna ?? '') . ')',
+                'name' => 'Gelang Custom (' . $strapColor . ')',
                 'category' => 'Gelang Custom',
-                'image' => null, // Display default bracelet emoji/logo
+                'image' => $strapBahan?->image,
             ];
         }
 

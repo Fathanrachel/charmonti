@@ -251,7 +251,7 @@
     </div>
 
     {{-- ✨ Custom Notification Modal --}}
-    <div id="custom-alert-modal" class="fixed inset-0 z-[100] items-center justify-center p-4 hidden" onclick="closeCustomAlertModal(event)">
+    <div id="custom-alert-modal" class="fixed inset-0 z-100 items-center justify-center p-4 hidden" onclick="closeCustomAlertModal(event)">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
         <div id="custom-alert-modal-card" class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center transform scale-90 opacity-0 transition-all duration-300">
             <div class="w-14 h-14 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100 text-2xl">

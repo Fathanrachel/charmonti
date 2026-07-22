@@ -2,6 +2,7 @@
 
 namespace App\Filament\Owner\Widgets;
 
+use App\Filament\Owner\Resources\Reviews\ReviewResource;
 use App\Models\Review;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -19,7 +20,8 @@ class OwnerAverageRatingWidget extends BaseWidget
             Stat::make('Rata-rata Kepuasan', number_format($averageRating, 1) . ' / 5.0')
                 ->description('Berdasarkan ulasan pembeli')
                 ->descriptionIcon('heroicon-m-star')
-                ->color('warning'),
+                ->color('warning')
+                ->url(ReviewResource::getUrl('index')),
         ];
     }
 }

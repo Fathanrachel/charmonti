@@ -13,6 +13,7 @@ use App\Models\Shipping;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
@@ -152,6 +153,8 @@ class CartController extends Controller
             }
         }
 
+        $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
+
         $cart = Session::get('cart', []);
         
         // Generate a unique ID for this custom design
@@ -164,6 +167,7 @@ class CartController extends Controller
             'charms_quantities' => $selectedCharmsInput, // Key-value array of [bahan_id => qty]
             'charms_details' => $charmsDetails,
             'name' => 'Gelang Custom (' . ucfirst($request->warna) . ')',
+            'image' => $strapBahan?->image,
             'price' => $charmsPrice,
             'request_note' => $request->request_note,
             'quantity' => 1,
@@ -368,83 +372,94 @@ class CartController extends Controller
             ]);
         }
 
-        // 1. Create single Order
-        $order = Order::create([
-            'profile_id' => $profile?->id,
-            'order_date' => now(),
-            'status' => 'pending',
-            'total_price' => $totalPrice,
-            'payment_method' => 'midtrans',
-        ]);
+        $order = DB::transaction(function () use ($profile, $totalPrice, $cart, $expedition, $shippingCost, $estimatedDays) {
+            // 1. Create single Order
+            $order = Order::create([
+                'profile_id' => $profile?->id,
+                'order_date' => now(),
+                'status' => 'pending',
+                'total_price' => $totalPrice,
+                'payment_method' => 'midtrans',
+            ]);
 
-        // 2. Populate items
-        foreach ($cart as $item) {
-            if ($item['type'] === 'regular') {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['id'],
-                    'qty' => $item['quantity'],
-                    'price' => $item['price'],
-                ]);
-            } elseif ($item['type'] === 'custom') {
-                $customProduct = \App\Models\Product::where('product_name', 'Gelang Custom')->first();
-                $customProductId = $customProduct ? $customProduct->id : 5;
-
-                // Catat di tabel induk barang pesanan (order_product_items)
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $customProductId,
-                    'qty' => $item['quantity'],
-                    'price' => $item['price'],
-                ]);
-
-                for ($i = 0; $i < $item['quantity']; $i++) {
-                    // Rangkai rincian catatan per-charm agar tersimpan di request_note tanpa ubah DB
-                    $combinedNotes = [];
-                    if (!empty($item['charms_details'])) {
-                        $charmNoteLines = [];
-                        foreach ($item['charms_details'] as $cd) {
-                            if (!empty($cd['note'])) {
-                                $charmNoteLines[] = '• ' . $cd['name'] . ' (x' . $cd['quantity'] . '): "' . $cd['note'] . '"';
-                            }
-                        }
-                        if (!empty($charmNoteLines)) {
-                            $combinedNotes[] = "📌 [Rincian Charm]:\n" . implode("\n", $charmNoteLines);
-                        }
-                    }
-
-                    if (!empty($item['request_note'])) {
-                        $combinedNotes[] = "📝 [Catatan Desain]: " . $item['request_note'];
-                    }
-
-                    $finalRequestNote = !empty($combinedNotes) ? implode("\n\n", $combinedNotes) : null;
-
-                    $customBahanOrder = CustomBahanOrder::create([
+            // 2. Populate items
+            foreach ($cart as $item) {
+                if ($item['type'] === 'regular') {
+                    OrderItem::create([
                         'order_id' => $order->id,
-                        'warna' => $item['warna'],
-                        'request_note' => $finalRequestNote,
-                        'status' => 'pending',
+                        'product_id' => $item['id'],
+                        'qty' => $item['quantity'],
+                        'price' => $item['price'],
+                    ]);
+                } elseif ($item['type'] === 'custom') {
+                    $customProduct = \App\Models\Product::firstOrCreate(
+                        ['product_name' => 'Gelang Custom'],
+                        [
+                            'description' => 'Gelang Custom Rangkaian Pelanggan',
+                            'price' => 20000,
+                            'category' => 'gelang_jadi',
+                        ]
+                    );
+                    $customProductId = $customProduct->id;
+
+                    // Catat di tabel induk barang pesanan (order_product_items)
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $customProductId,
+                        'qty' => $item['quantity'],
+                        'price' => $item['price'],
                     ]);
 
-                    foreach ($item['charms'] as $charmId) {
-                        CustomBahanOrderItem::create([
-                            'custom_order_id' => $customBahanOrder->id,
-                            'bahan_id' => $charmId,
-                            'qty' => 1,
+                    for ($i = 0; $i < $item['quantity']; $i++) {
+                        // Rangkai rincian catatan per-charm agar tersimpan di request_note tanpa ubah DB
+                        $combinedNotes = [];
+                        if (!empty($item['charms_details'])) {
+                            $charmNoteLines = [];
+                            foreach ($item['charms_details'] as $cd) {
+                                if (!empty($cd['note'])) {
+                                    $charmNoteLines[] = '• ' . $cd['name'] . ' (x' . $cd['quantity'] . '): "' . $cd['note'] . '"';
+                                }
+                            }
+                            if (!empty($charmNoteLines)) {
+                                $combinedNotes[] = "📌 [Rincian Charm]:\n" . implode("\n", $charmNoteLines);
+                            }
+                        }
+
+                        if (!empty($item['request_note'])) {
+                            $combinedNotes[] = "📝 [Catatan Desain]: " . $item['request_note'];
+                        }
+
+                        $finalRequestNote = !empty($combinedNotes) ? implode("\n\n", $combinedNotes) : null;
+
+                        $customBahanOrder = CustomBahanOrder::create([
+                            'order_id' => $order->id,
+                            'warna' => $item['warna'],
+                            'request_note' => $finalRequestNote,
+                            'status' => 'pending',
                         ]);
+
+                        foreach ($item['charms'] as $charmId) {
+                            CustomBahanOrderItem::create([
+                                'custom_order_id' => $customBahanOrder->id,
+                                'bahan_id' => $charmId,
+                                'qty' => 1,
+                            ]);
+                        }
                     }
                 }
             }
-        }
 
-        // 3. Create Shipping
-        Shipping::create([
-            'order_id' => $order->id,
-            'expedition_id' => $expedition->id,
-            'shipping_cost' => $shippingCost,
-            'estimated_arrival' => now()->addDays($estimatedDays),
-            'status' => 'pending',
-        ]);
+            // 3. Create Shipping
+            Shipping::create([
+                'order_id' => $order->id,
+                'expedition_id' => $expedition->id,
+                'shipping_cost' => $shippingCost,
+                'estimated_arrival' => now()->addDays($estimatedDays),
+                'status' => 'pending',
+            ]);
+
+            return $order;
+        });
 
         // Clear cart
         Session::forget('cart');

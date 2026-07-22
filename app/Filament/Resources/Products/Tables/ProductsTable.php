@@ -15,6 +15,7 @@ class ProductsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->where('product_name', '!=', 'Gelang Custom'))
             ->columns([
                 ImageColumn::make('image')
                     ->label('Foto')
