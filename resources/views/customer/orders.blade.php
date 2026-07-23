@@ -307,6 +307,10 @@
                                                 <span class="font-semibold text-gray-800 capitalize">{{ $order->shipping->expedition?->name_expedition ?: '-' }}</span>
                                             </div>
                                             <div class="flex justify-between">
+                                                <span class="font-light">Ongkos Kirim:</span>
+                                                <span class="font-semibold text-rose-500">Rp {{ number_format($order->shipping->shipping_cost, 0, ',', '.') }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
                                                 <span class="font-light">No. Resi:</span>
                                                 @if($order->shipping->status === 'batal' || $order->status === 'batal')
                                                     <span class="font-semibold text-gray-400 font-mono">-</span>
