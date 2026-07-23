@@ -590,6 +590,7 @@
             const content = document.getElementById('cancel-modal-content');
             
             modal.classList.remove('hidden');
+            modal.classList.add('flex');
             setTimeout(() => {
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
@@ -605,6 +606,7 @@
             
             setTimeout(() => {
                 modal.classList.add('hidden');
+                modal.classList.remove('flex');
                 activeCancelForm = null;
             }, 300);
         }
@@ -619,6 +621,7 @@
             const content = document.getElementById('confirm-received-modal-content');
             
             modal.classList.remove('hidden');
+            modal.classList.add('flex');
             setTimeout(() => {
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
@@ -634,6 +637,7 @@
             
             setTimeout(() => {
                 modal.classList.add('hidden');
+                modal.classList.remove('flex');
                 activeConfirmReceivedForm = null;
             }, 300);
         }
@@ -670,12 +674,12 @@
     </script>
 
     <!-- Custom Cancel Modal -->
-    <div id="cancel-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div id="cancel-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
         <!-- Backdrop overlay -->
         <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-xs transition-opacity duration-300" onclick="closeCancelModal()"></div>
         
         <!-- Modal Content Box -->
-        <div class="bg-white/95 backdrop-blur-md rounded-[2rem] border border-gray-100 p-8 max-w-sm w-[90%] relative z-10 shadow-[0_20px_50px_rgba(244,114,182,0.12)] transform scale-95 opacity-0 transition-all duration-300 ease-out" id="cancel-modal-content">
+        <div class="bg-white/95 backdrop-blur-md rounded-4xl border border-gray-100 p-8 max-w-sm w-[90%] relative z-10 shadow-[0_20px_50px_rgba(244,114,182,0.12)] transform scale-95 opacity-0 transition-all duration-300 ease-out" id="cancel-modal-content">
             <!-- Icon Warning -->
             <div class="flex justify-center mb-5">
                 <div class="bg-rose-50 h-14 w-14 rounded-full flex items-center justify-center text-rose-500 border border-rose-100/50 shadow-xs">
@@ -703,12 +707,12 @@
     </div>
 
     <!-- Custom Confirm Received Modal -->
-    <div id="confirm-received-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div id="confirm-received-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
         <!-- Backdrop overlay -->
         <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-xs transition-opacity duration-300" onclick="closeConfirmReceivedModal()"></div>
         
         <!-- Modal Content Box -->
-        <div class="bg-white/95 backdrop-blur-md rounded-[2rem] border border-emerald-100 p-8 max-w-sm w-[90%] relative z-10 shadow-[0_20px_50px_rgba(16,185,129,0.15)] transform scale-95 opacity-0 transition-all duration-300 ease-out" id="confirm-received-modal-content">
+        <div class="bg-white/95 backdrop-blur-md rounded-4xl border border-emerald-100 p-8 max-w-sm w-[90%] relative z-10 shadow-[0_20px_50px_rgba(16,185,129,0.15)] transform scale-95 opacity-0 transition-all duration-300 ease-out" id="confirm-received-modal-content">
             <!-- Icon Check -->
             <div class="flex justify-center mb-5">
                 <div class="bg-emerald-50 h-16 w-16 rounded-full flex items-center justify-center text-emerald-500 border border-emerald-100/60 shadow-xs">
