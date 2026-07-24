@@ -448,7 +448,17 @@ class CustomerController extends Controller
             }
         }
 
-        return view('customer.profile', compact('user', 'profile', 'provinces', 'cities'));
+        $totalOrdersCount = \App\Models\Order::where('profile_id', $profile->id)->count();
+        $recentOrders = \App\Models\Order::where('profile_id', $profile->id)
+            ->with(['orderItems.product', 'payment', 'shipping'])
+            ->latest('order_date')
+            ->take(3)
+            ->get();
+
+        $passwordChangedAtString = \Illuminate\Support\Facades\Cache::get('user_password_changed_' . $user->id);
+        $passwordChangedAt = $passwordChangedAtString ? \Carbon\Carbon::parse($passwordChangedAtString) : null;
+
+        return view('customer.profile', compact('user', 'profile', 'provinces', 'cities', 'totalOrdersCount', 'recentOrders', 'passwordChangedAt'));
     }
 
     public function updateProfile(Request $request)
@@ -456,14 +466,30 @@ class CustomerController extends Controller
         $user = Auth::user();
         $profile = $user->profile;
 
-        $request->validate([
+        $rules = [
             'name'         => 'required|string|max:255',
             'phone'        => 'required|string|max:20',
             'province_id'  => 'required|exists:provinces,id',
             'city_id'      => 'required|exists:cities,id',
             'address_line' => 'required|string|max:500',
             'postal_code'  => 'required|string|max:10',
-        ]);
+        ];
+
+        if ($request->filled('password')) {
+            $lastChangedString = \Illuminate\Support\Facades\Cache::get('user_password_changed_' . $user->id);
+            if ($lastChangedString) {
+                $lastChangedCarbon = \Carbon\Carbon::parse($lastChangedString);
+                $nextAvailableDate = $lastChangedCarbon->copy()->addDays(7)->translatedFormat('d F Y, H:i');
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['password' => "Perubahan kata sandi hanya dapat dilakukan 1 kali dalam 7 hari. Anda dapat mengubah kata sandi kembali pada {$nextAvailableDate} WIB."]);
+            }
+
+            $rules['current_password'] = 'required|current_password';
+            $rules['password']         = 'required|string|min:8|confirmed';
+        }
+
+        $request->validate($rules);
 
         // Update profile
         $profile->update([
@@ -473,6 +499,13 @@ class CustomerController extends Controller
             'address_line' => $request->address_line,
             'postal_code'  => $request->postal_code,
         ]);
+
+        if ($request->filled('password')) {
+            $user->update([
+                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            ]);
+            \Illuminate\Support\Facades\Cache::put('user_password_changed_' . $user->id, now()->toDateTimeString(), now()->addDays(7));
+        }
 
         return redirect()->route('customer.profile')->with('success', 'Profil Anda berhasil diperbarui! ✨');
     }
