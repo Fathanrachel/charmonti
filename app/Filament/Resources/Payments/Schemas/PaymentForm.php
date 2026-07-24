@@ -32,9 +32,10 @@ class PaymentForm
                 Select::make('payment_status')
                     ->label('Status Pembayaran')
                     ->options([
-                        'pending' => 'Pending',
-                        'paid'    => 'Paid',
-                        'failed'  => 'Failed',
+                        'pending' => 'Menunggu Pembayaran',
+                        'paid'    => 'Pembayaran Lunas',
+                        'failed'  => 'Gagal / Dibatalkan',
+                        'expired' => 'Kadaluwarsa',
                     ])
                     ->default('pending')
                     ->required(),

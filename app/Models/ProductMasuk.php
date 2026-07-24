@@ -10,7 +10,6 @@ class ProductMasuk extends Model
 
     protected $fillable = [
         'product_id',
-        'nama_product',
         'qty_masuk',
         'deskripsi',
         'tanggal_masuk',
@@ -19,6 +18,17 @@ class ProductMasuk extends Model
     protected $casts = [
         'tanggal_masuk' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function ($model) {
+            $model->product?->syncSisa();
+        });
+
+        static::deleted(function ($model) {
+            $model->product?->syncSisa();
+        });
+    }
 
     public function product()
     {

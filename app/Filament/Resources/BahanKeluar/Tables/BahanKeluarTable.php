@@ -19,17 +19,13 @@ class BahanKeluarTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('bahanMasuk.nama_bahan')
-                    ->label('Batch Masuk')
-                    ->sortable(),
-
                 TextColumn::make('qty_keluar')
                     ->label('Jumlah Keluar')
                     ->numeric()
                     ->sortable(),
 
                 TextColumn::make('sisa')
-                    ->label('Sisa Stok Batch')
+                    ->label('Sisa Stok')
                     ->numeric()
                     ->sortable(),
 

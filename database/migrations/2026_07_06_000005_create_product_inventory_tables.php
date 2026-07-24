@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('product_masuk', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->string('nama_product');
             $table->integer('qty_masuk');
             $table->text('deskripsi')->nullable();
             $table->dateTime('tanggal_masuk');
@@ -22,7 +21,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('idproduct_masuk')->constrained('product_masuk')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->integer('sisa');
             $table->integer('qty_keluar');
             $table->dateTime('tanggal_keluar');
             $table->timestamps();

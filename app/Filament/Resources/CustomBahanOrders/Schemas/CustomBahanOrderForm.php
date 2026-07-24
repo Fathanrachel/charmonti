@@ -27,16 +27,17 @@ class CustomBahanOrderForm
                     ->columnSpanFull(),
 
                 TextInput::make('warna')
-                    ->label('Warna')
+                    ->label('Warna Tali')
                     ->nullable()
-                    ->placeholder('contoh: Merah, Biru'),
+                    ->placeholder('contoh: Silver, Gold'),
 
                 Select::make('status')
-                    ->label('Status')
+                    ->label('Status Perakitan')
                     ->options([
-                        'pending'   => 'Pending',
-                        'disetujui' => 'Disetujui',
-                        'ditolak'   => 'Ditolak',
+                        'pending'   => 'Menunggu Perakitan',
+                        'diproses'  => 'Sedang Dirangkai',
+                        'selesai'   => 'Selesai Dirangkai',
+                        'batal'     => 'Dibatalkan',
                     ])
                     ->default('pending')
                     ->required(),

@@ -18,55 +18,37 @@ class BahanKeluarForm
                 Select::make('idbahan_masuk')
                     ->label('Batch Bahan Masuk')
                     ->options(function () {
-                        return BahanMasuk::all()->mapWithKeys(function ($bm) {
-                            // Calculate current remaining in this batch
+                        return BahanMasuk::with('bahan')->get()->mapWithKeys(function ($bm) {
                             $totalKeluar = BahanKeluar::where('idbahan_masuk', $bm->id)->sum('qty_keluar');
-                            $sisa = $bm->qty_masuk - $totalKeluar;
-                            return [$bm->id => "{$bm->nama_bahan} (Masuk: {$bm->qty_masuk}, Sisa Batch: {$sisa})"];
+                            $sisa = max(0, $bm->qty_masuk - $totalKeluar);
+                            $namaBahan = $bm->bahan?->nama_bahan ?? 'Bahan';
+                            return [$bm->id => "{$namaBahan} (Masuk: {$bm->qty_masuk}, Sisa: {$sisa})"];
                         });
                     })
                     ->required()
                     ->searchable()
                     ->reactive()
                     ->afterStateUpdated(function ($state, callable $set) {
-                        $bm = BahanMasuk::find($state);
+                        $bm = BahanMasuk::with('bahan')->find($state);
                         if ($bm) {
                             $set('bahan_id', $bm->bahan_id);
-                            $totalKeluar = BahanKeluar::where('idbahan_masuk', $bm->id)->sum('qty_keluar');
-                            $sisa = $bm->qty_masuk - $totalKeluar;
-                            $set('sisa', $sisa);
                         } else {
                             $set('bahan_id', null);
-                            $set('sisa', 0);
                         }
                     }),
 
                 Select::make('bahan_id')
-                    ->label('Bahan Master')
+                    ->label('Nama Bahan')
                     ->relationship('bahan', 'nama_bahan')
                     ->disabled()
                     ->dehydrated()
                     ->required(),
 
-                TextInput::make('sisa')
-                    ->label('Sisa Stok Batch Saat Ini')
-                    ->numeric()
-                    ->disabled()
-                    ->dehydrated(),
-
                 TextInput::make('qty_keluar')
                     ->label('Jumlah Keluar')
                     ->required()
                     ->numeric()
-                    ->minValue(1)
-                    ->reactive()
-                    ->afterStateUpdated(function ($state, $get, callable $set) {
-                        $sisa = intval($get('sisa'));
-                        if ($state > $sisa) {
-                            // Validasi input melebihi sisa stok batch
-                            $set('qty_keluar', $sisa);
-                        }
-                    }),
+                    ->minValue(1),
 
                 DateTimePicker::make('tanggal_keluar')
                     ->label('Tanggal Keluar')

@@ -12,10 +12,14 @@ class Product extends Model
         'price',
         'category',
         'image',
+        'sisa',
+        'stock',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'sisa'  => 'integer',
+        'stock' => 'integer',
     ];
 
     public function orderItems()
@@ -38,6 +42,23 @@ class Product extends Model
         return $this->hasMany(ProductKeluar::class, 'product_id');
     }
 
+    public function getDynamicStockAttribute()
+    {
+        $masuk = $this->productMasuk()->sum('qty_masuk');
+        $keluar = $this->productKeluar()->sum('qty_keluar');
+        $calculated = (int) ($masuk - $keluar);
+        return max(0, $calculated);
+    }
+
+    public function syncSisa(): void
+    {
+        $newStock = $this->getDynamicStockAttribute();
+        $this->update([
+            'sisa'  => $newStock,
+            'stock' => $newStock,
+        ]);
+    }
+
     public function deductStock(int $quantity): int
     {
         $needed = $quantity;
@@ -56,22 +77,16 @@ class Product extends Model
             if ($batchStock > 0) {
                 $deduct = min($needed, $batchStock);
                 $batch->productKeluar()->create([
-                    'product_id' => $this->id,
-                    'sisa' => $batchStock - $deduct,
-                    'qty_keluar' => $deduct,
+                    'product_id'     => $this->id,
+                    'qty_keluar'     => $deduct,
                     'tanggal_keluar' => now(),
                 ]);
                 $needed -= $deduct;
             }
         }
 
-        return $quantity - $needed;
-    }
+        $this->syncSisa();
 
-    public function getDynamicStockAttribute()
-    {
-        $masuk = $this->productMasuk()->sum('qty_masuk');
-        $keluar = $this->productKeluar()->sum('qty_keluar');
-        return (int) ($masuk - $keluar);
+        return $quantity - $needed;
     }
 }

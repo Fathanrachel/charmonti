@@ -11,7 +11,6 @@ class BahanKeluar extends Model
     protected $fillable = [
         'idbahan_masuk',
         'bahan_id',
-        'sisa',
         'qty_keluar',
         'tanggal_keluar',
     ];
@@ -19,6 +18,17 @@ class BahanKeluar extends Model
     protected $casts = [
         'tanggal_keluar' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function ($model) {
+            $model->bahan?->syncSisa();
+        });
+
+        static::deleted(function ($model) {
+            $model->bahan?->syncSisa();
+        });
+    }
 
     public function bahanMasuk()
     {

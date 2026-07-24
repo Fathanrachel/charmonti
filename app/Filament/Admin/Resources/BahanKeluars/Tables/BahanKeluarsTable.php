@@ -14,29 +14,25 @@ class BahanKeluarsTable
     {
         return $table
             ->columns([
-                TextColumn::make('idbahan_masuk')
-                    ->numeric()
+                TextColumn::make('bahan.nama_bahan')
+                    ->label('Bahan')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('bahan_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('sisa')
-                    ->numeric()
-                    ->sortable(),
+
                 TextColumn::make('qty_keluar')
+                    ->label('Jumlah Keluar')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('tanggal_keluar')
-                    ->dateTime()
+
+                TextColumn::make('sisa')
+                    ->label('Sisa Stok')
+                    ->numeric()
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('tanggal_keluar')
+                    ->label('Tanggal Keluar')
+                    ->dateTime('d M Y')
+                    ->sortable(),
             ])
             ->filters([
                 //

@@ -16,30 +16,36 @@ class ProductMasukForm
         return $schema
             ->components([
                 Select::make('product_id')
-                    ->label('Produk')
+                    ->label('Nama Produk')
                     ->options(Product::all()->pluck('product_name', 'id'))
                     ->required()
-                    ->searchable(),
+                    ->searchable()
+                    ->reactive()
+                    ->afterStateUpdated(fn ($state, callable $set) => 
+                        $set('nama_product', Product::find($state)?->product_name ?? '')
+                    ),
 
                 TextInput::make('nama_product')
-                    ->label('Nama Batch')
+                    ->label('Nama Produk (Katalog)')
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('qty_masuk')
                     ->label('Jumlah Masuk')
                     ->numeric()
-                    ->required(),
-
-                Textarea::make('deskripsi')
-                    ->label('Keterangan')
-                    ->nullable()
-                    ->rows(3)
-                    ->columnSpanFull(),
+                    ->required()
+                    ->minValue(1),
 
                 DateTimePicker::make('tanggal_masuk')
                     ->label('Tanggal Masuk')
+                    ->default(now())
                     ->required(),
+
+                Textarea::make('deskripsi')
+                    ->label('Keterangan / Catatan')
+                    ->nullable()
+                    ->rows(3)
+                    ->columnSpanFull(),
             ]);
     }
 }

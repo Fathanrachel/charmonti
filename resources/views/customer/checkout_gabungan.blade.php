@@ -35,7 +35,13 @@
             <div class="lg:col-span-2 space-y-6">
                 {{-- Alamat --}}
                 <div class="bg-white border border-gray-100/50 rounded-3xl p-6 shadow-sm">
-                    <h3 class="font-bold text-gray-800 text-lg mb-4">📍 Alamat Pengiriman</h3>
+                    <h3 class="font-bold text-gray-800 text-lg mb-2">📍 Alamat Pengiriman</h3>
+                    @if(Auth::user()->profile?->city)
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 border border-rose-100 rounded-full text-xs font-semibold text-rose-600 mb-3">
+                            <span>Kota Tujuan:</span>
+                            <span class="font-bold">{{ Auth::user()->profile->city->city }}, {{ Auth::user()->profile->city->province?->province }}</span>
+                        </div>
+                    @endif
                     <textarea name="shipping_address" rows="3" required class="w-full border border-gray-200 rounded-2xl p-4 focus:border-rose-400 focus:outline-none" placeholder="Masukkan alamat lengkap pengiriman paket">{{ Auth::user()->profile?->address_line }}</textarea>
                 </div>
 

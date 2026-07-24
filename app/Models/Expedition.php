@@ -18,4 +18,16 @@ class Expedition extends Model
     {
         return $this->hasMany(Shipping::class, 'expedition_id');
     }
+
+    public function cities()
+    {
+        return $this->belongsToMany(City::class, 'city_expeditions', 'expedition_id', 'city_id')
+                    ->withPivot(['shipping_cost', 'estimated_days'])
+                    ->withTimestamps();
+    }
+
+    public function cityExpeditions()
+    {
+        return $this->hasMany(CityExpedition::class, 'expedition_id');
+    }
 }

@@ -38,7 +38,23 @@ class CustomerController extends Controller
         if (!Auth::check()) {
             return redirect()->route('login')->with('info', 'Login dulu untuk memesan.');
         }
-        return view('customer.checkout', compact('product'));
+
+        $user = Auth::user();
+        $userCityId = $user->profile?->city_id;
+
+        $expeditions = Expedition::all()->map(function ($exp) use ($userCityId) {
+            $cityExp = null;
+            if ($userCityId) {
+                $cityExp = \App\Models\CityExpedition::where('city_id', $userCityId)
+                    ->where('expedition_id', $exp->id)
+                    ->first();
+            }
+            $exp->shipping_cost = $cityExp ? $cityExp->shipping_cost : $exp->shipping_cost;
+            $exp->estimated_days = $cityExp ? $cityExp->estimated_days : $exp->estimated_days;
+            return $exp;
+        });
+
+        return view('customer.checkout', compact('product', 'expeditions'));
     }
 
     public function store(Request $request, Product $product)
@@ -46,7 +62,7 @@ class CustomerController extends Controller
         $request->validate([
             'quantity'         => 'required|integer|min:1',
             'shipping_address' => 'required|string',
-            'courier'          => 'required|string|in:JNE,J&T,SiCepat',
+            'courier'          => 'required|string',
         ]);
 
         // Validasi stok produk reguler
@@ -58,20 +74,23 @@ class CustomerController extends Controller
 
         $itemTotal = $product->price * $request->quantity;
 
-        // Map shipping cost and estimated arrival
-        $shippingCosts = [
-            'J&T' => 10000,
-            'JNE' => 12000,
-            'SiCepat' => 8000,
-        ];
-        
-        $shippingArrivals = [
-            'J&T' => now()->addDays(3),
-            'JNE' => now()->addDays(2),
-            'SiCepat' => now()->addDays(5),
-        ];
+        $profile = Auth::user()->profile;
+        $userCityId = $profile?->city_id;
 
-        $shippingCost = $shippingCosts[$request->courier] ?? 10000;
+        $expedition = Expedition::where('name_expedition', $request->courier)->first();
+        if (!$expedition) {
+            $expedition = Expedition::firstOrCreate(['name_expedition' => $request->courier]);
+        }
+
+        $cityExp = null;
+        if ($userCityId) {
+            $cityExp = \App\Models\CityExpedition::where('city_id', $userCityId)
+                ->where('expedition_id', $expedition->id)
+                ->first();
+        }
+
+        $shippingCost = $cityExp ? $cityExp->shipping_cost : $expedition->shipping_cost;
+        $estimatedDays = $cityExp ? $cityExp->estimated_days : $expedition->estimated_days;
         $totalPrice = $itemTotal + $shippingCost;
 
         $profile = Auth::user()->profile;
@@ -95,13 +114,11 @@ class CustomerController extends Controller
             'price'      => $product->price,
         ]);
 
-        $expedition = Expedition::firstOrCreate(['name_expedition' => $request->courier]);
-
         \App\Models\Shipping::create([
             'order_id' => $order->id,
             'expedition_id' => $expedition->id,
             'shipping_cost' => $shippingCost,
-            'estimated_arrival' => $shippingArrivals[$request->courier] ?? now()->addDays(3),
+            'estimated_arrival' => now()->addDays($estimatedDays),
             'status' => 'pending',
         ]);
 
@@ -129,7 +146,7 @@ class CustomerController extends Controller
             'charms.*'           => 'exists:bahan,id',
             'request_note'       => 'nullable|string|max:500',
             'shipping_address'   => 'required|string',
-            'courier'            => 'required|string|in:JNE,J&T,SiCepat',
+            'courier'            => 'required|string',
         ]);
 
         // Validasi stok manik-manik kustom
@@ -153,20 +170,23 @@ class CustomerController extends Controller
         $selectedCharms = Bahan::whereIn('id', $request->charms)->get();
         $itemTotal = $selectedCharms->sum('price');
 
-        // Map shipping cost and estimated arrival
-        $shippingCosts = [
-            'J&T' => 10000,
-            'JNE' => 12000,
-            'SiCepat' => 8000,
-        ];
-        
-        $shippingArrivals = [
-            'J&T' => now()->addDays(3),
-            'JNE' => now()->addDays(2),
-            'SiCepat' => now()->addDays(5),
-        ];
+        $profile = Auth::user()->profile;
+        $userCityId = $profile?->city_id;
 
-        $shippingCost = $shippingCosts[$request->courier] ?? 10000;
+        $expedition = Expedition::where('name_expedition', $request->courier)->first();
+        if (!$expedition) {
+            $expedition = Expedition::firstOrCreate(['name_expedition' => $request->courier]);
+        }
+
+        $cityExp = null;
+        if ($userCityId) {
+            $cityExp = \App\Models\CityExpedition::where('city_id', $userCityId)
+                ->where('expedition_id', $expedition->id)
+                ->first();
+        }
+
+        $shippingCost = $cityExp ? $cityExp->shipping_cost : $expedition->shipping_cost;
+        $estimatedDays = $cityExp ? $cityExp->estimated_days : $expedition->estimated_days;
         $totalPrice = $itemTotal + $shippingCost;
 
         $profile = Auth::user()->profile;
@@ -181,6 +201,22 @@ class CustomerController extends Controller
             'order_date'       => now(),
             'status'           => 'pending',
             'total_price'      => $totalPrice,
+        ]);
+
+        $customProduct = \App\Models\Product::firstOrCreate(
+            ['product_name' => 'Gelang Custom'],
+            [
+                'description' => 'Gelang Custom Rangkaian Pelanggan',
+                'price'       => 20000,
+                'category'    => 'gelang_jadi',
+            ]
+        );
+
+        OrderItem::create([
+            'order_id'   => $order->id,
+            'product_id' => $customProduct->id,
+            'qty'        => 1,
+            'price'      => $itemTotal,
         ]);
 
         // Buat CustomBahanOrder
@@ -200,14 +236,12 @@ class CustomerController extends Controller
             ]);
         }
 
-        $expedition = Expedition::firstOrCreate(['name_expedition' => $request->courier]);
-
         // Automate creating the shipping record!
         \App\Models\Shipping::create([
             'order_id' => $order->id,
             'expedition_id' => $expedition->id,
             'shipping_cost' => $shippingCost,
-            'estimated_arrival' => $shippingArrivals[$request->courier] ?? now()->addDays(3),
+            'estimated_arrival' => now()->addDays($estimatedDays),
             'status' => 'pending',
         ]);
 
@@ -447,6 +481,24 @@ class CustomerController extends Controller
     {
         $cities = \App\Models\City::where('province_id', $provinceId)->orderBy('city')->get(['id', 'city']);
         return response()->json($cities);
+    }
+
+    public function getExpeditionCosts($cityId)
+    {
+        $expeditions = Expedition::all()->map(function ($exp) use ($cityId) {
+            $cityExp = \App\Models\CityExpedition::where('city_id', $cityId)
+                ->where('expedition_id', $exp->id)
+                ->first();
+
+            return [
+                'id'              => $exp->id,
+                'name_expedition' => $exp->name_expedition,
+                'shipping_cost'   => $cityExp ? (int)$cityExp->shipping_cost : (int)$exp->shipping_cost,
+                'estimated_days'  => $cityExp ? (int)$cityExp->estimated_days : (int)$exp->estimated_days,
+            ];
+        });
+
+        return response()->json($expeditions);
     }
 
     public function replyComplaint(Request $request, Complaint $complaint)

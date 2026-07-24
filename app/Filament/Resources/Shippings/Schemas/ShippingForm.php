@@ -20,8 +20,6 @@ class ShippingForm
                     ->required()
                     ->searchable(),
 
-
-
                 Select::make('expedition_id')
                     ->label('Ekspedisi / Kurir')
                     ->options(\App\Models\Expedition::all()->pluck('name_expedition', 'id'))
@@ -44,11 +42,12 @@ class ShippingForm
                     ->nullable(),
 
                 Select::make('status')
-                    ->label('Status')
+                    ->label('Status Pengiriman')
                     ->options([
-                        'pending'  => 'Pending',
-                        'dikirim'  => 'Dikirim',
-                        'sampai'   => 'Sampai',
+                        'pending' => 'Menunggu Pengiriman (Sedang Disiapkan)',
+                        'dikirim' => 'Dalam Pengiriman (Di Kurir)',
+                        'sampai'  => 'Sudah Terkirim / Sampai',
+                        'batal'   => 'Batal Dikirim',
                     ])
                     ->default('pending')
                     ->required(),

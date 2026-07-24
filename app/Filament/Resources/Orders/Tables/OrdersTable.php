@@ -31,13 +31,23 @@ class OrdersTable
                     ->sortable(),
 
                 TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Status Pesanan')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'pending'  => 'warning',
                         'diproses' => 'info',
+                        'dikirim'  => 'primary',
                         'selesai'  => 'success',
                         'batal'    => 'danger',
+                        default    => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'pending'  => 'Menunggu Pembayaran',
+                        'diproses' => 'Sedang Diproses',
+                        'dikirim'  => 'Dalam Pengiriman',
+                        'selesai'  => 'Pesanan Selesai',
+                        'batal'    => 'Dibatalkan',
+                        default    => ucfirst($state ?? '-'),
                     }),
 
                 TextColumn::make('total_price')
@@ -62,10 +72,11 @@ class OrdersTable
                         Select::make('status')
                             ->label('Status Baru')
                             ->options([
-                                'pending'  => 'Pending',
-                                'diproses' => 'Diproses',
-                                'selesai'  => 'Selesai',
-                                'batal'    => 'Batal',
+                                'pending'  => 'Menunggu Pembayaran',
+                                'diproses' => 'Sedang Diproses (Stok Dipotong)',
+                                'dikirim'  => 'Dalam Pengiriman',
+                                'selesai'  => 'Pesanan Selesai',
+                                'batal'    => 'Dibatalkan (Pengembalian Stok)',
                             ])
                             ->required(),
                     ])

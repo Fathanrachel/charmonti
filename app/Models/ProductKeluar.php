@@ -11,7 +11,6 @@ class ProductKeluar extends Model
     protected $fillable = [
         'idproduct_masuk',
         'product_id',
-        'sisa',
         'qty_keluar',
         'tanggal_keluar',
     ];
@@ -19,6 +18,17 @@ class ProductKeluar extends Model
     protected $casts = [
         'tanggal_keluar' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function ($model) {
+            $model->product?->syncSisa();
+        });
+
+        static::deleted(function ($model) {
+            $model->product?->syncSisa();
+        });
+    }
 
     public function productMasuk()
     {

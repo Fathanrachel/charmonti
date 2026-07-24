@@ -25,15 +25,25 @@ class PaymentsTable
                         'transfer'  => 'info',
                         'QRIS'      => 'warning',
                         'midtrans'  => 'success',
+                        default     => 'gray',
                     }),
 
                 TextColumn::make('payment_status')
-                    ->label('Status')
+                    ->label('Status Pembayaran')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'pending' => 'warning',
                         'paid'    => 'success',
                         'failed'  => 'danger',
+                        'expired' => 'gray',
+                        default   => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'pending' => 'Menunggu Pembayaran',
+                        'paid'    => 'Pembayaran Lunas',
+                        'failed'  => 'Gagal / Dibatalkan',
+                        'expired' => 'Kadaluwarsa',
+                        default   => ucfirst($state ?? '-'),
                     }),
 
                 TextColumn::make('transaction_id')
@@ -66,7 +76,6 @@ class PaymentsTable
                                 $baseTimestamp = $record->created_at->timestamp;
                                 $found = false;
                                 
-                                // Loop -5 to +5 seconds deviation to find the exact snapshot timestamp
                                 for ($diff = -5; $diff <= 5; $diff++) {
                                     $guessedId = 'ORDER-' . $record->order_id . '-' . ($baseTimestamp + $diff);
                                     try {
@@ -94,10 +103,9 @@ class PaymentsTable
                                     'payment_status' => 'paid',
                                     'payment_date' => now(),
                                     'payment_type' => in_array($status->payment_type ?? '', ['transfer', 'QRIS']) ? $status->payment_type : 'midtrans',
-                                    'transaction_id' => $orderId // Restore correct ORDER ID back to database
+                                    'transaction_id' => $orderId
                                 ]);
 
-                                // Update order status
                                 $record->order->update(['status' => 'diproses']);
 
                                 \Filament\Notifications\Notification::make()

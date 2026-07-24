@@ -74,37 +74,19 @@
             {{-- Pilihan Kurir Pengiriman --}}
             <div>
                 <label class="text-sm font-semibold text-gray-700 block mb-3">Pilih Kurir & Layanan Pengiriman</label>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="courier" value="J&T" class="hidden peer" required checked>
-                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                            <div>
-                                <span class="font-bold text-gray-800 text-sm block">J&T Express</span>
-                                <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 2 - 3 Hari</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach($expeditions as $index => $exp)
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="courier" value="{{ $exp->name_expedition }}" data-cost="{{ $exp->shipping_cost }}" class="hidden peer" required {{ $index === 0 ? 'checked' : '' }}>
+                            <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
+                                <div>
+                                    <span class="font-bold text-gray-800 text-sm block">{{ $exp->name_expedition }}</span>
+                                    <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: {{ $exp->estimated_days }} Hari</span>
+                                </div>
+                                <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp {{ number_format($exp->shipping_cost, 0, ',', '.') }}</span>
                             </div>
-                            <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 10.000</span>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="courier" value="JNE" class="hidden peer">
-                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                            <div>
-                                <span class="font-bold text-gray-800 text-sm block">JNE Reguler</span>
-                                <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 1 - 2 Hari</span>
-                            </div>
-                            <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 12.000</span>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="courier" value="SiCepat" class="hidden peer">
-                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-4 transition duration-300 group-hover:bg-gray-50 flex flex-col justify-between h-full shadow-sm">
-                            <div>
-                                <span class="font-bold text-gray-800 text-sm block">SiCepat Halu</span>
-                                <span class="text-xs text-gray-400 block mt-1 font-light">Estimasi: 3 - 5 Hari</span>
-                            </div>
-                            <span class="font-extrabold text-rose-500 text-sm mt-4 block">Rp 8.000</span>
-                        </div>
-                    </label>
+                        </label>
+                    @endforeach
                 </div>
                 @error('courier')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -119,11 +101,11 @@
                 </div>
                 <div class="flex justify-between text-gray-500">
                     <span>Ongkos Kirim</span>
-                    <span id="shipping-cost-display" class="font-medium text-gray-700">Rp 10.000</span>
+                    <span id="shipping-cost-display" class="font-medium text-gray-700">Rp {{ number_format($expeditions->first()->shipping_cost ?? 10000, 0, ',', '.') }}</span>
                 </div>
                 <div class="flex justify-between font-bold text-gray-800 pt-4 border-t border-dashed border-rose-200/60 text-base">
                     <span>Total Bayar</span>
-                    <span id="total" class="text-rose-500 text-lg">Rp {{ number_format($product->price + 10000, 0, ',', '.') }}</span>
+                    <span id="total" class="text-rose-500 text-lg">Rp {{ number_format($product->price + ($expeditions->first()->shipping_cost ?? 10000), 0, ',', '.') }}</span>
                 </div>
             </div>
 
@@ -142,21 +124,16 @@
         const totalEl = document.getElementById('total');
         const courierRadios = document.querySelectorAll('input[name="courier"]');
 
-        const shippingCosts = {
-            'J&T': 10000,
-            'JNE': 12000,
-            'SiCepat': 8000
-        };
-
         function calculateTotal() {
             const qty = parseInt(qtyInput.value) || 1;
             const subtotal = price * qty;
             
-            let selectedCourier = 'J&T';
+            let shippingCost = 10000;
             courierRadios.forEach(radio => {
-                if (radio.checked) selectedCourier = radio.value;
+                if (radio.checked) {
+                    shippingCost = parseInt(radio.getAttribute('data-cost')) || 0;
+                }
             });
-            const shippingCost = shippingCosts[selectedCourier];
             
             subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
             shippingEl.textContent = 'Rp ' + shippingCost.toLocaleString('id-ID');

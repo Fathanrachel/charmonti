@@ -14,25 +14,24 @@ class BahanMasuksTable
     {
         return $table
             ->columns([
-                TextColumn::make('bahan_id')
-                    ->numeric()
+                TextColumn::make('bahan.nama_bahan')
+                    ->label('Nama Bahan')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('nama_bahan')
-                    ->searchable(),
+
                 TextColumn::make('qty_masuk')
+                    ->label('Jumlah Masuk')
                     ->numeric()
                     ->sortable(),
+
                 TextColumn::make('tanggal_masuk')
-                    ->dateTime()
+                    ->label('Tanggal Masuk')
+                    ->dateTime('d M Y')
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('deskripsi')
+                    ->label('Keterangan')
+                    ->limit(50),
             ])
             ->filters([
                 //

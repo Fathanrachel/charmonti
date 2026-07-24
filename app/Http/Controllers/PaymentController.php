@@ -50,20 +50,23 @@ class PaymentController extends Controller
 
         $itemDetails = [];
         
-        // 1. Add regular items
-        foreach ($order->orderItems as $item) {
-            $itemDetails[] = [
-                'id'       => 'prod-' . $item->product_id,
-                'price'    => (int) $item->price,
-                'quantity' => $item->qty,
-                'name'     => $item->product->product_name,
-            ];
+        // 1. Add items from orderItems (includes regular & custom cart items)
+        $hasOrderItems = $order->orderItems->count() > 0;
+
+        if ($hasOrderItems) {
+            foreach ($order->orderItems as $item) {
+                $itemDetails[] = [
+                    'id'       => 'prod-' . $item->product_id,
+                    'price'    => (int) $item->price,
+                    'quantity' => (int) $item->qty,
+                    'name'     => $item->product?->product_name ?? 'Produk',
+                ];
+            }
         }
 
-        // 2. Add custom bracelets if any
-        if ($order->customBahanOrder) {
+        // 2. Add custom bracelet ONLY if orderItems is empty (legacy single custom order fallback)
+        if (!$hasOrderItems && $order->customBahanOrder) {
             $customOrder = $order->customBahanOrder;
-            // Calculate custom order total (Base strap 20,000 + charms)
             $charmsTotal = 0;
             foreach ($customOrder->customBahanOrderItems as $charmItem) {
                 $charmsTotal += ($charmItem->bahan?->price ?? 0) * ($charmItem->qty ?? 1);
@@ -89,14 +92,42 @@ class PaymentController extends Controller
             ];
         }
 
+        // Truncate item names if longer than 50 chars (Midtrans API requirement)
+        foreach ($itemDetails as &$item) {
+            if (isset($item['name']) && strlen($item['name']) > 50) {
+                $item['name'] = mb_strimwidth($item['name'], 0, 47, '...');
+            }
+        }
+        unset($item);
+
+        // Calculate sum of item_details to guarantee exact match with gross_amount
+        $itemTotalSum = 0;
+        foreach ($itemDetails as $item) {
+            $itemTotalSum += (int)$item['price'] * (int)$item['quantity'];
+        }
+
+        $grossAmount = $itemTotalSum > 0 ? $itemTotalSum : (int) $order->total_price;
+
+        if ($order->total_price != $grossAmount) {
+            $order->update(['total_price' => $grossAmount]);
+        }
+
         $params = [
             'transaction_details' => [
                 'order_id'     => $orderId,
-                'gross_amount' => (int) $order->total_price,
+                'gross_amount' => $grossAmount,
             ],
             'customer_details' => [
-                'first_name' => $order->profile?->name,
-                'email'      => $order->profile?->user?->email,
+                'first_name'       => $order->profile?->name ?? 'Customer',
+                'email'            => $order->profile?->user?->email ?? 'customer@example.com',
+                'phone'            => $order->profile?->phone ?? '',
+                'shipping_address' => [
+                    'first_name'   => $order->profile?->name ?? 'Customer',
+                    'address'      => $order->profile?->address_line ?? '',
+                    'city'         => $order->profile?->city?->city ?? '',
+                    'postal_code'  => $order->profile?->postal_code ?? '',
+                    'country_code' => 'IDN',
+                ],
             ],
             'item_details' => $itemDetails,
         ];

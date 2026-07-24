@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [CustomerController::class, 'profile'])->name('customer.profile');
     Route::post('/profile', [CustomerController::class, 'updateProfile'])->name('customer.profile.update');
     Route::get('/api/cities/{province_id}', [CustomerController::class, 'getCities'])->name('api.cities');
+    Route::get('/api/expedition-costs/{city_id}', [CustomerController::class, 'getExpeditionCosts'])->name('api.expedition.costs');
 
     // Payment routes
     Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');

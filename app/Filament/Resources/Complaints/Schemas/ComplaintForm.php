@@ -34,9 +34,9 @@ class ComplaintForm
                 Select::make('status')
                     ->label('Status Tindak Lanjut')
                     ->options([
-                        'open' => 'Baru / Menunggu',
-                        'diproses' => 'Sedang Diproses',
-                        'selesai' => 'Selesai / Teratasi',
+                        'open'     => 'Komplain Baru (Menunggu Tinjauan)',
+                        'diproses' => 'Sedang Ditangani Toko',
+                        'selesai'  => 'Selesai Ditangani',
                     ])
                     ->required()
                     ->native(false),

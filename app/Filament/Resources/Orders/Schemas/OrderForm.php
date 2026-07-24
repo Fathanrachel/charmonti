@@ -30,12 +30,13 @@ class OrderForm
                     ->default(now()),
 
                 Select::make('status')
-                    ->label('Status')
+                    ->label('Status Pesanan')
                     ->options([
-                        'pending'   => 'Pending',
-                        'diproses'  => 'Diproses',
-                        'selesai'   => 'Selesai',
-                        'batal'     => 'Batal',
+                        'pending'   => 'Menunggu Pembayaran',
+                        'diproses'  => 'Sedang Diproses (Stok Dipotong)',
+                        'dikirim'   => 'Dalam Pengiriman (Sudah Di Kurir)',
+                        'selesai'   => 'Pesanan Selesai (Diterima Customer)',
+                        'batal'     => 'Dibatalkan (Pengembalian Stok)',
                     ])
                     ->default('pending')
                     ->required(),

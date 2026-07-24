@@ -12,7 +12,7 @@ class ListProductKeluars extends ListRecords
 
     public function getSubheading(): ?string
     {
-        return 'Stok otomatis dipotong dari batch terlama terlebih dahulu.';
+        return 'Daftar riwayat pencatatan produk keluar.';
     }
 
     protected function getHeaderActions(): array

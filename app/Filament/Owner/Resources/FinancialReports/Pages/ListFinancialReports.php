@@ -13,6 +13,15 @@ class ListFinancialReports extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\Action::make('infoPerhitungan')
+                ->label('Info Perhitungan')
+                ->icon('heroicon-o-information-circle')
+                ->color('rose')
+                ->modalHeading('ℹ️ Petunjuk Perhitungan Laporan Keuangan')
+                ->modalContent(view('filament.pages.financial-report-info-modal'))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Tutup'),
+
             \Filament\Actions\Action::make('downloadPdf')
                 ->label('Unduh PDF Laporan')
                 ->icon('heroicon-o-document-arrow-down')

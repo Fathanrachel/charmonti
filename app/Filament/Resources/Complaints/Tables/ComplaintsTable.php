@@ -34,17 +34,19 @@ class ComplaintsTable
                     ->limit(50),
 
                 TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Status Tindak Lanjut')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'open'     => 'danger',
-                        'diproses' => 'warning',
-                        'selesai'  => 'success',
+                    ->color(fn (?string $state): string => match ($state) {
+                        'open', 'pending'   => 'danger',
+                        'diproses'          => 'info',
+                        'selesai', 'closed' => 'success',
+                        default             => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'open'     => 'Baru / Menunggu',
-                        'diproses' => 'Diproses Toko',
-                        'selesai'  => 'Selesai / Teratasi',
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'open', 'pending'   => 'Komplain Baru',
+                        'diproses'          => 'Sedang Ditangani',
+                        'selesai', 'closed' => 'Selesai Ditangani',
+                        default             => ucfirst($state ?? '-'),
                     })
                     ->sortable(),
 

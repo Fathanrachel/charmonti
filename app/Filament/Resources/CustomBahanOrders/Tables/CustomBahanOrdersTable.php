@@ -19,20 +19,30 @@ class CustomBahanOrdersTable
                     ->sortable(),
 
                 TextColumn::make('warna')
-                    ->label('Warna')
+                    ->label('Warna Tali')
                     ->searchable(),
 
                 TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Status Perakitan')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending'   => 'warning',
-                        'disetujui' => 'success',
-                        'ditolak'   => 'danger',
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending'               => 'warning',
+                        'diproses', 'disetujui' => 'info',
+                        'selesai'               => 'success',
+                        'batal', 'ditolak'      => 'danger',
+                        default                 => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'pending'               => 'Menunggu Perakitan',
+                        'diproses'              => 'Sedang Dirangkai',
+                        'disetujui'             => 'Disetujui',
+                        'selesai'               => 'Selesai Dirangkai',
+                        'batal', 'ditolak'      => 'Dibatalkan',
+                        default                 => ucfirst($state ?? '-'),
                     }),
 
                 TextColumn::make('created_at')
-                    ->label('Dibuat')
+                    ->label('Tanggal Request')
                     ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

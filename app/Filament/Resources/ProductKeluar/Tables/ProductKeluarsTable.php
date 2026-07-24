@@ -6,7 +6,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 
@@ -18,10 +17,7 @@ class ProductKeluarsTable
             ->columns([
                 TextColumn::make('product.product_name')
                     ->label('Produk')
-                    ->searchable(),
-
-                TextColumn::make('productMasuk.nama_product')
-                    ->label('Batch Masuk')
+                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('qty_keluar')
@@ -30,13 +26,13 @@ class ProductKeluarsTable
                     ->sortable(),
 
                 TextColumn::make('sisa')
-                    ->label('Sisa Batch')
+                    ->label('Sisa Stok')
                     ->numeric()
                     ->sortable(),
 
                 TextColumn::make('tanggal_keluar')
                     ->label('Tanggal Keluar')
-                    ->dateTime('d M Y H:i')
+                    ->dateTime('d M Y')
                     ->sortable(),
             ])
             ->filters([

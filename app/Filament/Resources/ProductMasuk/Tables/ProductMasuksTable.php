@@ -7,8 +7,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 
@@ -19,11 +17,7 @@ class ProductMasuksTable
         return $table
             ->columns([
                 TextColumn::make('product.product_name')
-                    ->label('Produk')
-                    ->searchable(),
-
-                TextColumn::make('nama_product')
-                    ->label('Nama Batch')
+                    ->label('Nama Produk')
                     ->searchable(),
 
                 TextColumn::make('qty_masuk')
@@ -32,10 +26,10 @@ class ProductMasuksTable
                     ->sortable(),
 
                 TextColumn::make('sisa_stok')
-                    ->label('Sisa Stok Batch')
+                    ->label('Sisa Stok')
                     ->getStateUsing(function ($record) {
                         $alreadyOut = $record->productKeluar()->sum('qty_keluar');
-                        return $record->qty_masuk - $alreadyOut;
+                        return max(0, $record->qty_masuk - $alreadyOut);
                     })
                     ->numeric()
                     ->badge()

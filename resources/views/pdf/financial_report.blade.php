@@ -29,19 +29,21 @@
         /* Kotak Summary (Grid 3 Kolom) */
         .summary-table { width: 100%; border-collapse: collapse; margin-top: 25px; }
         .summary-card { padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; }
-        .card-income { background-color: #fffbeb; border-color: #fde68a; } /* Amber-50 */
-        .card-expense { background-color: #fef2f2; border-color: #fecaca; } /* Red-50 */
-        .card-profit { background-color: #f0fdf4; border-color: #bbf7d0; } /* Green-50 */
+        .card-income { background-color: #fffbeb; border-color: #fde68a; }
+        .card-expense { background-color: #fef2f2; border-color: #fecaca; }
+        .card-profit { background-color: #f0fdf4; border-color: #bbf7d0; }
         
         .card-title { font-size: 9px; color: #7c2d12; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px; }
         .card-title.expense { color: #7f1d1d; }
         .card-title.profit { color: #14532d; }
         .card-value { font-size: 15px; font-weight: bold; color: #1f2937; }
         .card-value.profit { color: #16a34a; }
+
+        /* Catatan Perhitungan */
+        .note-box { margin-top: 20px; padding: 10px 14px; background-color: #fff5f5; border-left: 4px solid #be123c; border-radius: 4px; font-size: 10.5px; color: #881337; }
         
         /* Tanda Tangan */
-        .signature-section { width: 100%; margin-top: 40px; border-collapse: collapse; page-break-inside: avoid; }
-        .signature-space { height: 50px; }
+        .signature-section { width: 100%; margin-top: 30px; border-collapse: collapse; page-break-inside: avoid; }
         .sig-text { font-size: 11px; color: #374151; }
     </style>
 </head>
@@ -123,6 +125,13 @@
             </td>
         </tr>
     </table>
+
+    <!-- Kotak Catatan Perhitungan -->
+    <div class="note-box">
+        <strong>💡 Catatan Rumus Perhitungan Keuntungan Bersih:</strong><br>
+        • <strong>Keuntungan Bersih (Net Profit)</strong> = Total Pendapatan − Total Pengeluaran<br>
+        • <em>Keterangan: Total Pengeluaran merupakan estimasi HPP (Harga Pokok Penjualan) & Operasional sebesar 40% dari Total Pendapatan.</em>
+    </div>
 
     <!-- Area Tanda Tangan -->
     <table class="signature-section">

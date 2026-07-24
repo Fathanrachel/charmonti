@@ -37,6 +37,10 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('charmonti.png'))
             ->brandLogoHeight('2.5rem')
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
+            ->resources([
+                \App\Filament\Admin\Resources\CityExpeditions\CityExpeditionResource::class,
+                \App\Filament\Admin\Resources\Expeditions\ExpeditionResource::class,
+            ])
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
                 \App\Filament\Admin\Pages\Dashboard::class,

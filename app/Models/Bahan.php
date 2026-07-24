@@ -13,10 +13,12 @@ class Bahan extends Model
         'description',
         'price',
         'image',
+        'sisa',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'sisa'  => 'integer',
     ];
 
     public function bahanMasuk()
@@ -34,12 +36,18 @@ class Bahan extends Model
         return $this->hasMany(CustomBahanOrderItem::class, 'bahan_id');
     }
 
-    // Dynamic stock accessor (FIFO/batch sum of qty_masuk - sum of qty_keluar)
+    // Dynamic stock accessor (Centralized sisa stock with batch fallback)
     public function getDynamicStockAttribute()
     {
         $masuk = $this->bahanMasuk()->sum('qty_masuk');
         $keluar = $this->bahanKeluar()->sum('qty_keluar');
-        return (int) ($masuk - $keluar);
+        $calculated = (int) ($masuk - $keluar);
+        return max(0, $calculated);
+    }
+
+    public function syncSisa(): void
+    {
+        $this->update(['sisa' => $this->getDynamicStockAttribute()]);
     }
 
     public function deductStock(int $quantity): int
@@ -60,15 +68,16 @@ class Bahan extends Model
             if ($batchStock > 0) {
                 $deduct = min($needed, $batchStock);
                 BahanKeluar::create([
-                    'idbahan_masuk' => $batch->id,
-                    'bahan_id' => $this->id,
-                    'qty_keluar' => $deduct,
-                    'sisa' => $batchStock - $deduct,
+                    'idbahan_masuk'  => $batch->id,
+                    'bahan_id'       => $this->id,
+                    'qty_keluar'     => $deduct,
                     'tanggal_keluar' => now(),
                 ]);
                 $needed -= $deduct;
             }
         }
+
+        $this->syncSisa();
 
         return $needed; // Returns remaining quantity if out of stock
     }

@@ -14,13 +14,13 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 12, 2);
             $table->string('image')->nullable();
+            $table->integer('sisa')->default(0);
             $table->timestamps();
         });
 
         Schema::create('bahan_masuk', function (Blueprint $table) {
             $table->id();
             $table->foreignId('bahan_id')->constrained('bahan')->onDelete('cascade');
-            $table->string('nama_bahan');
             $table->integer('qty_masuk');
             $table->text('deskripsi')->nullable();
             $table->dateTime('tanggal_masuk');
@@ -31,7 +31,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('idbahan_masuk')->constrained('bahan_masuk')->onDelete('cascade');
             $table->foreignId('bahan_id')->constrained('bahan')->onDelete('cascade');
-            $table->integer('sisa');
             $table->integer('qty_keluar');
             $table->dateTime('tanggal_keluar');
             $table->timestamps();

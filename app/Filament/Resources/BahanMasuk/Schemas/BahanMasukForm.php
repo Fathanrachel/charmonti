@@ -16,18 +16,19 @@ class BahanMasukForm
         return $schema
             ->components([
                 Select::make('bahan_id')
-                    ->label('Bahan Master')
+                    ->label('Nama Bahan')
                     ->options(Bahan::all()->pluck('nama_bahan', 'id'))
                     ->required()
                     ->searchable()
                     ->reactive()
                     ->afterStateUpdated(fn ($state, callable $set) => 
-                        $set('nama_bahan', Bahan::find($state)?->nama_bahan)
+                        $set('nama_bahan', Bahan::find($state)?->nama_bahan ?? '')
                     ),
                 
                 TextInput::make('nama_bahan')
-                    ->label('Nama Bahan (Katalog)')
-                    ->required(),
+                    ->label('Nama Katalog Bahan')
+                    ->required()
+                    ->maxLength(255),
 
                 TextInput::make('qty_masuk')
                     ->label('Jumlah Masuk')
@@ -41,7 +42,7 @@ class BahanMasukForm
                     ->required(),
 
                 Textarea::make('deskripsi')
-                    ->label('Deskripsi / Catatan')
+                    ->label('Keterangan / Catatan')
                     ->columnSpanFull(),
             ]);
     }

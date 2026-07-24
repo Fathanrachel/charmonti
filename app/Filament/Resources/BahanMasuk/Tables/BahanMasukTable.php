@@ -14,7 +14,7 @@ class BahanMasukTable
     {
         return $table
             ->columns([
-                TextColumn::make('nama_bahan')
+                TextColumn::make('Bahan.nama_bahan')
                     ->label('Nama Bahan')
                     ->searchable()
                     ->sortable(),
@@ -25,10 +25,10 @@ class BahanMasukTable
                     ->sortable(),
 
                 TextColumn::make('sisa_stok')
-                    ->label('Sisa Stok Batch')
+                    ->label('Sisa Stok')
                     ->getStateUsing(function ($record) {
                         $alreadyOut = \App\Models\BahanKeluar::where('idbahan_masuk', $record->id)->sum('qty_keluar');
-                        return $record->qty_masuk - $alreadyOut;
+                        return max(0, $record->qty_masuk - $alreadyOut);
                     })
                     ->numeric()
                     ->badge()

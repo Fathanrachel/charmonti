@@ -268,7 +268,21 @@ class CartController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja Anda kosong.');
         }
 
-        $expeditions = Expedition::all();
+        $user = Auth::user();
+        $userCityId = $user->profile?->city_id;
+
+        $expeditions = Expedition::all()->map(function ($exp) use ($userCityId) {
+            $cityExp = null;
+            if ($userCityId) {
+                $cityExp = \App\Models\CityExpedition::where('city_id', $userCityId)
+                    ->where('expedition_id', $exp->id)
+                    ->first();
+            }
+            $exp->shipping_cost = $cityExp ? $cityExp->shipping_cost : $exp->shipping_cost;
+            $exp->estimated_days = $cityExp ? $cityExp->estimated_days : $exp->estimated_days;
+            return $exp;
+        });
+
         return view('customer.checkout_gabungan', compact('cart', 'expeditions'));
     }
 
@@ -355,14 +369,24 @@ class CartController extends Controller
             $itemTotal += $item['price'] * $item['quantity'];
         }
 
+        $profile = Auth::user()->profile;
+        $userCityId = $profile?->city_id;
+
         // Ambil data ekspedisi dari database
         $expedition = Expedition::where('name_expedition', $request->courier)->first();
         if (!$expedition) {
             return redirect()->back()->with('error', 'Kurir pengiriman tidak valid.');
         }
 
-        $shippingCost = $expedition->shipping_cost;
-        $estimatedDays = $expedition->estimated_days;
+        $cityExp = null;
+        if ($userCityId) {
+            $cityExp = \App\Models\CityExpedition::where('city_id', $userCityId)
+                ->where('expedition_id', $expedition->id)
+                ->first();
+        }
+
+        $shippingCost = $cityExp ? $cityExp->shipping_cost : $expedition->shipping_cost;
+        $estimatedDays = $cityExp ? $cityExp->estimated_days : $expedition->estimated_days;
         $totalPrice = $itemTotal + $shippingCost;
 
         $profile = Auth::user()->profile;

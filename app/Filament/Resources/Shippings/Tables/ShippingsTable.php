@@ -44,13 +44,21 @@ class ShippingsTable
                     ->sortable(),
 
                 TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Status Pengiriman')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending'  => 'warning',
-                        'dikirim'  => 'info',
-                        'sampai'   => 'success',
-                        'batal'    => 'danger',
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending'           => 'warning',
+                        'dikirim'           => 'info',
+                        'sampai', 'selesai' => 'success',
+                        'batal'             => 'danger',
+                        default             => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'pending'           => 'Menunggu Pengiriman',
+                        'dikirim'           => 'Dalam Pengiriman',
+                        'sampai', 'selesai' => 'Sudah Terkirim / Sampai',
+                        'batal'             => 'Batal Dikirim',
+                        default             => ucfirst($state ?? '-'),
                     }),
             ])
             ->filters([])

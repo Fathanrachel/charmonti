@@ -36,7 +36,11 @@ class OwnerPanelProvider extends PanelProvider
             ->brandLogo(asset('charmonti.png'))
             ->brandLogoHeight('2.5rem')
             ->discoverResources(in: app_path('Filament/Owner/Resources'), for: 'App\\Filament\\Owner\\Resources')
-            ->discoverPages(in: app_path('Filament/Owner/Pages'), for: 'App\\Filament\\Owner\\Pages')
+            ->resources([
+                \App\Filament\Owner\Resources\CityExpeditions\CityExpeditionResource::class,
+                \App\Filament\Owner\Resources\Expeditions\ExpeditionResource::class,
+            ])
+            ->discoverPages(in: app_path('Filament/Owner/Pages'), for: 'App\\Filament/Owner/Pages')
             ->pages([
                 \App\Filament\Owner\Pages\Dashboard::class,
             ])
