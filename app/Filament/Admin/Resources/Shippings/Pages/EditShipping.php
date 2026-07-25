@@ -17,6 +17,11 @@ class EditShipping extends EditRecord
         ];
     }
 
+    public function getTitle(): string
+    {
+        return 'Edit Pengiriman Order #' . ($this->record->order_id ?? $this->record->id);
+    }
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

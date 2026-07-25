@@ -188,17 +188,32 @@ class CartController extends Controller
                 $product = Product::find($cart[$id]['id']);
                 if ($product && $product->product_name !== 'Gelang Custom') {
                     if ($quantity > $product->dynamic_stock) {
-                        return redirect()->back()->with('error', 'Stok tidak mencukupi untuk "' . $product->product_name . '". Tersedia: ' . $product->dynamic_stock . ' pcs.');
+                        $errMsg = 'Stok tidak mencukupi untuk "' . $product->product_name . '". Tersedia: ' . $product->dynamic_stock . ' pcs.';
+                        if ($request->wantsJson() || $request->ajax()) {
+                            return response()->json(['success' => false, 'message' => $errMsg], 400);
+                        }
+                        return redirect()->back()->with('error', $errMsg);
                     }
                 }
             } elseif ($cart[$id]['type'] === 'custom') {
-                // Validasi stok tali gelang
-                $warna = $cart[$id]['warna'];
-                $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($warna))->first();
-                if ($strapBahan) {
-                    if ($quantity > $strapBahan->dynamic_stock) {
-                        return redirect()->back()->with('error', 'Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.');
+                // Validasi stok tali gelang (fleksibel)
+                $warna = $cart[$id]['warna'] ?? '';
+                $strapBahan = Bahan::where(function ($q) use ($warna) {
+                    $q->where('nama_bahan', 'like', '%' . strtolower($warna) . '%')
+                      ->orWhere('nama_bahan', 'like', '%' . ucfirst($warna) . '%');
+                })->where(function ($q) {
+                    $q->where('nama_bahan', 'like', '%strap%')
+                      ->orWhere('nama_bahan', 'like', '%Strap%')
+                      ->orWhere('nama_bahan', 'like', '%tali%')
+                      ->orWhere('nama_bahan', 'like', '%Tali%');
+                })->first();
+
+                if ($strapBahan && $quantity > $strapBahan->dynamic_stock) {
+                    $errMsg = 'Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.';
+                    if ($request->wantsJson() || $request->ajax()) {
+                        return response()->json(['success' => false, 'message' => $errMsg], 400);
                     }
+                    return redirect()->back()->with('error', $errMsg);
                 }
 
                 $charmsQuantities = $cart[$id]['charms_quantities'] ?? [];
@@ -207,7 +222,11 @@ class CartController extends Controller
                     if ($bahan) {
                         $totalRequired = $qtyPerBracelet * $quantity;
                         if ($totalRequired > $bahan->dynamic_stock) {
-                            return redirect()->back()->with('error', 'Stok manik "' . $bahan->nama_bahan . '" tidak mencukupi untuk jumlah gelang tersebut. Tersisa: ' . $bahan->dynamic_stock . ' pcs.');
+                            $errMsg = 'Stok manik "' . $bahan->nama_bahan . '" tidak mencukupi untuk jumlah gelang tersebut. Tersisa: ' . $bahan->dynamic_stock . ' pcs.';
+                            if ($request->wantsJson() || $request->ajax()) {
+                                return response()->json(['success' => false, 'message' => $errMsg], 400);
+                            }
+                            return redirect()->back()->with('error', $errMsg);
                         }
                     }
                 }
@@ -219,8 +238,10 @@ class CartController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 $itemSubtotal = $cart[$id]['price'] * $cart[$id]['quantity'];
                 $grandTotal = 0;
+                $totalQty = 0;
                 foreach ($cart as $item) {
                     $grandTotal += $item['price'] * $item['quantity'];
+                    $totalQty += $item['quantity'];
                 }
 
                 return response()->json([
@@ -228,6 +249,7 @@ class CartController extends Controller
                     'quantity' => $cart[$id]['quantity'],
                     'itemSubtotal' => 'Rp ' . number_format($itemSubtotal, 0, ',', '.'),
                     'grandTotal' => 'Rp ' . number_format($grandTotal, 0, ',', '.'),
+                    'totalQty' => $totalQty,
                     'message' => 'Kuantitas berhasil diperbarui.'
                 ]);
             }

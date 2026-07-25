@@ -131,9 +131,33 @@ class CustomerController extends Controller
             return redirect()->route('login')->with('info', 'Login dulu untuk memesan.');
         }
 
-        $charms = Bahan::where('nama_bahan', 'not like', 'Tali Gelang%')->get();
-        $strapSilver = Bahan::where('nama_bahan', 'Tali Gelang Silver')->first();
-        $strapGold = Bahan::where('nama_bahan', 'Tali Gelang Gold')->first();
+        // 1. Ambil Strap Silver & Gold secara fleksibel (mengabaikan huruf besar/kecil & variasi nama 'tali' / 'strap')
+        $strapSilver = Bahan::where(function ($q) {
+            $q->where('nama_bahan', 'like', '%silver%')
+              ->orWhere('nama_bahan', 'like', '%Silver%');
+        })->where(function ($q) {
+            $q->where('nama_bahan', 'like', '%strap%')
+              ->orWhere('nama_bahan', 'like', '%Strap%')
+              ->orWhere('nama_bahan', 'like', '%tali%')
+              ->orWhere('nama_bahan', 'like', '%Tali%');
+        })->first();
+
+        $strapGold = Bahan::where(function ($q) {
+            $q->where('nama_bahan', 'like', '%gold%')
+              ->orWhere('nama_bahan', 'like', '%Gold%');
+        })->where(function ($q) {
+            $q->where('nama_bahan', 'like', '%strap%')
+              ->orWhere('nama_bahan', 'like', '%Strap%')
+              ->orWhere('nama_bahan', 'like', '%tali%')
+              ->orWhere('nama_bahan', 'like', '%Tali%');
+        })->first();
+
+        // 2. Ambil Charms: Semua bahan yang BUKAN mengandung kata 'strap' atau 'tali'
+        $charms = Bahan::where('nama_bahan', 'not like', '%strap%')
+            ->where('nama_bahan', 'not like', '%Strap%')
+            ->where('nama_bahan', 'not like', '%tali%')
+            ->where('nama_bahan', 'not like', '%Tali%')
+            ->get();
 
         return view('customer.custom-order', compact('charms', 'strapSilver', 'strapGold'));
     }
@@ -161,8 +185,17 @@ class CustomerController extends Controller
             }
         }
 
-        // Validasi stok tali gelang
-        $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
+        // Validasi stok tali gelang (fleksibel)
+        $strapBahan = Bahan::where(function ($q) use ($request) {
+            $q->where('nama_bahan', 'like', '%' . strtolower($request->warna) . '%')
+              ->orWhere('nama_bahan', 'like', '%' . ucfirst($request->warna) . '%');
+        })->where(function ($q) {
+            $q->where('nama_bahan', 'like', '%strap%')
+              ->orWhere('nama_bahan', 'like', '%Strap%')
+              ->orWhere('nama_bahan', 'like', '%tali%')
+              ->orWhere('nama_bahan', 'like', '%Tali%');
+        })->first();
+
         if ($strapBahan && $strapBahan->dynamic_stock <= 0) {
             return redirect()->back()->with('error', 'Stok tali gelang warna ' . $request->warna . ' sedang habis.')->withInput();
         }
@@ -299,8 +332,8 @@ class CustomerController extends Controller
     {
         abort_if($order->profile?->users_id !== Auth::id(), 403);
 
-        // Hanya bisa dikonfirmasi jika status pengiriman sudah 'dikirim' atau status pesanan masih diproses/pending
-        if ($order->shipping?->status === 'dikirim' || in_array($order->status, ['diproses', 'pending'])) {
+        // Hanya bisa dikonfirmasi jika status pengiriman sudah 'dikirim' atau status pesanan dikirim/diproses/pending
+        if ($order->shipping?->status === 'dikirim' || in_array($order->status, ['dikirim', 'diproses', 'pending'])) {
             $order->update(['status' => 'selesai']);
 
             if ($order->shipping) {

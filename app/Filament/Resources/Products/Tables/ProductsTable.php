@@ -46,18 +46,14 @@ class ProductsTable
                     ->label('Kategori')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'charm'       => 'warning',
-                        'strap'       => 'info',
                         'gelang_jadi' => 'success',
                         'cincin'      => 'danger',
                         default       => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'charm'       => 'Charm',
-                        'strap'       => 'Strap',
                         'gelang_jadi' => 'Gelang Jadi',
                         'cincin'      => 'Cincin',
-                        default       => $state,
+                        default       => ucwords(str_replace('_', ' ', $state)),
                     }),
 
                 TextColumn::make('created_at')

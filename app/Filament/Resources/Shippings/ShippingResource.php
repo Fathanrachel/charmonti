@@ -18,9 +18,13 @@ class ShippingResource extends Resource
 {
     protected static ?string $model = Shipping::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-truck';
 
-    protected static ?string $recordTitleAttribute = 'shipping_id';
+    protected static ?string $modelLabel = 'Pengiriman';
+
+    protected static ?string $pluralModelLabel = 'Pengiriman';
+
+    protected static ?string $navigationLabel = 'Pengiriman';
 
     public static function form(Schema $schema): Schema
     {

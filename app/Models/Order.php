@@ -39,6 +39,11 @@ class Order extends Model
         return $this->hasOne(CustomBahanOrder::class, 'order_id');
     }
 
+    public function customBahanOrders()
+    {
+        return $this->hasMany(CustomBahanOrder::class, 'order_id');
+    }
+
     public function complaints()
     {
         return $this->hasMany(Complaint::class);

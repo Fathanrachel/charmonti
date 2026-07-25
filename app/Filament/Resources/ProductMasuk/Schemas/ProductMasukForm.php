@@ -19,16 +19,7 @@ class ProductMasukForm
                     ->label('Nama Produk')
                     ->options(Product::all()->pluck('product_name', 'id'))
                     ->required()
-                    ->searchable()
-                    ->reactive()
-                    ->afterStateUpdated(fn ($state, callable $set) => 
-                        $set('nama_product', Product::find($state)?->product_name ?? '')
-                    ),
-
-                TextInput::make('nama_product')
-                    ->label('Nama Produk (Katalog)')
-                    ->required()
-                    ->maxLength(255),
+                    ->searchable(),
 
                 TextInput::make('qty_masuk')
                     ->label('Jumlah Masuk')

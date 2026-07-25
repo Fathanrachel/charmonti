@@ -6,7 +6,6 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class ProductForm
@@ -42,15 +41,12 @@ class ProductForm
                 Select::make('category')
                     ->label('Kategori Produk')
                     ->options([
-                        'charm'       => 'Charm',
-                        'strap'       => 'Strap',
                         'gelang_jadi' => 'Gelang Jadi',
                         'cincin'      => 'Cincin',
                     ])
                     ->required()
+                    ->native(false)
                     ->default('gelang_jadi'),
-                
-
             ]);
     }
 }

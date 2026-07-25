@@ -32,21 +32,29 @@ class OrderObserver
                 foreach ($customOrders as $customOrder) {
                     // Potong stok Tali Gelang (strap)
                     if (!empty($customOrder->warna)) {
-                        $colorName = ucfirst(trim($customOrder->warna)); // 'Silver' atau 'Gold'
-                        $bahanName = "Tali Gelang " . $colorName;
+                        $taliBahan = Bahan::where(function ($q) use ($customOrder) {
+                            $q->where('nama_bahan', 'like', '%' . strtolower($customOrder->warna) . '%')
+                              ->orWhere('nama_bahan', 'like', '%' . ucfirst($customOrder->warna) . '%');
+                        })->where(function ($q) {
+                            $q->where('nama_bahan', 'like', '%strap%')
+                              ->orWhere('nama_bahan', 'like', '%Strap%')
+                              ->orWhere('nama_bahan', 'like', '%tali%')
+                              ->orWhere('nama_bahan', 'like', '%Tali%');
+                        })->first();
 
-                        $taliBahan = Bahan::where('nama_bahan', $bahanName)->first();
                         if ($taliBahan) {
                             $taliBahan->deductStock(1);
                         }
                     }
 
-                    // Potong stok manik-manik/charms untuk setiap item di gelang custom ini
-                    foreach ($customOrder->customBahanOrderItems as $charmItem) {
-                        $bahan = $charmItem->bahan;
+                    // Potong stok manik-manik/charms (dikelompokkan per bahan_id agar tercatat dalam 1 baris log Bahan Keluar)
+                    $groupedCharmItems = $customOrder->customBahanOrderItems->groupBy('bahan_id');
+                    foreach ($groupedCharmItems as $bahanId => $charmItems) {
+                        $firstItem = $charmItems->first();
+                        $bahan = $firstItem?->bahan;
                         if ($bahan) {
-                            $qtyToDeduct = $charmItem->qty ?? 1;
-                            $bahan->deductStock($qtyToDeduct);
+                            $totalQtyToDeduct = $charmItems->sum('qty');
+                            $bahan->deductStock($totalQtyToDeduct);
                         }
                     }
                 }
@@ -96,10 +104,16 @@ class OrderObserver
                     foreach ($customOrdersWithItems as $customOrder) {
                         // Restore Tali Gelang (strap)
                         if (!empty($customOrder->warna)) {
-                            $colorName = ucfirst(trim($customOrder->warna));
-                            $bahanName = "Tali Gelang " . $colorName;
+                            $taliBahan = Bahan::where(function ($q) use ($customOrder) {
+                                $q->where('nama_bahan', 'like', '%' . strtolower($customOrder->warna) . '%')
+                                  ->orWhere('nama_bahan', 'like', '%' . ucfirst($customOrder->warna) . '%');
+                            })->where(function ($q) {
+                                $q->where('nama_bahan', 'like', '%strap%')
+                                  ->orWhere('nama_bahan', 'like', '%Strap%')
+                                  ->orWhere('nama_bahan', 'like', '%tali%')
+                                  ->orWhere('nama_bahan', 'like', '%Tali%');
+                            })->first();
 
-                            $taliBahan = Bahan::where('nama_bahan', $bahanName)->first();
                             if ($taliBahan) {
                                 BahanMasuk::create([
                                     'bahan_id'      => $taliBahan->id,
@@ -111,14 +125,16 @@ class OrderObserver
                             }
                         }
 
-                        // Restore Charms
-                        foreach ($customOrder->customBahanOrderItems as $charmItem) {
-                            $bahan = $charmItem->bahan;
+                        // Restore Charms (dikelompokkan per bahan_id)
+                        $groupedRestoreCharms = $customOrder->customBahanOrderItems->groupBy('bahan_id');
+                        foreach ($groupedRestoreCharms as $bahanId => $charmItems) {
+                            $firstItem = $charmItems->first();
+                            $bahan = $firstItem?->bahan;
                             if ($bahan) {
-                                $qtyToRestore = $charmItem->qty ?? 1;
+                                $totalQtyToRestore = $charmItems->sum('qty');
                                 BahanMasuk::create([
                                     'bahan_id'      => $bahan->id,
-                                    'qty_masuk'     => $qtyToRestore,
+                                    'qty_masuk'     => $totalQtyToRestore,
                                     'deskripsi'     => 'Pengembalian Stok (Pembatalan Order #' . $order->id . ')',
                                     'tanggal_masuk' => now(),
                                 ]);

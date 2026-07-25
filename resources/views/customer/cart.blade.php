@@ -73,7 +73,11 @@
                                     <div class="mt-2 text-[10px] text-gray-400 font-light flex flex-col gap-1">
                                         @foreach($item['charms_details'] as $charm)
                                             <div class="flex items-start gap-1.5">
-                                                <span class="bg-rose-50 px-2 py-0.5 rounded border border-rose-100 shrink-0">{{ $charm['name'] }} ×{{ $charm['quantity'] }}</span>
+                                                <span class="bg-rose-50 px-2 py-0.5 rounded border border-rose-100 shrink-0 charm-qty-badge-{{ $id }}"
+                                                      data-charm-name="{{ $charm['name'] }}"
+                                                      data-base-qty="{{ $charm['quantity'] }}">
+                                                    {{ $charm['name'] }} ×{{ $charm['quantity'] * $item['quantity'] }}
+                                                </span>
                                                 @if(!empty($charm['note']))
                                                     <span class="text-rose-400 italic">→ "{{ $charm['note'] }}"</span>
                                                 @endif
@@ -121,11 +125,24 @@
                 </div>
 
                 {{-- Summary Checkout Card --}}
+                @php
+                    $totalQty = 0;
+                    foreach($cart as $item) {
+                        $totalQty += $item['quantity'];
+                    }
+                @endphp
                 <div class="bg-white border border-gray-100/50 rounded-3xl p-6 shadow-sm h-fit space-y-6">
                     <h3 class="font-bold text-gray-800 text-lg border-b border-gray-50 pb-4">Ringkasan Belanja</h3>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="font-light text-gray-500">Subtotal Barang</span>
-                        <span id="cart-grand-total" class="font-bold text-gray-800">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
+                    
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center text-gray-500 font-light">
+                            <span>Total Barang</span>
+                            <span class="font-bold text-gray-800"><span id="cart-total-qty">{{ $totalQty }}</span> pcs</span>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-500 font-light">
+                            <span>Subtotal Barang</span>
+                            <span id="cart-grand-total" class="font-bold text-rose-500 text-base">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
+                        </div>
                     </div>
 
                     <div class="bg-rose-50/30 border border-rose-100/50 rounded-2xl p-4 text-xs text-rose-700 leading-relaxed font-light">
@@ -140,7 +157,66 @@
         @endif
     </div>
 
+    {{-- Custom Alert Modal --}}
+    <div id="cart-alert-modal" 
+         onclick="closeCartAlertModal(event)"
+         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300 ease-out">
+        <div id="cart-alert-modal-card" 
+             class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl transform scale-90 translate-y-4 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-rose-100">
+            <div class="h-16 w-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-rose-100/50 shadow-sm animate-pulse">
+                🌸
+            </div>
+            <h4 class="font-bold text-gray-800 text-lg mb-2">Informasi Stok</h4>
+            <p id="cart-alert-modal-msg" class="text-sm text-gray-600 font-light mb-6 leading-relaxed">Pesan modal</p>
+            <button type="button" onclick="closeCartAlertModal()" class="w-full bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-bold py-3.5 rounded-full transition duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+                Mengerti ✨
+            </button>
+        </div>
+    </div>
+
     <script>
+        function showCartAlert(msg) {
+            const modal = document.getElementById('cart-alert-modal');
+            const card  = document.getElementById('cart-alert-modal-card');
+            const msgEl = document.getElementById('cart-alert-modal-msg');
+            if (!modal || !card || !msgEl) return;
+
+            msgEl.textContent = msg;
+
+            // Ensure initial hidden state is applied
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-90', 'translate-y-4', 'opacity-0');
+            card.classList.remove('scale-100', 'translate-y-0', 'opacity-100');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            // Force DOM reflow to ensure initial state is rendered before animation starts
+            void modal.offsetHeight;
+
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-90', 'translate-y-4', 'opacity-0');
+                card.classList.add('scale-100', 'translate-y-0', 'opacity-100');
+            });
+        }
+
+        function closeCartAlertModal(e) {
+            if (e && e.target && e.target.closest('#cart-alert-modal-card')) return;
+            const modal = document.getElementById('cart-alert-modal');
+            const card  = document.getElementById('cart-alert-modal-card');
+            if (!card || !modal) return;
+
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95', 'translate-y-2', 'opacity-0');
+            card.classList.remove('scale-100', 'translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 320);
+        }
+
         function updateCartQty(id, delta) {
             const input = document.getElementById('qty-val-' + id);
             const disp = document.getElementById('qty-disp-' + id);
@@ -165,23 +241,38 @@
                 },
                 body: JSON.stringify({ quantity: next })
             })
-            .then(res => res.json())
+            .then(async res => {
+                const data = await res.json().catch(() => null);
+                if (!res.ok || !data || data.success === false) {
+                    throw new Error((data && data.message) ? data.message : 'Gagal mengubah kuantitas.');
+                }
+                return data;
+            })
             .then(data => {
                 if (data.success) {
                     disp.textContent = data.quantity;
                     input.value = data.quantity;
                     document.getElementById('item-subtotal-' + id).textContent = data.itemSubtotal;
                     document.getElementById('cart-grand-total').textContent = data.grandTotal;
+                    if (document.getElementById('cart-total-qty')) {
+                        document.getElementById('cart-total-qty').textContent = data.totalQty;
+                    }
+                    // Update charm badges dynamically if custom item
+                    document.querySelectorAll('.charm-qty-badge-' + id).forEach(badge => {
+                        const name = badge.getAttribute('data-charm-name');
+                        const baseQty = parseInt(badge.getAttribute('data-base-qty'), 10) || 1;
+                        badge.textContent = name + ' ×' + (baseQty * data.quantity);
+                    });
                 } else {
-                    alert(data.message || 'Gagal mengubah kuantitas.');
                     disp.textContent = current;
                     input.value = current;
+                    showCartAlert(data.message || 'Gagal mengubah kuantitas.');
                 }
             })
             .catch(err => {
-                console.error(err);
                 disp.textContent = current;
                 input.value = current;
+                showCartAlert(err.message || 'Stok tidak mencukupi.');
             });
         }
     </script>

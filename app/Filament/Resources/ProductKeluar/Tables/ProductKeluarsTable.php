@@ -25,7 +25,7 @@ class ProductKeluarsTable
                     ->numeric()
                     ->sortable(),
 
-                TextColumn::make('sisa')
+                TextColumn::make('product.dynamic_stock')
                     ->label('Sisa Stok')
                     ->numeric()
                     ->sortable(),

@@ -68,20 +68,49 @@ class OrdersTable
                     ->label('Ubah Status')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
+                    ->hidden(fn ($record): bool => in_array($record?->status, ['selesai', 'batal']))
                     ->form([
                         Select::make('status')
                             ->label('Status Baru')
-                            ->options([
-                                'pending'  => 'Menunggu Pembayaran',
-                                'diproses' => 'Sedang Diproses (Stok Dipotong)',
-                                'dikirim'  => 'Dalam Pengiriman',
-                                'selesai'  => 'Pesanan Selesai',
-                                'batal'    => 'Dibatalkan (Pengembalian Stok)',
-                            ])
+                            ->native(false)
+                            ->options(function ($record): array {
+                                $current = $record?->status;
+
+                                if ($current === 'pending') {
+                                    return [
+                                        'diproses' => 'Sedang Diproses (Stok Dipotong)',
+                                        'dikirim'  => 'Dalam Pengiriman',
+                                        'selesai'  => 'Pesanan Selesai',
+                                        'batal'    => 'Dibatalkan (Pengembalian Stok)',
+                                    ];
+                                }
+
+                                if ($current === 'diproses') {
+                                    return [
+                                        'dikirim'  => 'Dalam Pengiriman',
+                                        'selesai'  => 'Pesanan Selesai',
+                                        'batal'    => 'Dibatalkan (Pengembalian Stok)',
+                                    ];
+                                }
+
+                                if ($current === 'dikirim') {
+                                    return [
+                                        'selesai'  => 'Pesanan Selesai',
+                                        'batal'    => 'Dibatalkan (Pengembalian Stok)',
+                                    ];
+                                }
+
+                                return [];
+                            })
                             ->required(),
                     ])
                     ->action(function ($record, array $data) {
                         $record->update(['status' => $data['status']]);
+                        if ($data['status'] === 'dikirim' && $record->shipping) {
+                            $record->shipping->update(['status' => 'dikirim']);
+                        } elseif ($data['status'] === 'selesai' && $record->shipping) {
+                            $record->shipping->update(['status' => 'sampai']);
+                        }
                     })
                     ->successNotificationTitle('Status order berhasil diubah!'),
             ])

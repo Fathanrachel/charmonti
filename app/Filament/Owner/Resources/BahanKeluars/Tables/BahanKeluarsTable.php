@@ -20,7 +20,8 @@ class BahanKeluarsTable
                 TextColumn::make('bahan_id')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('sisa')
+                TextColumn::make('bahan.dynamic_stock')
+                    ->label('Sisa Stok')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('qty_keluar')

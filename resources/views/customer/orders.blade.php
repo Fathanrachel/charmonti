@@ -189,71 +189,81 @@
                                 @endforeach
 
                                 {{-- 2. Custom Gelang Order --}}
-                                @if($order->customBahanOrder)
-                                    @php
-                                        $customPrice = 20000; // Base price tali strap
-                                        foreach($order->customBahanOrder->customBahanOrderItems as $customItem) {
-                                            $customPrice += ($customItem->bahan->price ?? 0) * ($customItem->qty ?? 1);
-                                        }
-                                        $strapColor = ucfirst(trim($order->customBahanOrder->warna));
-                                        $strapBahan = \App\Models\Bahan::where('nama_bahan', 'Tali Gelang ' . $strapColor)->first();
-                                    @endphp
-                                    <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5">
-                                        <div class="flex items-center justify-between gap-4 mb-4">
-                                            <div class="flex items-center gap-4">
-                                                <div class="bg-rose-50/80 rounded-xl h-14 w-14 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
-                                                    @if($strapBahan && $strapBahan->image)
-                                                        <img src="{{ Storage::url($strapBahan->image) }}" alt="Tali Gelang {{ $strapColor }}" class="w-full h-full object-cover rounded-xl">
-                                                    @else
-                                                        <span class="text-2xl">✨</span>
-                                                    @endif
-                                                </div>
-                                                <div>
-                                                    <h4 class="font-bold text-gray-800 text-sm">Gelang Custom (Warna: {{ $strapColor }})</h4>
-                                                    @if($order->customBahanOrder->request_note)
-                                                        <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $order->customBahanOrder->request_note }}"</p>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            <div class="text-right shrink-0">
-                                                <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($customPrice, 0, ',', '.') }}</span>
-                                            </div>
-                                        </div>
-                                        
-                                        {{-- Daftar Bahan/Charm --}}
-                                        <div class="border-t border-rose-100/40 pt-3">
-                                            <p class="text-xs font-semibold text-gray-400 mb-2.5 uppercase tracking-wide">Bahan / Charm yang Digunakan:</p>
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                                @php
-                                                    $groupedCharms = $order->customBahanOrder->customBahanOrderItems->groupBy('bahan_id');
-                                                @endphp
-                                                @foreach($groupedCharms as $bahanId => $items)
-                                                    @php
-                                                        $firstItem = $items->first();
-                                                        $totalQty = $items->sum('qty');
-                                                    @endphp
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="h-8 w-8 rounded-lg bg-white border border-rose-50 flex items-center justify-center shrink-0">
-                                                            @if($firstItem->bahan->image)
-                                                                <img src="{{ Storage::url($firstItem->bahan->image) }}" alt="{{ $firstItem->bahan->nama_bahan }}" class="h-full w-full object-cover rounded-lg">
-                                                            @else
-                                                                <span class="text-sm">💎</span>
-                                                            @endif
-                                                        </div>
-                                                        <div class="min-w-0 flex-1">
-                                                            <p class="text-xs font-semibold text-gray-700 truncate">
-                                                                {{ $firstItem->bahan->nama_bahan }}
-                                                                <span class="ml-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-100/50">
-                                                                    {{ $totalQty }}x
-                                                                </span>
-                                                            </p>
-                                                            <p class="text-[10px] text-gray-400 font-light">Rp {{ number_format($firstItem->bahan->price, 0, ',', '.') }} /pcs</p>
-                                                        </div>
+                                @if($order->customBahanOrders && $order->customBahanOrders->isNotEmpty())
+                                    @foreach($order->customBahanOrders as $cIndex => $customBahanOrder)
+                                        @php
+                                            $customPrice = 20000; // Base price tali strap
+                                            foreach($customBahanOrder->customBahanOrderItems as $customItem) {
+                                                $customPrice += ($customItem->bahan->price ?? 0) * ($customItem->qty ?? 1);
+                                            }
+                                            $strapColor = ucfirst(trim($customBahanOrder->warna));
+                                            $strapBahan = \App\Models\Bahan::where(function ($q) use ($strapColor) {
+                                                $q->where('nama_bahan', 'like', '%' . strtolower($strapColor) . '%')
+                                                  ->orWhere('nama_bahan', 'like', '%' . $strapColor . '%');
+                                            })->where(function ($q) {
+                                                $q->where('nama_bahan', 'like', '%strap%')
+                                                  ->orWhere('nama_bahan', 'like', '%tali%');
+                                            })->first();
+                                        @endphp
+                                        <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5 mb-4 last:mb-0">
+                                            <div class="flex items-center justify-between gap-4 mb-4">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="bg-rose-50/80 rounded-xl h-14 w-14 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
+                                                        @if($strapBahan && $strapBahan->image)
+                                                            <img src="{{ Storage::url($strapBahan->image) }}" alt="Tali Gelang {{ $strapColor }}" class="w-full h-full object-cover rounded-xl">
+                                                        @else
+                                                            <span class="text-2xl">✨</span>
+                                                        @endif
                                                     </div>
-                                                @endforeach
+                                                    <div>
+                                                        <h4 class="font-bold text-gray-800 text-sm">
+                                                            Gelang Custom @if($order->customBahanOrders->count() > 1) #{{ $cIndex + 1 }} @endif (Warna: {{ $strapColor }})
+                                                        </h4>
+                                                        @if($customBahanOrder->request_note)
+                                                            <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $customBahanOrder->request_note }}"</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="text-right shrink-0">
+                                                    <span class="font-bold text-gray-800 text-sm">Rp {{ number_format($customPrice, 0, ',', '.') }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            {{-- Daftar Bahan/Charm --}}
+                                            <div class="border-t border-rose-100/40 pt-3">
+                                                <p class="text-xs font-semibold text-gray-400 mb-2.5 uppercase tracking-wide">Bahan / Charm yang Digunakan:</p>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                                    @php
+                                                        $groupedCharms = $customBahanOrder->customBahanOrderItems->groupBy('bahan_id');
+                                                    @endphp
+                                                    @foreach($groupedCharms as $bahanId => $items)
+                                                        @php
+                                                            $firstItem = $items->first();
+                                                            $totalQty = $items->sum('qty');
+                                                        @endphp
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="h-8 w-8 rounded-lg bg-white border border-rose-50 flex items-center justify-center shrink-0">
+                                                                @if($firstItem->bahan && $firstItem->bahan->image)
+                                                                    <img src="{{ Storage::url($firstItem->bahan->image) }}" alt="{{ $firstItem->bahan->nama_bahan }}" class="h-full w-full object-cover rounded-lg">
+                                                                @else
+                                                                    <span class="text-sm">💎</span>
+                                                                @endif
+                                                            </div>
+                                                            <div class="min-w-0 flex-1">
+                                                                <p class="text-xs font-semibold text-gray-700 truncate">
+                                                                    {{ $firstItem->bahan?->nama_bahan ?? 'Charm' }}
+                                                                    <span class="ml-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-100/50">
+                                                                        {{ $totalQty }}x
+                                                                    </span>
+                                                                </p>
+                                                                <p class="text-[10px] text-gray-400 font-light">Rp {{ number_format($firstItem->bahan?->price ?? 0, 0, ',', '.') }} /pcs</p>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    @endforeach
                                 @endif
                             </div>
 
@@ -473,37 +483,27 @@
                                             Bayar Sekarang ✨
                                         </a>
                                     </div>
+                                @elseif($orderStatus === 'dikirim' || $order->shipping?->status === 'dikirim')
+                                    <div class="flex items-center gap-3">
+                                        <form method="POST" action="{{ route('customer.order.confirm-received', $order->id) }}" class="inline">
+                                            @csrf
+                                            <button type="submit" onclick="openConfirmReceivedModal(event, this.closest('form'))"
+                                                    class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2.5 rounded-full text-xs transition shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center gap-1.5 cursor-pointer">
+                                                <span>Pesanan Diterima ✅</span>
+                                            </button>
+                                        </form>
+                                    </div>
                                 @elseif($orderStatus === 'pending' && $payStatus === 'paid')
                                     <div class="flex items-center gap-3">
-                                        @if($order->shipping?->status === 'dikirim')
-                                            <form method="POST" action="{{ route('customer.order.confirm-received', $order->id) }}" class="inline">
-                                                @csrf
-                                                <button type="submit" onclick="openConfirmReceivedModal(event, this.closest('form'))"
-                                                        class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2.5 rounded-full text-xs transition shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center gap-1.5">
-                                                    <span>Pesanan Diterima ✅</span>
-                                                </button>
-                                            </form>
-                                        @else
-                                            <span class="text-xs font-medium text-green-600 bg-green-50/80 border border-green-100 px-4 py-2.5 rounded-full self-start sm:self-center shadow-sm">
-                                                Pembayaran Lunas, Menunggu Konfirmasi Toko
-                                            </span>
-                                        @endif
+                                        <span class="text-xs font-medium text-green-600 bg-green-50/80 border border-green-100 px-4 py-2.5 rounded-full self-start sm:self-center shadow-sm">
+                                            Pembayaran Lunas, Menunggu Konfirmasi Toko
+                                        </span>
                                     </div>
                                 @elseif($orderStatus === 'diproses')
                                     <div class="flex items-center gap-3">
-                                        @if($order->shipping?->status === 'dikirim')
-                                            <form method="POST" action="{{ route('customer.order.confirm-received', $order->id) }}" class="inline">
-                                                @csrf
-                                                <button type="submit" onclick="openConfirmReceivedModal(event, this.closest('form'))"
-                                                        class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2.5 rounded-full text-xs transition shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center gap-1.5">
-                                                    <span>Pesanan Diterima ✅</span>
-                                                </button>
-                                            </form>
-                                        @else
-                                            <span class="text-xs font-medium text-blue-600 bg-blue-50/80 border border-blue-100 px-4 py-2.5 rounded-full self-start sm:self-center shadow-sm">
-                                                Penjual sedang mempersiapkan pesananmu 💖
-                                            </span>
-                                        @endif
+                                        <span class="text-xs font-medium text-blue-600 bg-blue-50/80 border border-blue-100 px-4 py-2.5 rounded-full self-start sm:self-center shadow-sm">
+                                            Penjual sedang mempersiapkan pesananmu 💖
+                                        </span>
                                     </div>
                                 @elseif($orderStatus === 'selesai')
                                     @php
@@ -516,15 +516,7 @@
                                                 Ajukan Komplain
                                             </a>
                                         @endif
-                                        @if($order->shipping?->status === 'dikirim')
-                                            <form method="POST" action="{{ route('customer.order.confirm-received', $order->id) }}" class="inline">
-                                                @csrf
-                                                <button type="submit" onclick="openConfirmReceivedModal(event, this.closest('form'))"
-                                                        class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2.5 rounded-full text-xs transition shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center gap-1.5">
-                                                    <span>Pesanan Diterima ✅</span>
-                                                </button>
-                                            </form>
-                                        @elseif($hasReviewed)
+                                        @if($hasReviewed)
                                             <span class="text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 px-5 py-2.5 rounded-full shadow-sm">
                                                 Ulasan Terkirim ✓
                                             </span>

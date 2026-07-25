@@ -13,13 +13,11 @@ class Product extends Model
         'category',
         'image',
         'sisa',
-        'stock',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'sisa'  => 'integer',
-        'stock' => 'integer',
     ];
 
     public function orderItems()
@@ -54,8 +52,7 @@ class Product extends Model
     {
         $newStock = $this->getDynamicStockAttribute();
         $this->update([
-            'sisa'  => $newStock,
-            'stock' => $newStock,
+            'sisa' => $newStock,
         ]);
     }
 
