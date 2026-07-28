@@ -40,9 +40,9 @@ class StaffForm
                 Select::make('profile.role')
                     ->label('Role Staff')
                     ->options([
-                        'kasir' => 'Kasir',
-                        'store' => 'Staff Toko (Store)',
-                        'admin' => 'Admin',
+                        'admin' => 'Admin (Akses Penuh)',
+                        'kasir' => 'Kasir (Transaksi & Pembayaran)',
+                        'stok'  => 'Stok (Petugas Gudang & Inventaris)',
                     ])
                     ->native(false)
                     ->default('kasir')

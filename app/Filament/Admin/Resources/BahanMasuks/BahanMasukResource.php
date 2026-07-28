@@ -38,6 +38,12 @@ class BahanMasukResource extends Resource
         return BahanMasukTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+    {
+        $role = auth()->user()?->profile?->role;
+        return in_array($role, ['admin', 'stok', 'store']);
+    }
+
     public static function getRelations(): array
     {
         return [

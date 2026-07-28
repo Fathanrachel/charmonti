@@ -35,13 +35,13 @@ class StaffsTable
                     ->color(fn (?string $state): string => match ($state) {
                         'admin' => 'danger',
                         'kasir' => 'warning',
-                        'store' => 'success',
+                        'stok', 'store' => 'info',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'kasir' => 'Kasir',
-                        'store' => 'Staff Toko (Store)',
                         'admin' => 'Admin',
+                        'kasir' => 'Kasir',
+                        'stok', 'store' => 'Stok',
                         default => ucfirst($state ?? '-'),
                     })
                     ->sortable(),

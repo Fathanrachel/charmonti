@@ -32,6 +32,12 @@ class ProductResource extends Resource
         return ProductsTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+    {
+        $role = auth()->user()?->profile?->role;
+        return in_array($role, ['admin', 'stok', 'store']);
+    }
+
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getEloquentQuery()->where('product_name', '!=', 'Gelang Custom');

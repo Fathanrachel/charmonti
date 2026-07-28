@@ -33,17 +33,12 @@ class BahanForm
                     ->columnSpanFull(),
 
                 Select::make('variasi_id')
-                    ->relationship('variasi', 'nama_variasi')
                     ->label('Kelompok Variasi Bahan')
                     ->placeholder('Pilih Variasi Bahan...')
+                    ->options(fn () => \App\Models\Variasi::pluck('nama_variasi', 'id'))
                     ->searchable()
                     ->nullable()
                     ->native(false),
-
-                TextInput::make('kegunaan')
-                    ->label('Kegunaan / Fungsi Bahan')
-                    ->placeholder('Contoh: Tali Utama Gelang, Hiasan Liontin Tengah')
-                    ->nullable(),
 
                 TextInput::make('price')
                     ->label('Harga Satuan')

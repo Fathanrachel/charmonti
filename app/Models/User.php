@@ -47,11 +47,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->profile?->role;
     }
 
-    // Hanya admin, kasir, store, dan owner yang bisa akses panel Filament
+    // Hanya admin, kasir, stok (store), dan owner yang bisa akses panel Filament
     public function canAccessPanel(Panel $panel): bool
     {
         return match($panel->getId()) {
-            'admin' => in_array($this->profile?->role, ['admin', 'kasir', 'store']),
+            'admin' => in_array($this->profile?->role, ['admin', 'kasir', 'stok', 'store']),
             'owner' => $this->isOwner(),
             default => false,
         };
@@ -72,14 +72,19 @@ class User extends Authenticatable implements FilamentUser
         return $this->profile?->role === 'kasir';
     }
 
+    public function isStok(): bool
+    {
+        return in_array($this->profile?->role, ['stok', 'store']);
+    }
+
     public function isStore(): bool
     {
-        return $this->profile?->role === 'store';
+        return in_array($this->profile?->role, ['stok', 'store']);
     }
 
     public function isStaff(): bool
     {
-        return in_array($this->profile?->role, ['admin', 'kasir', 'store']);
+        return in_array($this->profile?->role, ['admin', 'kasir', 'stok', 'store']);
     }
 
     public function isCustomer(): bool

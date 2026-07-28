@@ -37,10 +37,15 @@ class StaffResource extends Resource
         return StaffsTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getEloquentQuery()->whereHas('profile', function ($q) {
-            $q->whereIn('role', ['admin', 'kasir', 'store']);
+            $q->whereIn('role', ['admin', 'kasir', 'stok', 'store']);
         });
     }
 

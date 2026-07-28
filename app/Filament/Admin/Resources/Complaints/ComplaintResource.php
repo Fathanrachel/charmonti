@@ -35,6 +35,12 @@ class ComplaintResource extends Resource
         return ComplaintsTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+    {
+        $role = auth()->user()?->profile?->role;
+        return in_array($role, ['admin', 'kasir']);
+    }
+
     public static function getRelations(): array
     {
         return [];

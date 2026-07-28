@@ -31,11 +31,6 @@ class BahanTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('kegunaan')
-                    ->label('Kegunaan / Fungsi')
-                    ->default('-')
-                    ->limit(40),
-
                 TextColumn::make('price')
                     ->label('Harga')
                     ->money('IDR', locale: 'id')
