@@ -144,6 +144,22 @@ class OrderObserver
                     }
                 }
             }
+
+            // 3. Auto-sync SalesReport record with order_id when order status becomes diproses / selesai
+            if ($order->wasChanged('status')) {
+                if (in_array($order->status, ['diproses', 'selesai'])) {
+                    \App\Models\SalesReport::updateOrCreate(
+                        ['order_id' => $order->id],
+                        [
+                            'date' => $order->order_date ? $order->order_date->format('Y-m-d') : now()->toDateString(),
+                            'total_orders' => 1,
+                            'total_revenue' => $order->total_price,
+                        ]
+                    );
+                } elseif ($order->status === 'batal') {
+                    \App\Models\SalesReport::where('order_id', $order->id)->delete();
+                }
+            }
         });
     }
 }

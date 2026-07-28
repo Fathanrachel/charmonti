@@ -14,13 +14,20 @@ class SalesReportsTable
     {
         return $table
             ->columns([
+                TextColumn::make('order.id')
+                    ->label('Pesanan #')
+                    ->default('-')
+                    ->sortable(),
                 TextColumn::make('date')
-                    ->date()
+                    ->label('Tanggal')
+                    ->date('d M Y')
                     ->sortable(),
                 TextColumn::make('total_orders')
+                    ->label('Jumlah Order')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('total_revenue')
+                    ->label('Total Pendapatan')
                     ->money('IDR', locale: 'id')
                     ->sortable(),
                 TextColumn::make('created_at')

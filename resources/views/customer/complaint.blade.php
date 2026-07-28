@@ -48,16 +48,23 @@
 
                 {{-- Category Select --}}
                 <div>
-                    <label for="category" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kategori Masalah:</label>
-                    <select name="category" 
-                            id="category" 
+                    <label for="complaint_category_id" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kategori Masalah:</label>
+                    <select name="complaint_category_id" 
+                            id="complaint_category_id" 
                             required 
                             class="w-full bg-white/70 border border-rose-100 rounded-2xl p-4 text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition shadow-sm appearance-none cursor-pointer">
                         <option value="" disabled selected>Pilih kategori kendala...</option>
-                        <option value="Gelang Rusak / Putus">Gelang Rusak / Cacat Produksi</option>
-                        <option value="Variasi Charm Salah / Kurang">Variasi Charm Salah atau Kurang</option>
-                        <option value="Paket Tidak Sampai / Terlambat">Pengiriman Paket Terlambat / Tidak Sampai</option>
-                        <option value="Lainnya">Kelemahan / Masalah Lainnya</option>
+                        @if(isset($categories) && $categories->count() > 0)
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            @endforeach
+                        @else
+                            <option value="Barang Rusak / Cacat">Barang Rusak / Cacat Produksi</option>
+                            <option value="Ukuran / Warna Tidak Sesuai">Variasi Charm / Warna Tidak Sesuai</option>
+                            <option value="Jumlah Barang Kurang">Jumlah Barang Kurang</option>
+                            <option value="Keterlambatan Pengiriman">Pengiriman Paket Terlambat</option>
+                            <option value="Lainnya">Lainnya</option>
+                        @endif
                     </select>
                 </div>
 

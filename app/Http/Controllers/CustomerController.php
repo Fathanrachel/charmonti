@@ -440,7 +440,9 @@ class CustomerController extends Controller
         $payStatus = $order->payment?->payment_status ?? 'pending';
         abort_if($payStatus !== 'paid' && $order->status !== 'selesai', 403);
 
-        return view('customer.complaint', compact('order'));
+        $categories = \App\Models\ComplaintCategory::all();
+
+        return view('customer.complaint', compact('order', 'categories'));
     }
 
     public function storeComplaint(Request $request, Order $order)
@@ -451,14 +453,24 @@ class CustomerController extends Controller
         abort_if($payStatus !== 'paid' && $order->status !== 'selesai', 403);
 
         $request->validate([
-            'category' => 'required|string|max:255',
+            'complaint_category_id' => 'nullable|exists:complaint_categories,id',
+            'category' => 'nullable|string|max:255',
             'message' => 'required|string|max:2000',
         ]);
+
+        $categoryName = $request->category ?? 'Komplain';
+        if ($request->complaint_category_id) {
+            $cat = \App\Models\ComplaintCategory::find($request->complaint_category_id);
+            if ($cat) {
+                $categoryName = $cat->name;
+            }
+        }
 
         Complaint::create([
             'order_id' => $order->id,
             'user_id' => Auth::id(),
-            'category' => $request->category,
+            'complaint_category_id' => $request->complaint_category_id,
+            'category' => $categoryName,
             'message' => $request->message,
             'status' => 'open',
         ]);

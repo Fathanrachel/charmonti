@@ -25,6 +25,17 @@ class BahanTable
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('variasi.nama_variasi')
+                    ->label('Kelompok Variasi')
+                    ->default('-')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('kegunaan')
+                    ->label('Kegunaan / Fungsi')
+                    ->default('-')
+                    ->limit(40),
+
                 TextColumn::make('price')
                     ->label('Harga')
                     ->money('IDR', locale: 'id')
@@ -35,11 +46,22 @@ class BahanTable
                     ->getStateUsing(fn ($record) => $record->dynamic_stock)
                     ->numeric()
                     ->badge()
-                    ->color(fn ($state): string => match(true) {
-                        $state <= 0  => 'danger',
-                        $state <= 5  => 'warning',
-                        default      => 'success',
-                    }),
+                    ->color(fn ($state, $record): string => match(true) {
+                        $state <= 0                          => 'danger',
+                        $state <= ($record->min_stock ?? 1)  => 'warning',
+                        default                              => 'success',
+                    })
+                    ->formatStateUsing(fn ($state, $record) => match(true) {
+                        $state <= 0                          => 'Habis (0)',
+                        $state <= ($record->min_stock ?? 1)  => "⚠️ Stok Menipis ({$state} pcs)",
+                        default                              => "{$state} pcs",
+                    })
+                    ->sortable(),
+
+                TextColumn::make('min_stock')
+                    ->label('Min. Stok')
+                    ->numeric()
+                    ->sortable(),
 
                 TextColumn::make('description')
                     ->label('Deskripsi')

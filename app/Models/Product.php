@@ -13,6 +13,7 @@ class Product extends Model
         'category',
         'image',
         'sisa',
+        'min_stock',
     ];
 
     protected $casts = [

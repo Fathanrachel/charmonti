@@ -47,6 +47,13 @@ class ProductForm
                     ->required()
                     ->native(false)
                     ->default('gelang_jadi'),
+
+                TextInput::make('min_stock')
+                    ->label('Batas Minimum Stok (Warning)')
+                    ->helperText('Batas stok terendah sebelum muncul peringatan warning')
+                    ->required()
+                    ->numeric()
+                    ->default(1),
             ]);
     }
 }

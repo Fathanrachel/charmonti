@@ -55,6 +55,12 @@ class OrdersTable
                     ->money('IDR')
                     ->sortable(),
 
+                TextColumn::make('staff.profile.name')
+                    ->label('Staff Penanggung Jawab')
+                    ->default('Belum Ada')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('payment_method')
                     ->label('Pembayaran')
                     ->searchable(),
@@ -103,9 +109,28 @@ class OrdersTable
                                 return [];
                             })
                             ->required(),
+
+                        Select::make('staff_id')
+                            ->label('Tugaskan Staff Penanggung Jawab')
+                            ->native(false)
+                            ->options(function () {
+                                return \App\Models\User::whereHas('profile', function ($q) {
+                                    $q->whereIn('role', ['admin', 'kasir', 'store', 'owner']);
+                                })->get()->pluck('name', 'id');
+                            })
+                            ->default(fn ($record) => $record?->staff_id ?? auth()->id())
+                            ->nullable(),
                     ])
                     ->action(function ($record, array $data) {
-                        $record->update(['status' => $data['status']]);
+                        $updateData = ['status' => $data['status']];
+                        if (isset($data['staff_id']) && $data['staff_id']) {
+                            $updateData['staff_id'] = $data['staff_id'];
+                        } elseif (!$record->staff_id && auth()->check()) {
+                            $updateData['staff_id'] = auth()->id();
+                        }
+
+                        $record->update($updateData);
+
                         if ($data['status'] === 'dikirim' && $record->shipping) {
                             $record->shipping->update(['status' => 'dikirim']);
                         } elseif ($data['status'] === 'selesai' && $record->shipping) {

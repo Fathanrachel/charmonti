@@ -55,6 +55,17 @@ class OrderForm
                         'midtrans'  => 'Midtrans',
                     ])
                     ->nullable(),
+
+                Select::make('staff_id')
+                    ->label('Staff Penanggung Jawab (Pegawai)')
+                    ->options(function () {
+                        return \App\Models\User::whereHas('profile', function ($q) {
+                            $q->whereIn('role', ['admin', 'kasir', 'store', 'owner']);
+                        })->get()->pluck('name', 'id');
+                    })
+                    ->searchable()
+                    ->nullable()
+                    ->placeholder('Pilih Staff / Pegawai Penanggung Jawab'),
             ]);
     }
 }

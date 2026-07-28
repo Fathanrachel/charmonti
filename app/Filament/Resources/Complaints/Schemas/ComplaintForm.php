@@ -26,6 +26,11 @@ class ComplaintForm
                     ->disabled()
                     ->required(),
 
+                Select::make('complaint_category_id')
+                    ->relationship('complaintCategory', 'name')
+                    ->label('Kategori Komplain (Master)')
+                    ->disabled(),
+
                 TextInput::make('category')
                     ->label('Kategori Masalah')
                     ->disabled()

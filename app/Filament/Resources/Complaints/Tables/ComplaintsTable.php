@@ -25,6 +25,7 @@ class ComplaintsTable
 
                 TextColumn::make('category')
                     ->label('Kategori Masalah')
+                    ->state(fn ($record) => $record->complaintCategory?->name ?? $record->category ?? '-')
                     ->searchable()
                     ->sortable(),
 

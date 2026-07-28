@@ -9,12 +9,20 @@ class Bahan extends Model
     protected $table = 'bahan';
 
     protected $fillable = [
+        'variasi_id',
         'nama_bahan',
         'description',
+        'kegunaan',
         'price',
         'image',
         'sisa',
+        'min_stock',
     ];
+
+    public function variasi()
+    {
+        return $this->belongsTo(Variasi::class, 'variasi_id');
+    }
 
     protected $casts = [
         'price' => 'decimal:2',
