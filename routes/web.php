@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
     // Profile
     Route::get('/profile', [CustomerController::class, 'profile'])->name('customer.profile');
     Route::post('/profile', [CustomerController::class, 'updateProfile'])->name('customer.profile.update');
+    Route::post('/profile/ajax-update', [CustomerController::class, 'ajaxUpdateProfile'])->name('customer.profile.ajax-update');
     Route::get('/api/cities/{province_id}', [CustomerController::class, 'getCities'])->name('api.cities');
     Route::get('/api/expedition-costs/{city_id}', [CustomerController::class, 'getExpeditionCosts'])->name('api.expedition.costs');
 

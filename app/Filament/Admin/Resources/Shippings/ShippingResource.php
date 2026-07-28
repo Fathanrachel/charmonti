@@ -36,6 +36,12 @@ class ShippingResource extends Resource
         return ShippingsTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+    {
+        $role = auth()->user()?->profile?->role;
+        return in_array($role, ['admin', 'kasir', 'stok', 'store']);
+    }
+
     public static function getRelations(): array
     {
         return [

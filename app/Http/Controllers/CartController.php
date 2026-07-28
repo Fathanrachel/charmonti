@@ -274,15 +274,31 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Barang dihapus dari keranjang.');
     }
 
+    private function isProfileComplete($user): bool
+    {
+        $profile = $user?->profile;
+        if (!$profile) {
+            return false;
+        }
+
+        $name = !empty($profile->name) ? $profile->name : $user->name;
+        $phone = $profile->phone;
+        $address = !empty($profile->address_line) ? $profile->address_line : $profile->address;
+        $cityId = $profile->city_id;
+
+        return !empty($name) && !empty($phone) && !empty($address) && !empty($cityId);
+    }
+
     public function checkout()
     {
         if (!Auth::check()) {
             return redirect()->route('login')->with('info', 'Silakan login terlebih dahulu untuk checkout.');
         }
 
-        if (!$this->checkProfileComplete()) {
+        $user = Auth::user();
+        if (!$this->isProfileComplete($user)) {
             return redirect()->route('customer.profile')
-                ->with('error', 'Silakan lengkapi data profil (Nama, No Telepon, Provinsi, Kota, Alamat Lengkap, & Kode Pos) Anda terlebih dahulu sebelum memesan barang. ⚠️');
+                ->with('error', 'Silakan lengkapi data diri (Nama, No. Telepon, Provinsi, Kota, & Alamat Lengkap) Anda terlebih dahulu sebelum melakukan checkout pesanan. ⚠️');
         }
 
         $cart = Session::get('cart', []);
@@ -290,7 +306,6 @@ class CartController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja Anda kosong.');
         }
 
-        $user = Auth::user();
         $userCityId = $user->profile?->city_id;
 
         $expeditions = Expedition::all()->map(function ($exp) use ($userCityId) {

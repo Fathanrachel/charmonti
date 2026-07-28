@@ -40,6 +40,11 @@ class CityExpeditionResource extends Resource
         return CityExpeditionsTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public static function getRelations(): array
     {
         return [

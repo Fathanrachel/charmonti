@@ -33,13 +33,33 @@ class CustomerController extends Controller
         return view('customer.products.show', compact('product'));
     }
 
+    private function isProfileComplete($user): bool
+    {
+        $profile = $user?->profile;
+        if (!$profile) {
+            return false;
+        }
+
+        $name = !empty($profile->name) ? $profile->name : $user->name;
+        $phone = $profile->phone;
+        $address = !empty($profile->address_line) ? $profile->address_line : $profile->address;
+        $cityId = $profile->city_id;
+
+        return !empty($name) && !empty($phone) && !empty($address) && !empty($cityId);
+    }
+
     public function checkout(Product $product)
     {
         if (!Auth::check()) {
-            return redirect()->route('login')->with('info', 'Login dulu untuk memesan.');
+            return redirect()->route('login')->with('info', 'Silakan login terlebih dahulu untuk memesan.');
         }
 
         $user = Auth::user();
+        if (!$this->isProfileComplete($user)) {
+            return redirect()->route('customer.profile')
+                ->with('error', 'Silakan lengkapi data diri (Nama, No. Telepon, Provinsi, Kota, & Alamat Lengkap) Anda terlebih dahulu sebelum melakukan checkout pesanan. ⚠️');
+        }
+
         $userCityId = $user->profile?->city_id;
 
         $expeditions = Expedition::all()->map(function ($exp) use ($userCityId) {
@@ -599,5 +619,56 @@ class CustomerController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Balasan Anda berhasil dikirim! 💬');
+    }
+
+    public function ajaxUpdateProfile(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Silakan login terlebih dahulu.'], 401);
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'name'        => 'required|string|max:255',
+            'phone'       => 'required|string|max:20',
+            'address'     => 'required|string|max:1000',
+            'province_id' => 'required|exists:provinces,id',
+            'city_id'     => 'required|exists:cities,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $profile = $user->profile ?? new \App\Models\Profile(['users_id' => $user->id]);
+        $profile->name = $request->name;
+        $profile->phone = $request->phone;
+        $profile->address = $request->address;
+        $profile->address_line = $request->address;
+        $profile->province_id = $request->province_id;
+        $profile->city_id = $request->city_id;
+        $profile->save();
+
+        // Juga perbarui name di tabel users agar konsisten
+        $user->update(['name' => $request->name]);
+
+        $city = \App\Models\City::find($request->city_id);
+        $province = \App\Models\Province::find($request->province_id);
+        $cityName = $city?->city ?? '';
+        $provinceName = $province?->province ?? '';
+
+        return response()->json([
+            'success'       => true,
+            'message'       => 'Data diri dan alamat pengiriman berhasil diperbarui! ✨',
+            'name'          => $request->name,
+            'phone'         => $request->phone,
+            'address'       => $request->address,
+            'province_id'   => $request->province_id,
+            'city_id'       => $request->city_id,
+            'full_location' => $request->address . ', ' . $cityName . ', ' . $provinceName,
+        ]);
     }
 }

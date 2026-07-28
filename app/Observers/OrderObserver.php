@@ -151,7 +151,7 @@ class OrderObserver
                     \App\Models\SalesReport::updateOrCreate(
                         ['order_id' => $order->id],
                         [
-                            'date' => $order->order_date ? $order->order_date->format('Y-m-d') : now()->toDateString(),
+                            'date' => $order->order_date ? \Carbon\Carbon::parse($order->order_date)->format('Y-m-d') : now()->toDateString(),
                             'total_orders' => 1,
                             'total_revenue' => $order->total_price,
                         ]
