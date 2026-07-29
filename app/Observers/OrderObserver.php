@@ -159,6 +159,31 @@ class OrderObserver
                 } elseif ($order->status === 'batal') {
                     \App\Models\SalesReport::where('order_id', $order->id)->delete();
                 }
+
+                // 4. Auto-sync Shipping record when order status changes
+                if (in_array($order->status, ['diproses', 'dikirim', 'selesai'])) {
+                    $shippingStatus = match($order->status) {
+                        'diproses' => 'pending',
+                        'dikirim'  => 'dikirim',
+                        'selesai'  => 'sampai',
+                        default    => 'pending',
+                    };
+                    
+                    $existingShipping = \App\Models\Shipping::where('order_id', $order->id)->first();
+                    if ($existingShipping) {
+                        if ($existingShipping->status !== $shippingStatus) {
+                            $existingShipping->status = $shippingStatus;
+                            $existingShipping->saveQuietly();
+                        }
+                    } else {
+                        \App\Models\Shipping::create([
+                            'order_id'      => $order->id,
+                            'expedition_id' => 1,
+                            'shipping_cost' => 10000,
+                            'status'        => $shippingStatus,
+                        ]);
+                    }
+                }
             }
         });
     }

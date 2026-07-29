@@ -60,8 +60,18 @@ class OrderForm
                     ->label('Staff Penanggung Jawab (Pegawai)')
                     ->options(function () {
                         return \App\Models\User::whereHas('profile', function ($q) {
-                            $q->whereIn('role', ['admin', 'kasir', 'store', 'owner']);
-                        })->get()->pluck('name', 'id');
+                            $q->whereIn('role', ['admin', 'kasir', 'stok', 'store', 'owner']);
+                        })->get()->mapWithKeys(function ($user) {
+                            $name = $user->profile?->name ?? $user->name ?? $user->email;
+                            $role = match($user->profile?->role) {
+                                'admin' => 'Admin',
+                                'kasir' => 'Kasir',
+                                'stok', 'store' => 'Stok',
+                                'owner' => 'Owner',
+                                default => ucfirst($user->profile?->role ?? 'Staff'),
+                            };
+                            return [$user->id => "{$name} - {$role}"];
+                        });
                     })
                     ->searchable()
                     ->nullable()

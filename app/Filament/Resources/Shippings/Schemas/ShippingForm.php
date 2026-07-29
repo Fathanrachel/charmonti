@@ -34,8 +34,8 @@ class ShippingForm
 
                 TextInput::make('tracking_number')
                     ->label('Nomor Resi')
-                    ->nullable()
-                    ->placeholder('Isi setelah paket dikirim'),
+                    ->required(fn ($get) => in_array($get('status'), ['dikirim', 'sampai']))
+                    ->placeholder('Wajib diisi saat status Dalam Pengiriman / Sampai'),
 
                 DateTimePicker::make('estimated_arrival')
                     ->label('Estimasi Tiba')
@@ -50,7 +50,8 @@ class ShippingForm
                         'batal'   => 'Batal Dikirim',
                     ])
                     ->default('pending')
-                    ->required(),
+                    ->required()
+                    ->live(),
             ]);
     }
 }

@@ -40,6 +40,7 @@ class AppServiceProvider extends AuthServiceProvider
     {
         $this->registerPolicies();
         Order::observe(OrderObserver::class);
+        \App\Models\Shipping::observe(\App\Observers\ShippingObserver::class);
 
         // Konfigurasi Global Format Tanggal di Tabel Filament (Admin & Owner)
         \Filament\Tables\Table::configureUsing(function (\Filament\Tables\Table $table): void {

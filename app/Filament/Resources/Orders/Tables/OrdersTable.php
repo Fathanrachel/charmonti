@@ -57,6 +57,18 @@ class OrdersTable
 
                 TextColumn::make('staff.profile.name')
                     ->label('Staff Penanggung Jawab')
+                    ->state(function ($record) {
+                        if (!$record->staff) return 'Belum Ada';
+                        $name = $record->staff->profile?->name ?? $record->staff->name ?? $record->staff->email;
+                        $role = match($record->staff->profile?->role) {
+                            'admin' => 'Admin',
+                            'kasir' => 'Kasir',
+                            'stok', 'store' => 'Stok',
+                            'owner' => 'Owner',
+                            default => ucfirst($record->staff->profile?->role ?? 'Staff'),
+                        };
+                        return "{$name} - {$role}";
+                    })
                     ->default('Belum Ada')
                     ->searchable()
                     ->sortable(),
@@ -113,10 +125,21 @@ class OrdersTable
                         Select::make('staff_id')
                             ->label('Tugaskan Staff Penanggung Jawab')
                             ->native(false)
+                            ->searchable()
                             ->options(function () {
                                 return \App\Models\User::whereHas('profile', function ($q) {
-                                    $q->whereIn('role', ['admin', 'kasir', 'store', 'owner']);
-                                })->get()->pluck('name', 'id');
+                                    $q->whereIn('role', ['admin', 'kasir', 'stok', 'store', 'owner']);
+                                })->get()->mapWithKeys(function ($user) {
+                                    $name = $user->profile?->name ?? $user->name ?? $user->email;
+                                    $role = match($user->profile?->role) {
+                                        'admin' => 'Admin',
+                                        'kasir' => 'Kasir',
+                                        'stok', 'store' => 'Stok',
+                                        'owner' => 'Owner',
+                                        default => ucfirst($user->profile?->role ?? 'Staff'),
+                                    };
+                                    return [$user->id => "{$name} - {$role}"];
+                                });
                             })
                             ->default(fn ($record) => $record?->staff_id ?? auth()->id())
                             ->nullable(),

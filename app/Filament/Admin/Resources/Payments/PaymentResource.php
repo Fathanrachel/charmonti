@@ -20,7 +20,16 @@ class PaymentResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    protected static ?string $modelLabel = 'Pembayaran';
+
+    protected static ?string $pluralModelLabel = 'Payments';
+
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        if (!$record) return null;
+        $orderId = $record->order_id ? " (Order #{$record->order_id})" : '';
+        return "Pembayaran #{$record->id}{$orderId}";
+    }
 
     public static function form(Schema $schema): Schema
     {

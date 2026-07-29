@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\Shippings\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -63,6 +66,79 @@ class ShippingsTable
             ])
             ->filters([])
             ->recordActions([
+                Action::make('ubahStatusPengiriman')
+                    ->label('Ubah Status Pengiriman')
+                    ->icon('heroicon-o-truck')
+                    ->color('warning')
+                    ->form([
+                        Select::make('status')
+                            ->label('Status Pengiriman Baru')
+                            ->native(false)
+                            ->live()
+                            ->options([
+                                'pending' => 'Menunggu Pengiriman (Sedang Disiapkan)',
+                                'dikirim' => 'Dalam Pengiriman (Di Kurir)',
+                                'sampai'  => 'Sudah Terkirim / Sampai',
+                                'batal'   => 'Batal Dikirim',
+                            ])
+                            ->default(fn ($record) => $record?->status ?? 'pending')
+                            ->required(),
+
+                        TextInput::make('tracking_number')
+                            ->label('Nomor Resi *')
+                            ->required(fn ($get) => in_array($get('status'), ['dikirim', 'sampai']))
+                            ->placeholder('Masukkan nomor resi pengiriman (Contoh: JNE123456789)')
+                            ->default(fn ($record) => $record?->tracking_number),
+
+                        Select::make('staff_id')
+                            ->label('Staff Penanggung Jawab (Pegawai)')
+                            ->native(false)
+                            ->searchable()
+                            ->options(function () {
+                                return \App\Models\User::whereHas('profile', function ($q) {
+                                    $q->whereIn('role', ['admin', 'kasir', 'stok', 'store', 'owner']);
+                                })->get()->mapWithKeys(function ($user) {
+                                    $name = $user->profile?->name ?? $user->name ?? $user->email;
+                                    $role = match($user->profile?->role) {
+                                        'admin' => 'Admin',
+                                        'kasir' => 'Kasir',
+                                        'stok', 'store' => 'Stok',
+                                        'owner' => 'Owner',
+                                        default => ucfirst($user->profile?->role ?? 'Staff'),
+                                    };
+                                    return [$user->id => "{$name} - {$role}"];
+                                });
+                            })
+                            ->default(fn ($record) => $record?->order?->staff_id ?? auth()->id())
+                            ->nullable(),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->status = $data['status'];
+                        if (isset($data['tracking_number'])) {
+                            $record->tracking_number = $data['tracking_number'];
+                        }
+                        $record->save();
+
+                        // Auto update linked Order status & staff_id
+                        if ($record->order) {
+                            $order = $record->order;
+                            $orderStatus = match ($data['status']) {
+                                'dikirim'           => 'dikirim',
+                                'sampai', 'selesai' => 'selesai',
+                                'pending'           => 'diproses',
+                                'batal'             => 'batal',
+                                default             => $order->status,
+                            };
+                            $order->status = $orderStatus;
+                            if (isset($data['staff_id']) && $data['staff_id']) {
+                                $order->staff_id = $data['staff_id'];
+                            } elseif (auth()->check()) {
+                                $order->staff_id = auth()->id();
+                            }
+                            $order->save();
+                        }
+                    }),
+
                 EditAction::make(),
             ])
             ->toolbarActions([
