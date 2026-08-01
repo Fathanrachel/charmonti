@@ -55,11 +55,14 @@
                         <div class="bg-rose-50/60 rounded-2xl h-14 w-14 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden shadow-2xs">
                             @if($item->product->product_name === 'Gelang Custom' && $order->customBahanOrder)
                                 @php
-                                    $strapColor = ucfirst(trim($order->customBahanOrder->warna ?? ''));
-                                    $strapBahan = \App\Models\Bahan::where('nama_bahan', 'Tali Gelang ' . $strapColor)->first();
+                                    $isNoStrap = ($order->customBahanOrder->warna ?? '') === 'tanpa_strap';
+                                    $strapColor = $isNoStrap ? 'Tanpa Strap' : ucfirst(trim($order->customBahanOrder->warna ?? ''));
+                                    $strapBahan = !$isNoStrap ? \App\Models\Bahan::where('nama_bahan', 'Tali Gelang ' . $strapColor)->first() : null;
                                 @endphp
                                 @if($strapBahan && $strapBahan->image)
                                     <img src="{{ Storage::url($strapBahan->image) }}" alt="Tali Gelang {{ $strapColor }}" class="w-full h-full object-cover rounded-2xl">
+                                @elseif($isNoStrap)
+                                    <span class="text-2xl text-rose-400">💎</span>
                                 @else
                                     <span class="text-2xl text-rose-400">✨</span>
                                 @endif
@@ -71,7 +74,7 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             @if($item->product->product_name === 'Gelang Custom' && $order->customBahanOrder)
-                                <p class="text-sm font-bold text-gray-800 leading-snug">Gelang Custom (Warna: {{ ucfirst($order->customBahanOrder->warna) }})</p>
+                                <p class="text-sm font-bold text-gray-800 leading-snug">Gelang Custom ({{ $isNoStrap ? 'Tanpa Strap' : 'Warna: ' . $strapColor }})</p>
                             @else
                                 <p class="text-sm font-bold text-gray-800 leading-snug">{{ $item->product->product_name }}</p>
                             @endif

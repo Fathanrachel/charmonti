@@ -103,6 +103,18 @@
                             </span>
                         </div>
                     </label>
+
+                    {{-- Tanpa Strap Option --}}
+                    <label class="flex-1 cursor-pointer group">
+                        <input type="radio" name="warna" value="tanpa_strap" class="hidden peer">
+                        <div class="border-2 border-gray-100 peer-checked:border-rose-400 peer-checked:bg-rose-50/50 rounded-2xl p-5 text-center transition duration-300 group-hover:bg-gray-50 shadow-sm">
+                            <div class="h-28 flex items-center justify-center mb-3 overflow-hidden rounded-2xl bg-rose-50/40 relative">
+                                <span class="text-4xl">💎</span>
+                            </div>
+                            <span class="font-semibold text-gray-700 block text-sm">Tanpa Strap</span>
+                            <span class="text-[11px] text-emerald-600 font-medium block mt-1">Beli Charm Saja (Strap Rp 0)</span>
+                        </div>
+                    </label>
                 </div>
             </div>
 
@@ -110,7 +122,7 @@
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-lg text-gray-800">2. Pilih Charm</h3>
-                    <span class="text-sm font-medium bg-rose-50 text-rose-500 px-4 py-1.5 rounded-full border border-rose-100">Dipilih: <span id="charm-count" class="font-bold">0</span>/15</span>
+                    <span class="text-sm font-medium bg-rose-50 text-rose-500 px-4 py-1.5 rounded-full border border-rose-100" id="charm-limit-badge">Dipilih: <span id="charm-count" class="font-bold">0</span>/15</span>
                 </div>
 
                 {{-- Info Notice: foto berisi banyak charm --}}
@@ -232,10 +244,10 @@
 
             {{-- Total & Submit --}}
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100/50 p-8 space-y-5">
-                <div class="bg-rose-50/30 border border-rose-100/50 rounded-2xl p-6 text-sm space-y-3">
-                    <div class="flex justify-between text-gray-500">
+                <div class="space-y-3 text-sm border-t border-gray-100 pt-5">
+                    <div id="strap-price-row" class="flex justify-between text-gray-500">
                         <span>Strap Gelang</span>
-                        <span class="font-medium text-gray-700">Rp 20.000</span>
+                        <span id="strap-price-disp" class="font-medium text-gray-700">Rp 20.000</span>
                     </div>
                     <div class="flex justify-between text-gray-500">
                         <span>Harga Charm Pilihan</span>
@@ -383,6 +395,11 @@
         const subtotalEl = document.getElementById('subtotal-price');
         const totalEl = document.getElementById('total-price');
 
+        function getSelectedStrap() {
+            const checked = document.querySelector('input[name="warna"]:checked');
+            return checked ? checked.value : 'silver';
+        }
+
         function adjustQty(charmId, delta) {
             const input = document.getElementById('qty-input-' + charmId);
             const display = document.getElementById('qty-display-' + charmId);
@@ -390,15 +407,17 @@
 
             let currentVal = parseInt(input.value) || 0;
             let currentTotal = getTotalQty();
+            const strap = getSelectedStrap();
+            const isNoStrap = (strap === 'tanpa_strap');
 
-            // Validate against stock limit and max charms limit
+            // Validate against stock limit and max charms limit (max 15 ONLY if strap is selected)
             if (delta > 0) {
                 if (currentVal >= stocks[charmId]) {
                     showCustomAlert('Stok untuk manik-manik ini tidak mencukupi (Tersisa: ' + stocks[charmId] + ' pcs)');
                     return;
                 }
-                if (currentTotal >= 15) {
-                    showCustomAlert('Maksimal manik/charm yang dapat dimasukkan adalah 15 pcs.');
+                if (!isNoStrap && currentTotal >= 15) {
+                    showCustomAlert('Maksimal manik/charm yang dapat dimasukkan pada 1 gelang custom adalah 15 pcs.');
                     return;
                 }
             }
@@ -456,7 +475,24 @@
 
         function calculateTotal() {
             let totalQty = getTotalQty();
-            countEl.textContent = totalQty;
+            const strap = getSelectedStrap();
+            const isNoStrap = (strap === 'tanpa_strap');
+
+            const strapRowEl = document.getElementById('strap-price-row');
+            const limitBadgeEl = document.getElementById('charm-limit-badge');
+            const countEl = document.getElementById('charm-count');
+
+            if (countEl) {
+                countEl.textContent = totalQty;
+            }
+
+            if (isNoStrap) {
+                if (strapRowEl) strapRowEl.classList.add('hidden');
+                if (limitBadgeEl) limitBadgeEl.classList.add('hidden');
+            } else {
+                if (strapRowEl) strapRowEl.classList.remove('hidden');
+                if (limitBadgeEl) limitBadgeEl.classList.remove('hidden');
+            }
 
             let subtotal = 0;
             document.querySelectorAll('.charm-qty-input').forEach(input => {
@@ -465,11 +501,17 @@
                 subtotal += (prices[id] || 0) * qty;
             });
 
-            let totalPrice = 20000 + subtotal;
+            let strapPrice = isNoStrap ? 0 : 20000;
+            let totalPrice = strapPrice + subtotal;
 
-            subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-            totalEl.textContent = 'Rp ' + totalPrice.toLocaleString('id-ID');
+            if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            if (totalEl) totalEl.textContent = 'Rp ' + totalPrice.toLocaleString('id-ID');
         }
+
+        // Listen for strap radio button changes
+        document.querySelectorAll('input[name="warna"]').forEach(radio => {
+            radio.addEventListener('change', calculateTotal);
+        });
 
         // Run initially
         calculateTotal();

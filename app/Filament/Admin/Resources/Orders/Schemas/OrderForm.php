@@ -7,6 +7,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
+use Filament\Forms\Components\Select;
+
 class OrderForm
 {
     public static function configure(Schema $schema): Schema
@@ -18,7 +20,14 @@ class OrderForm
                     ->numeric(),
                 DateTimePicker::make('order_date')
                     ->required(),
-                TextInput::make('status')
+                Select::make('status')
+                    ->options([
+                        'pending'  => 'Pending (Menunggu Pembayaran)',
+                        'diproses' => 'Diproses (Sedang Disiapkan)',
+                        'dikirim'  => 'Dikirim (Dalam Pengiriman)',
+                        'selesai'  => 'Selesai',
+                        'batal'    => 'Dibatalkan',
+                    ])
                     ->required()
                     ->default('pending'),
                 TextInput::make('total_price')

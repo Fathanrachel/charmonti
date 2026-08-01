@@ -135,7 +135,7 @@ class ShippingsTable
                             } elseif (auth()->check()) {
                                 $order->staff_id = auth()->id();
                             }
-                            $order->save();
+                            $order->saveQuietly();
                         }
                     }),
 

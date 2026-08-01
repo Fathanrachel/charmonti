@@ -30,8 +30,8 @@ class OrderObserver
                     ->get();
 
                 foreach ($customOrders as $customOrder) {
-                    // Potong stok Tali Gelang (strap)
-                    if (!empty($customOrder->warna)) {
+                    // Potong stok Tali Gelang (strap) - hanya jika bukan tanpa_strap
+                    if (!empty($customOrder->warna) && $customOrder->warna !== 'tanpa_strap') {
                         $taliBahan = Bahan::where(function ($q) use ($customOrder) {
                             $q->where('nama_bahan', 'like', '%' . strtolower($customOrder->warna) . '%')
                               ->orWhere('nama_bahan', 'like', '%' . ucfirst($customOrder->warna) . '%');
@@ -102,8 +102,8 @@ class OrderObserver
                         ->get();
 
                     foreach ($customOrdersWithItems as $customOrder) {
-                        // Restore Tali Gelang (strap)
-                        if (!empty($customOrder->warna)) {
+                        // Restore Tali Gelang (strap) - hanya jika bukan tanpa_strap
+                        if (!empty($customOrder->warna) && $customOrder->warna !== 'tanpa_strap') {
                             $taliBahan = Bahan::where(function ($q) use ($customOrder) {
                                 $q->where('nama_bahan', 'like', '%' . strtolower($customOrder->warna) . '%')
                                   ->orWhere('nama_bahan', 'like', '%' . ucfirst($customOrder->warna) . '%');
@@ -145,20 +145,35 @@ class OrderObserver
                 }
             }
 
-            // 3. Auto-sync SalesReport record with order_id when order status becomes diproses / selesai
+            // 3. Auto-sync SalesReport & FinancialReport aggregate records by date
             if ($order->wasChanged('status')) {
-                if (in_array($order->status, ['diproses', 'selesai'])) {
-                    \App\Models\SalesReport::updateOrCreate(
-                        ['order_id' => $order->id],
-                        [
-                            'date' => $order->order_date ? \Carbon\Carbon::parse($order->order_date)->format('Y-m-d') : now()->toDateString(),
-                            'total_orders' => 1,
-                            'total_revenue' => $order->total_price,
-                        ]
-                    );
-                } elseif ($order->status === 'batal') {
-                    \App\Models\SalesReport::where('order_id', $order->id)->delete();
-                }
+                $date = $order->order_date ? \Carbon\Carbon::parse($order->order_date)->format('Y-m-d') : now()->toDateString();
+                $paidOrders = Order::whereIn('status', ['diproses', 'dikirim', 'selesai'])
+                    ->whereDate('order_date', $date)
+                    ->get();
+
+                $totalOrders = $paidOrders->count();
+                $totalRevenue = $paidOrders->sum('total_price');
+
+                \App\Models\SalesReport::updateOrCreate(
+                    ['date' => $date],
+                    [
+                        'total_orders' => $totalOrders,
+                        'total_revenue' => $totalRevenue,
+                    ]
+                );
+
+                $expense = $totalRevenue * 0.40;
+                $profit = $totalRevenue - $expense;
+
+                \App\Models\FinancialReport::updateOrCreate(
+                    ['date' => $date],
+                    [
+                        'income'  => $totalRevenue,
+                        'expense' => $expense,
+                        'profit'  => $profit,
+                    ]
+                );
 
                 // 4. Auto-sync Shipping record when order status changes
                 if (in_array($order->status, ['diproses', 'dikirim', 'selesai'])) {
@@ -176,9 +191,10 @@ class OrderObserver
                             $existingShipping->saveQuietly();
                         }
                     } else {
+                        $firstExpeditionId = \App\Models\Expedition::first()?->id ?? 1;
                         \App\Models\Shipping::create([
                             'order_id'      => $order->id,
-                            'expedition_id' => 1,
+                            'expedition_id' => $firstExpeditionId,
                             'shipping_cost' => 10000,
                             'status'        => $shippingStatus,
                         ]);

@@ -86,7 +86,7 @@ class CartController extends Controller
     public function addCustom(Request $request)
     {
         $request->validate([
-            'warna'        => 'required|in:silver,gold',
+            'warna'        => 'required|in:silver,gold,tanpa_strap',
             'charms'       => 'nullable|array',
             'charm_notes'  => 'nullable|array',
             'charm_notes.*'=> 'nullable|string|max:200',
@@ -99,16 +99,18 @@ class CartController extends Controller
         // Filter out items with 0 quantity
         $selectedCharmsInput = array_filter($charmsInput, fn($qty) => $qty > 0);
 
-        // Validasi stok tali gelang
-        $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
-        if ($strapBahan && $strapBahan->dynamic_stock <= 0) {
-            return redirect()->back()->withErrors(['warna' => 'Stok tali gelang warna ' . $request->warna . ' sedang habis.'])->withInput();
+        // Validasi stok tali gelang (hanya jika memilih strap)
+        if ($request->warna !== 'tanpa_strap') {
+            $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
+            if ($strapBahan && $strapBahan->dynamic_stock <= 0) {
+                return redirect()->back()->withErrors(['warna' => 'Stok tali gelang warna ' . $request->warna . ' sedang habis.'])->withInput();
+            }
         }
 
-        // Validate aggregate quantity max 15
+        // Validate aggregate quantity max 15 (hanya berlaku jika memakai strap gelang)
         $totalQty = array_sum($selectedCharmsInput);
-        if ($totalQty > 15) {
-            return redirect()->back()->withErrors(['charms' => 'Total manik/charm yang Anda pilih melebihi batas maksimal (15 manik).'])->withInput();
+        if ($request->warna !== 'tanpa_strap' && $totalQty > 15) {
+            return redirect()->back()->withErrors(['charms' => 'Total manik/charm yang Anda pilih untuk perakitan gelang melebihi batas maksimal (15 manik).'])->withInput();
         }
 
         // Validate that all keys exist in bahan table if charms are selected
@@ -130,8 +132,8 @@ class CartController extends Controller
             }
         }
 
-        // Base price of strap = Rp 20.000
-        $charmsPrice = 20000;
+        // Base price of strap = Rp 20.000 (Rp 0 jika tanpa strap)
+        $charmsPrice = ($request->warna === 'tanpa_strap') ? 0 : 20000;
         $charmsDetails = [];
         $charmsFlattenedIds = [];
 
@@ -153,12 +155,14 @@ class CartController extends Controller
             }
         }
 
-        $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
+        $strapBahan = ($request->warna !== 'tanpa_strap') ? Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first() : null;
 
         $cart = Session::get('cart', []);
         
         // Generate a unique ID for this custom design
         $cartId = 'custom_' . uniqid();
+
+        $itemName = ($request->warna === 'tanpa_strap') ? 'Gelang Custom (Tanpa Strap)' : 'Gelang Custom (' . ucfirst($request->warna) . ')';
 
         $cart[$cartId] = [
             'type' => 'custom',
@@ -166,7 +170,7 @@ class CartController extends Controller
             'charms' => $charmsFlattenedIds, // Keep flattened array of IDs for compatibility
             'charms_quantities' => $selectedCharmsInput, // Key-value array of [bahan_id => qty]
             'charms_details' => $charmsDetails,
-            'name' => 'Gelang Custom (' . ucfirst($request->warna) . ')',
+            'name' => $itemName,
             'image' => $strapBahan?->image,
             'price' => $charmsPrice,
             'request_note' => $request->request_note,
@@ -196,24 +200,26 @@ class CartController extends Controller
                     }
                 }
             } elseif ($cart[$id]['type'] === 'custom') {
-                // Validasi stok tali gelang (fleksibel)
                 $warna = $cart[$id]['warna'] ?? '';
-                $strapBahan = Bahan::where(function ($q) use ($warna) {
-                    $q->where('nama_bahan', 'like', '%' . strtolower($warna) . '%')
-                      ->orWhere('nama_bahan', 'like', '%' . ucfirst($warna) . '%');
-                })->where(function ($q) {
-                    $q->where('nama_bahan', 'like', '%strap%')
-                      ->orWhere('nama_bahan', 'like', '%Strap%')
-                      ->orWhere('nama_bahan', 'like', '%tali%')
-                      ->orWhere('nama_bahan', 'like', '%Tali%');
-                })->first();
+                // Validasi stok tali gelang (hanya jika memakai strap)
+                if ($warna !== 'tanpa_strap') {
+                    $strapBahan = Bahan::where(function ($q) use ($warna) {
+                        $q->where('nama_bahan', 'like', '%' . strtolower($warna) . '%')
+                          ->orWhere('nama_bahan', 'like', '%' . ucfirst($warna) . '%');
+                    })->where(function ($q) {
+                        $q->where('nama_bahan', 'like', '%strap%')
+                          ->orWhere('nama_bahan', 'like', '%Strap%')
+                          ->orWhere('nama_bahan', 'like', '%tali%')
+                          ->orWhere('nama_bahan', 'like', '%Tali%');
+                    })->first();
 
-                if ($strapBahan && $quantity > $strapBahan->dynamic_stock) {
-                    $errMsg = 'Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.';
-                    if ($request->wantsJson() || $request->ajax()) {
-                        return response()->json(['success' => false, 'message' => $errMsg], 400);
+                    if ($strapBahan && $quantity > $strapBahan->dynamic_stock) {
+                        $errMsg = 'Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.';
+                        if ($request->wantsJson() || $request->ajax()) {
+                            return response()->json(['success' => false, 'message' => $errMsg], 400);
+                        }
+                        return redirect()->back()->with('error', $errMsg);
                     }
-                    return redirect()->back()->with('error', $errMsg);
                 }
 
                 $charmsQuantities = $cart[$id]['charms_quantities'] ?? [];
@@ -344,62 +350,6 @@ class CartController extends Controller
             'courier' => 'required|string',
         ]);
 
-        // 1. Validasi stok akhir produk reguler
-        foreach ($cart as $item) {
-            if ($item['type'] === 'regular') {
-                $product = Product::find($item['id']);
-                if ($product && $product->product_name !== 'Gelang Custom') {
-                    if ($item['quantity'] > $product->dynamic_stock) {
-                        return redirect()->back()->with('error', 'Stok produk "' . $product->product_name . '" tidak mencukupi. Tersedia: ' . $product->dynamic_stock . ' pcs.');
-                    }
-                }
-            }
-        }
-
-        // 2. Validasi stok akhir manik-manik (charms) secara akumulatif
-        $requiredCharms = [];
-        $requiredStraps = [
-            'silver' => 0,
-            'gold' => 0,
-        ];
-        foreach ($cart as $item) {
-            if ($item['type'] === 'custom') {
-                // Akumulasi tali gelang
-                $warna = strtolower($item['warna']);
-                if (isset($requiredStraps[$warna])) {
-                    $requiredStraps[$warna] += $item['quantity'];
-                }
-
-                $charmsQuantities = $item['charms_quantities'] ?? [];
-                foreach ($charmsQuantities as $bahanId => $qtyPerBracelet) {
-                    if (!isset($requiredCharms[$bahanId])) {
-                        $requiredCharms[$bahanId] = 0;
-                    }
-                    $requiredCharms[$bahanId] += $qtyPerBracelet * $item['quantity'];
-                }
-            }
-        }
-
-        // Verifikasi stok manik-manik
-        foreach ($requiredCharms as $bahanId => $totalQty) {
-            $bahan = Bahan::find($bahanId);
-            if ($bahan) {
-                if ($totalQty > $bahan->dynamic_stock) {
-                    return redirect()->back()->with('error', 'Stok manik-manik "' . $bahan->nama_bahan . '" tidak mencukupi untuk pesanan gelang custom Anda. Tersisa: ' . $bahan->dynamic_stock . ' pcs.');
-                }
-            }
-        }
-
-        // Verifikasi stok tali gelang
-        foreach ($requiredStraps as $warna => $totalQty) {
-            if ($totalQty > 0) {
-                $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($warna))->first();
-                if ($strapBahan && $totalQty > $strapBahan->dynamic_stock) {
-                    return redirect()->back()->with('error', 'Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.');
-                }
-            }
-        }
-
         // Calculate item total
         $itemTotal = 0;
         foreach ($cart as $item) {
@@ -426,101 +376,149 @@ class CartController extends Controller
         $estimatedDays = $cityExp ? $cityExp->estimated_days : $expedition->estimated_days;
         $totalPrice = $itemTotal + $shippingCost;
 
-        $profile = Auth::user()->profile;
         if ($profile) {
             $profile->update([
                 'address_line' => $request->shipping_address,
             ]);
         }
 
-        $order = DB::transaction(function () use ($profile, $totalPrice, $cart, $expedition, $shippingCost, $estimatedDays) {
-            // 1. Create single Order
-            $order = Order::create([
-                'profile_id' => $profile?->id,
-                'order_date' => now(),
-                'status' => 'pending',
-                'total_price' => $totalPrice,
-                'payment_method' => 'midtrans',
-            ]);
-
-            // 2. Populate items
-            foreach ($cart as $item) {
-                if ($item['type'] === 'regular') {
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $item['id'],
-                        'qty' => $item['quantity'],
-                        'price' => $item['price'],
-                    ]);
-                } elseif ($item['type'] === 'custom') {
-                    $customProduct = \App\Models\Product::firstOrCreate(
-                        ['product_name' => 'Gelang Custom'],
-                        [
-                            'description' => 'Gelang Custom Rangkaian Pelanggan',
-                            'price' => 20000,
-                            'category' => 'gelang_jadi',
-                        ]
-                    );
-                    $customProductId = $customProduct->id;
-
-                    // Catat di tabel induk barang pesanan (order_product_items)
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $customProductId,
-                        'qty' => $item['quantity'],
-                        'price' => $item['price'],
-                    ]);
-
-                    for ($i = 0; $i < $item['quantity']; $i++) {
-                        // Rangkai rincian catatan per-charm agar tersimpan di request_note tanpa ubah DB
-                        $combinedNotes = [];
-                        if (!empty($item['charms_details'])) {
-                            $charmNoteLines = [];
-                            foreach ($item['charms_details'] as $cd) {
-                                if (!empty($cd['note'])) {
-                                    $charmNoteLines[] = '• ' . $cd['name'] . ' (x' . $cd['quantity'] . '): "' . $cd['note'] . '"';
-                                }
+        try {
+            $order = DB::transaction(function () use ($profile, $totalPrice, $cart, $expedition, $shippingCost, $estimatedDays) {
+                // 1. Validasi stok akhir produk reguler di dalam transaksi
+                foreach ($cart as $item) {
+                    if ($item['type'] === 'regular') {
+                        $product = Product::find($item['id']);
+                        if ($product && $product->product_name !== 'Gelang Custom') {
+                            if ($item['quantity'] > $product->dynamic_stock) {
+                                throw new \Exception('Stok produk "' . $product->product_name . '" tidak mencukupi. Tersedia: ' . $product->dynamic_stock . ' pcs.');
                             }
-                            if (!empty($charmNoteLines)) {
-                                $combinedNotes[] = "📌 [Rincian Charm]:\n" . implode("\n", $charmNoteLines);
-                            }
-                        }
-
-                        if (!empty($item['request_note'])) {
-                            $combinedNotes[] = "📝 [Catatan Desain]: " . $item['request_note'];
-                        }
-
-                        $finalRequestNote = !empty($combinedNotes) ? implode("\n\n", $combinedNotes) : null;
-
-                        $customBahanOrder = CustomBahanOrder::create([
-                            'order_id' => $order->id,
-                            'warna' => $item['warna'],
-                            'request_note' => $finalRequestNote,
-                            'status' => 'pending',
-                        ]);
-
-                        foreach ($item['charms'] as $charmId) {
-                            CustomBahanOrderItem::create([
-                                'custom_order_id' => $customBahanOrder->id,
-                                'bahan_id' => $charmId,
-                                'qty' => 1,
-                            ]);
                         }
                     }
                 }
-            }
 
-            // 3. Create Shipping
-            Shipping::create([
-                'order_id' => $order->id,
-                'expedition_id' => $expedition->id,
-                'shipping_cost' => $shippingCost,
-                'estimated_arrival' => now()->addDays($estimatedDays),
-                'status' => 'pending',
-            ]);
+                // 2. Validasi stok akhir manik-manik (charms) secara akumulatif
+                $requiredCharms = [];
+                $requiredStraps = ['silver' => 0, 'gold' => 0];
+                foreach ($cart as $item) {
+                    if ($item['type'] === 'custom') {
+                        $warna = strtolower($item['warna']);
+                        if (isset($requiredStraps[$warna])) {
+                            $requiredStraps[$warna] += $item['quantity'];
+                        }
+                        $charmsQuantities = $item['charms_quantities'] ?? [];
+                        foreach ($charmsQuantities as $bahanId => $qtyPerBracelet) {
+                            if (!isset($requiredCharms[$bahanId])) {
+                                $requiredCharms[$bahanId] = 0;
+                            }
+                            $requiredCharms[$bahanId] += $qtyPerBracelet * $item['quantity'];
+                        }
+                    }
+                }
 
-            return $order;
-        });
+                foreach ($requiredCharms as $bahanId => $totalQty) {
+                    $bahan = Bahan::find($bahanId);
+                    if ($bahan && $totalQty > $bahan->dynamic_stock) {
+                        throw new \Exception('Stok manik-manik "' . $bahan->nama_bahan . '" tidak mencukupi. Tersisa: ' . $bahan->dynamic_stock . ' pcs.');
+                    }
+                }
+
+                foreach ($requiredStraps as $warna => $totalQty) {
+                    if ($totalQty > 0) {
+                        $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($warna))->first();
+                        if ($strapBahan && $totalQty > $strapBahan->dynamic_stock) {
+                            throw new \Exception('Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.');
+                        }
+                    }
+                }
+
+                // 3. Create single Order
+                $order = Order::create([
+                    'profile_id' => $profile?->id,
+                    'order_date' => now(),
+                    'status' => 'pending',
+                    'total_price' => $totalPrice,
+                    'payment_method' => 'midtrans',
+                ]);
+
+                // 4. Populate items
+                foreach ($cart as $item) {
+                    if ($item['type'] === 'regular') {
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'product_id' => $item['id'],
+                            'qty' => $item['quantity'],
+                            'price' => $item['price'],
+                        ]);
+                    } elseif ($item['type'] === 'custom') {
+                        $customProduct = \App\Models\Product::firstOrCreate(
+                            ['product_name' => 'Gelang Custom'],
+                            [
+                                'description' => 'Gelang Custom Rangkaian Pelanggan',
+                                'price' => 20000,
+                                'category' => 'gelang_jadi',
+                            ]
+                        );
+                        $customProductId = $customProduct->id;
+
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'product_id' => $customProductId,
+                            'qty' => $item['quantity'],
+                            'price' => $item['price'],
+                        ]);
+
+                        for ($i = 0; $i < $item['quantity']; $i++) {
+                            $combinedNotes = [];
+                            if (!empty($item['charms_details'])) {
+                                $charmNoteLines = [];
+                                foreach ($item['charms_details'] as $cd) {
+                                    if (!empty($cd['note'])) {
+                                        $charmNoteLines[] = '• ' . $cd['name'] . ' (x' . $cd['quantity'] . '): "' . $cd['note'] . '"';
+                                    }
+                                }
+                                if (!empty($charmNoteLines)) {
+                                    $combinedNotes[] = "📌 [Rincian Charm]:\n" . implode("\n", $charmNoteLines);
+                                }
+                            }
+
+                            if (!empty($item['request_note'])) {
+                                $combinedNotes[] = "📝 [Catatan Desain]: " . $item['request_note'];
+                            }
+
+                            $finalRequestNote = !empty($combinedNotes) ? implode("\n\n", $combinedNotes) : null;
+
+                            $customBahanOrder = CustomBahanOrder::create([
+                                'order_id' => $order->id,
+                                'warna' => $item['warna'],
+                                'request_note' => $finalRequestNote,
+                                'status' => 'pending',
+                            ]);
+
+                            foreach ($item['charms'] as $charmId) {
+                                CustomBahanOrderItem::create([
+                                    'custom_order_id' => $customBahanOrder->id,
+                                    'bahan_id' => $charmId,
+                                    'qty' => 1,
+                                ]);
+                            }
+                        }
+                    }
+                }
+
+                // 5. Create Shipping
+                Shipping::create([
+                    'order_id' => $order->id,
+                    'expedition_id' => $expedition->id,
+                    'shipping_cost' => $shippingCost,
+                    'estimated_arrival' => now()->addDays($estimatedDays),
+                    'status' => 'pending',
+                ]);
+
+                return $order;
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
         // Clear cart
         Session::forget('cart');

@@ -36,14 +36,18 @@ class PaymentController extends Controller
     // Generate Snap Token dari Midtrans
     private function generateSnapToken(Order $order)
     {
-        $orderId = 'ORDER-' . $order->id . '-' . time();
-
-        // Simpan orderId ke database payment agar gampang diakses
         $payment = Payment::firstOrNew(['order_id' => $order->id]);
-        $payment->transaction_id = $orderId;
-        $payment->payment_status = 'pending';
-        $payment->payment_type = 'midtrans';
-        $payment->save();
+        
+        // Reuse existing transaction_id if still pending and starts with ORDER-
+        if ($payment->exists && !empty($payment->transaction_id) && strpos($payment->transaction_id, 'ORDER-') === 0 && $payment->payment_status === 'pending') {
+            $orderId = $payment->transaction_id;
+        } else {
+            $orderId = 'ORDER-' . $order->id . '-' . time();
+            $payment->transaction_id = $orderId;
+            $payment->payment_status = 'pending';
+            $payment->payment_type = 'midtrans';
+            $payment->save();
+        }
 
         // Simpan order_id ke session supaya bisa dipakai checkStatus
         session(['midtrans_order_id_' . $order->id => $orderId]);
@@ -132,7 +136,20 @@ class PaymentController extends Controller
             'item_details' => $itemDetails,
         ];
 
-        return Snap::getSnapToken($params);
+        try {
+            return Snap::getSnapToken($params);
+        } catch (\Exception $e) {
+            // Jika Midtrans menolak order_id (misal: "order_id has already been taken"), buat order_id baru & coba lagi
+            $newOrderId = 'ORDER-' . $order->id . '-' . time();
+            $payment->transaction_id = $newOrderId;
+            $payment->payment_status = 'pending';
+            $payment->save();
+
+            session(['midtrans_order_id_' . $order->id => $newOrderId]);
+            $params['transaction_details']['order_id'] = $newOrderId;
+
+            return Snap::getSnapToken($params);
+        }
     }
 
     // Callback dari Midtrans (notification)
@@ -229,10 +246,17 @@ class PaymentController extends Controller
 
             $payment->save();
 
-            // Hapus session setelah dipakai
-            Session::forget('midtrans_order_id_' . $order->id);
+            // Hapus session hanya jika pembayaran sudah selesai/lunas atau gagal
+            if (in_array($transactionStatus, ['capture', 'settlement', 'deny', 'cancel', 'expire'])) {
+                Session::forget('midtrans_order_id_' . $order->id);
+            }
 
-            return redirect()->route('payment.success', $order->id);
+            if (in_array($transactionStatus, ['capture', 'settlement'])) {
+                return redirect()->route('payment.success', $order->id);
+            }
+
+            return redirect()->route('payment.show', $order->id)
+                ->with('info', 'Status pembayaran saat ini: ' . strtoupper($transactionStatus) . '. Silakan selesaikan pembayaran.');
 
         } catch (\Exception $e) {
             return redirect()->route('payment.show', $order->id)

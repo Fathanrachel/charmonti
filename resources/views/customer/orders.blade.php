@@ -128,13 +128,15 @@
                             @php
                                 $statusColors = [
                                     'pending' => 'bg-rose-100 text-rose-700 border-rose-200',
-                                    'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                    'diproses' => 'bg-amber-50 text-amber-600 border-amber-100',
+                                    'dikirim' => 'bg-blue-50 text-blue-600 border-blue-100',
                                     'selesai' => 'bg-green-50 text-green-600 border-green-100',
                                     'batal' => 'bg-red-50 text-red-600 border-red-100',
                                 ];
                                 $statusLabels = [
                                     'pending' => 'Menunggu Pembayaran',
-                                    'diproses' => 'Diproses',
+                                    'diproses' => 'Diproses (Sedang Disiapkan)',
+                                    'dikirim' => 'Dalam Pengiriman 🚚',
                                     'selesai' => 'Selesai',
                                     'batal' => 'Dibatalkan',
                                 ];
@@ -192,18 +194,19 @@
                                 @if($order->customBahanOrders && $order->customBahanOrders->isNotEmpty())
                                     @foreach($order->customBahanOrders as $cIndex => $customBahanOrder)
                                         @php
-                                            $customPrice = 20000; // Base price tali strap
-                                            foreach($customBahanOrder->customBahanOrderItems as $customItem) {
-                                                $customPrice += ($customItem->bahan->price ?? 0) * ($customItem->qty ?? 1);
-                                            }
-                                            $strapColor = ucfirst(trim($customBahanOrder->warna));
-                                            $strapBahan = \App\Models\Bahan::where(function ($q) use ($strapColor) {
-                                                $q->where('nama_bahan', 'like', '%' . strtolower($strapColor) . '%')
-                                                  ->orWhere('nama_bahan', 'like', '%' . $strapColor . '%');
-                                            })->where(function ($q) {
-                                                $q->where('nama_bahan', 'like', '%strap%')
-                                                  ->orWhere('nama_bahan', 'like', '%tali%');
-                                            })->first();
+                                             $isNoStrap = ($customBahanOrder->warna === 'tanpa_strap');
+                                             $customPrice = $isNoStrap ? 0 : 20000;
+                                             foreach($customBahanOrder->customBahanOrderItems as $customItem) {
+                                                 $customPrice += ($customItem->bahan->price ?? 0) * ($customItem->qty ?? 1);
+                                             }
+                                             $strapColor = $isNoStrap ? 'Tanpa Strap' : ucfirst(trim($customBahanOrder->warna));
+                                             $strapBahan = !$isNoStrap ? \App\Models\Bahan::where(function ($q) use ($strapColor) {
+                                                 $q->where('nama_bahan', 'like', '%' . strtolower($strapColor) . '%')
+                                                   ->orWhere('nama_bahan', 'like', '%' . $strapColor . '%');
+                                             })->where(function ($q) {
+                                                 $q->where('nama_bahan', 'like', '%strap%')
+                                                   ->orWhere('nama_bahan', 'like', '%tali%');
+                                             })->first() : null;
                                         @endphp
                                         <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5 mb-4 last:mb-0">
                                             <div class="flex items-center justify-between gap-4 mb-4">
@@ -211,13 +214,15 @@
                                                     <div class="bg-rose-50/80 rounded-xl h-14 w-14 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
                                                         @if($strapBahan && $strapBahan->image)
                                                             <img src="{{ Storage::url($strapBahan->image) }}" alt="Tali Gelang {{ $strapColor }}" class="w-full h-full object-cover rounded-xl">
+                                                        @elseif($isNoStrap)
+                                                            <span class="text-2xl">💎</span>
                                                         @else
                                                             <span class="text-2xl">✨</span>
                                                         @endif
                                                     </div>
                                                     <div>
                                                         <h4 class="font-bold text-gray-800 text-sm">
-                                                            Gelang Custom @if($order->customBahanOrders->count() > 1) #{{ $cIndex + 1 }} @endif (Warna: {{ $strapColor }})
+                                                            Gelang Custom @if($order->customBahanOrders->count() > 1) #{{ $cIndex + 1 }} @endif ({{ $isNoStrap ? 'Tanpa Strap' : 'Warna: ' . $strapColor }})
                                                         </h4>
                                                         @if($customBahanOrder->request_note)
                                                             <p class="text-xs text-gray-500 mt-0.5 italic">Catatan: "{{ $customBahanOrder->request_note }}"</p>

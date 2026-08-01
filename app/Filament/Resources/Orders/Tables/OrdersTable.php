@@ -79,7 +79,18 @@ class OrdersTable
             ])
             ->defaultSort('order_date', 'desc')
             ->filters([])
+            ->recordAction('detail')
             ->recordActions([
+                Action::make('detail')
+                    ->label('Detail Transaksi')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->modalHeading(fn ($record) => "Detail Transaksi — Order #{$record->id}")
+                    ->modalWidth('3xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup')
+                    ->modalContent(fn ($record) => view('filament.modals.order-detail', ['order' => $record])),
+
                 EditAction::make(),
 
                 Action::make('ubahStatus')

@@ -44,8 +44,9 @@ class CustomerController extends Controller
         $phone = $profile->phone;
         $address = !empty($profile->address_line) ? $profile->address_line : $profile->address;
         $cityId = $profile->city_id;
+        $postalCode = $profile->postal_code;
 
-        return !empty($name) && !empty($phone) && !empty($address) && !empty($cityId);
+        return !empty($name) && !empty($phone) && !empty($address) && !empty($cityId) && !empty($postalCode);
     }
 
     public function checkout(Product $product)
@@ -184,14 +185,18 @@ class CustomerController extends Controller
 
     public function storeCustomOrder(Request $request)
     {
-        $request->validate([
-            'warna'              => 'required|in:silver,gold',
-            'charms'             => 'required|array|min:1|max:15',
+        $rules = [
+            'warna'              => 'required|in:silver,gold,tanpa_strap',
+            'charms'             => 'required|array|min:1',
             'charms.*'           => 'exists:bahan,id',
             'request_note'       => 'nullable|string|max:500',
             'shipping_address'   => 'required|string',
             'courier'            => 'required|string',
-        ]);
+        ];
+        if ($request->warna !== 'tanpa_strap') {
+            $rules['charms'] = 'required|array|min:1|max:15';
+        }
+        $request->validate($rules);
 
         // Validasi stok manik-manik kustom
         $charmsInput = $request->charms ?? [];
@@ -221,7 +226,8 @@ class CustomerController extends Controller
         }
 
         $selectedCharms = Bahan::whereIn('id', $request->charms)->get();
-        $itemTotal = $selectedCharms->sum('price');
+        // Include base price for strap (Rp 20.000)
+        $itemTotal = 20000 + $selectedCharms->sum('price');
 
         $profile = Auth::user()->profile;
         $userCityId = $profile?->city_id;
@@ -249,54 +255,59 @@ class CustomerController extends Controller
             ]);
         }
 
-        $order = Order::create([
-            'profile_id'       => $profile?->id,
-            'order_date'       => now(),
-            'status'           => 'pending',
-            'total_price'      => $totalPrice,
-        ]);
-
-        $customProduct = \App\Models\Product::firstOrCreate(
-            ['product_name' => 'Gelang Custom'],
-            [
-                'description' => 'Gelang Custom Rangkaian Pelanggan',
-                'price'       => 20000,
-                'category'    => 'gelang_jadi',
-            ]
-        );
-
-        OrderItem::create([
-            'order_id'   => $order->id,
-            'product_id' => $customProduct->id,
-            'qty'        => 1,
-            'price'      => $itemTotal,
-        ]);
-
-        // Buat CustomBahanOrder
-        $customBahanOrder = CustomBahanOrder::create([
-            'order_id'           => $order->id,
-            'warna'              => $request->warna,
-            'request_note'       => $request->request_note,
-            'status'             => 'pending',
-        ]);
-
-        // Buat CustomBahanOrderItem untuk setiap charm
-        foreach ($selectedCharms as $charm) {
-            CustomBahanOrderItem::create([
-                'custom_order_id' => $customBahanOrder->id,
-                'bahan_id'        => $charm->id,
-                'qty'             => 1,
+        $order = \Illuminate\Support\Facades\DB::transaction(function () use ($profile, $totalPrice, $itemTotal, $request, $selectedCharms, $expedition, $shippingCost, $estimatedDays) {
+            $order = Order::create([
+                'profile_id'       => $profile?->id,
+                'order_date'       => now(),
+                'status'           => 'pending',
+                'total_price'      => $totalPrice,
+                'payment_method'   => 'midtrans',
             ]);
-        }
 
-        // Automate creating the shipping record!
-        \App\Models\Shipping::create([
-            'order_id' => $order->id,
-            'expedition_id' => $expedition->id,
-            'shipping_cost' => $shippingCost,
-            'estimated_arrival' => now()->addDays($estimatedDays),
-            'status' => 'pending',
-        ]);
+            $customProduct = \App\Models\Product::firstOrCreate(
+                ['product_name' => 'Gelang Custom'],
+                [
+                    'description' => 'Gelang Custom Rangkaian Pelanggan',
+                    'price'       => 20000,
+                    'category'    => 'gelang_jadi',
+                ]
+            );
+
+            OrderItem::create([
+                'order_id'   => $order->id,
+                'product_id' => $customProduct->id,
+                'qty'        => 1,
+                'price'      => $itemTotal,
+            ]);
+
+            // Buat CustomBahanOrder
+            $customBahanOrder = CustomBahanOrder::create([
+                'order_id'           => $order->id,
+                'warna'              => $request->warna,
+                'request_note'       => $request->request_note,
+                'status'             => 'pending',
+            ]);
+
+            // Buat CustomBahanOrderItem untuk setiap charm
+            foreach ($selectedCharms as $charm) {
+                CustomBahanOrderItem::create([
+                    'custom_order_id' => $customBahanOrder->id,
+                    'bahan_id'        => $charm->id,
+                    'qty'             => 1,
+                ]);
+            }
+
+            // Automate creating the shipping record!
+            \App\Models\Shipping::create([
+                'order_id' => $order->id,
+                'expedition_id' => $expedition->id,
+                'shipping_cost' => $shippingCost,
+                'estimated_arrival' => now()->addDays($estimatedDays),
+                'status' => 'pending',
+            ]);
+
+            return $order;
+        });
 
         return redirect()->route('order.success', $order->id);
     }
@@ -352,8 +363,8 @@ class CustomerController extends Controller
     {
         abort_if($order->profile?->users_id !== Auth::id(), 403);
 
-        // Hanya bisa dikonfirmasi jika status pengiriman sudah 'dikirim' atau status pesanan dikirim/diproses/pending
-        if ($order->shipping?->status === 'dikirim' || in_array($order->status, ['dikirim', 'diproses', 'pending'])) {
+        // Hanya bisa dikonfirmasi jika status pengiriman/pesanan sudah benar-benar 'dikirim'
+        if ($order->shipping?->status === 'dikirim' || $order->status === 'dikirim') {
             $order->update(['status' => 'selesai']);
 
             if ($order->shipping) {
@@ -367,7 +378,7 @@ class CustomerController extends Controller
             return redirect()->back()->with('success', 'Pesanan telah berhasil dikonfirmasi diterima. Terima kasih sudah berbelanja di CharmOnTi! 💖');
         }
 
-        return redirect()->back()->with('error', 'Pesanan belum dapat dikonfirmasi diterima.');
+        return redirect()->back()->with('error', 'Pesanan belum dikirim oleh toko, tidak dapat dikonfirmasi diterima.');
     }
 
     public function createReview(Order $order)
@@ -634,6 +645,7 @@ class CustomerController extends Controller
             'address'     => 'required|string|max:1000',
             'province_id' => 'required|exists:provinces,id',
             'city_id'     => 'required|exists:cities,id',
+            'postal_code' => 'nullable|string|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -650,6 +662,9 @@ class CustomerController extends Controller
         $profile->address_line = $request->address;
         $profile->province_id = $request->province_id;
         $profile->city_id = $request->city_id;
+        if ($request->filled('postal_code')) {
+            $profile->postal_code = $request->postal_code;
+        }
         $profile->save();
 
         // Juga perbarui name di tabel users agar konsisten
