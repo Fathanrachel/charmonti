@@ -236,7 +236,7 @@
                                             
                                             {{-- Daftar Bahan/Charm --}}
                                             <div class="border-t border-rose-100/40 pt-3">
-                                                <p class="text-xs font-semibold text-gray-400 mb-2.5 uppercase tracking-wide">Bahan / Charm yang Digunakan:</p>
+                                                <p class="text-xs font-semibold text-gray-400 mb-2.5 uppercase tracking-wide">Bahan/Charm Yang Dibeli:</p>
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                                     @php
                                                         $groupedCharms = $customBahanOrder->customBahanOrderItems->groupBy('bahan_id');
