@@ -14,9 +14,11 @@ class PaymentsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order.id')
-                    ->label('Order #')
-                    ->sortable(),
+                TextColumn::make('order.profile.name')
+                    ->label('Pesanan / Pelanggan')
+                    ->formatStateUsing(fn ($state, $record) => "Pesanan #{$record->order_id} - " . ($state ?? 'Pelanggan'))
+                    ->sortable()
+                    ->searchable(),
 
                 TextColumn::make('payment_type')
                     ->label('Metode')

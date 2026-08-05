@@ -15,8 +15,11 @@ class OrderItemForm
         return $schema
             ->components([
                 Select::make('order_id')
-                    ->label('Order')
-                    ->options(Order::all()->pluck('id', 'id')->map(fn($id) => 'Order #' . $id))
+                    ->label('Pesanan (Pelanggan)')
+                    ->options(fn () => Order::with('profile')->get()->mapWithKeys(function ($order) {
+                        $name = $order->profile?->name ?? 'Pelanggan';
+                        return [$order->id => "Pesanan #{$order->id} - {$name}"];
+                    }))
                     ->required()
                     ->searchable(),
 

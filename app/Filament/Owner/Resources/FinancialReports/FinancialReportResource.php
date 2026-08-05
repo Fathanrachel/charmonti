@@ -22,6 +22,13 @@ class FinancialReportResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'date';
 
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        if (! $record) return null;
+        $date = $record->date ? \Carbon\Carbon::parse($record->date)->format('d/m/Y') : "#{$record->id}";
+        return "Laporan Keuangan {$date}";
+    }
+
     public static function form(Schema $schema): Schema
     {
         return FinancialReportForm::configure($schema);

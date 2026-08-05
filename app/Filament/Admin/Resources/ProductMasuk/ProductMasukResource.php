@@ -14,13 +14,27 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
+use Illuminate\Database\Eloquent\Model;
+
 class ProductMasukResource extends Resource
 {
     protected static ?string $model = ProductMasuk::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
 
-    protected static ?string $recordTitleAttribute = 'nama_product';
+    protected static ?string $recordTitleAttribute = 'id';
+
+    public static function getRecordTitle(?Model $record): ?string
+    {
+        if (! $record) {
+            return null;
+        }
+
+        /** @var \App\Models\ProductMasuk $record */
+        $nama = $record->product?->product_name;
+
+        return $nama ? "Produk Masuk #{$record->id} ({$nama})" : "Produk Masuk #{$record->id}";
+    }
 
     public static function form(Schema $schema): Schema
     {

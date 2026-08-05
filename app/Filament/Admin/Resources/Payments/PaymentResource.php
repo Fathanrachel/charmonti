@@ -27,8 +27,8 @@ class PaymentResource extends Resource
     public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string|\Illuminate\Contracts\Support\Htmlable|null
     {
         if (!$record) return null;
-        $orderId = $record->order_id ? " (Order #{$record->order_id})" : '';
-        return "Pembayaran #{$record->id}{$orderId}";
+        $customerName = $record->order?->profile?->name ?? 'Pelanggan';
+        return "Pembayaran #{$record->id} - {$customerName} (Pesanan #{$record->order_id})";
     }
 
     public static function form(Schema $schema): Schema

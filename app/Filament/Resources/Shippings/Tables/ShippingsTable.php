@@ -23,7 +23,7 @@ class ShippingsTable
                     ->sortable(),
 
                 TextColumn::make('order.id')
-                    ->label('ID Order')
+                    ->label('No. Pesanan')
                     ->formatStateUsing(fn ($state) => "#{$state}")
                     ->sortable(),
 

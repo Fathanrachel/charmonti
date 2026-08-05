@@ -20,6 +20,13 @@ class CustomBahanOrderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
 
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        if (! $record) return null;
+        $warna = $record->warna ? ucfirst($record->warna) : 'Custom';
+        return "Gelang Custom #{$record->id} ({$warna})";
+    }
+
     public static function form(Schema $schema): Schema
     {
         return CustomBahanOrderForm::configure($schema);

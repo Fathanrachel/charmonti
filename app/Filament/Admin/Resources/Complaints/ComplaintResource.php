@@ -25,6 +25,13 @@ class ComplaintResource extends Resource
 
     protected static ?int $navigationSort = 7;
 
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        if (! $record) return null;
+        $id = $record->complaint_id ?? $record->id;
+        return "Komplain #{$id}";
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ComplaintForm::configure($schema);

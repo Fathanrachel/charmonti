@@ -26,6 +26,15 @@ class ShippingResource extends Resource
 
     protected static ?string $navigationLabel = 'Pengiriman';
 
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        if (!$record) return null;
+        $customerName = $record->order?->profile?->name ?? 'Pelanggan';
+        $key = $record->getKey();
+        $resi = $record->tracking_number ? " [Resi: {$record->tracking_number}]" : '';
+        return "Pengiriman #{$key} - {$customerName} (Pesanan #{$record->order_id}){$resi}";
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ShippingForm::configure($schema);

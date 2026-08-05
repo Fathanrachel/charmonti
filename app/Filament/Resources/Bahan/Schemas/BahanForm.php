@@ -35,8 +35,19 @@ class BahanForm
                 Select::make('variasi_id')
                     ->label('Kelompok Variasi Bahan')
                     ->placeholder('Pilih Variasi Bahan...')
-                    ->options(fn () => \App\Models\Variasi::pluck('nama_variasi', 'id'))
+                    ->relationship('variasi', 'nama_variasi')
+                    ->createOptionForm([
+                        TextInput::make('nama_variasi')
+                            ->label('Nama Kelompok Variasi')
+                            ->required()
+                            ->placeholder('contoh: Manik-Manik, Tali Gelang, Charm'),
+                        Textarea::make('deskripsi')
+                            ->label('Deskripsi')
+                            ->nullable()
+                            ->rows(2),
+                    ])
                     ->searchable()
+                    ->preload()
                     ->nullable()
                     ->native(false),
 

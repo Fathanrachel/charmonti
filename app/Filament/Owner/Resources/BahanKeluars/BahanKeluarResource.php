@@ -14,6 +14,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
+use Illuminate\Database\Eloquent\Model;
+
 class BahanKeluarResource extends Resource
 {
     protected static ?string $model = BahanKeluar::class;
@@ -27,6 +29,18 @@ class BahanKeluarResource extends Resource
     protected static ?string $pluralModelLabel = 'Bahan Keluar';
 
     protected static ?string $recordTitleAttribute = 'id';
+
+    public static function getRecordTitle(?Model $record): ?string
+    {
+        if (! $record) {
+            return null;
+        }
+
+        /** @var \App\Models\BahanKeluar $record */
+        $nama = $record->bahan?->nama_bahan ?? $record->bahanMasuk?->nama_bahan;
+
+        return $nama ? "Bahan Keluar #{$record->id} ({$nama})" : "Bahan Keluar #{$record->id}";
+    }
 
     public static function form(Schema $schema): Schema
     {
