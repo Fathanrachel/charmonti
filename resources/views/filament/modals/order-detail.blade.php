@@ -117,6 +117,7 @@
                                     $first = $items->first();
                                     return [
                                         'nama_bahan' => $first->bahan?->nama_bahan ?? 'Charm',
+                                        'image'      => $first->bahan?->image,
                                         'total_qty'  => $items->sum('qty'),
                                     ];
                                 });
@@ -138,7 +139,12 @@
                                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
                                         @foreach($groupedCharms as $charmGroup)
                                             <div style="background: #ffffff; border: 1px solid #fda4af; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
-                                                <span style="font-weight: 600; color: #334155;">• {{ $charmGroup['nama_bahan'] }}</span>
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    @if(!empty($charmGroup['image']))
+                                                        <img src="{{ Storage::url($charmGroup['image']) }}" alt="{{ $charmGroup['nama_bahan'] }}" style="width: 24px; height: 24px; object-fit: cover; border-radius: 4px; border: 1px solid #ffe4e6;">
+                                                    @endif
+                                                    <span style="font-weight: 600; color: #334155;">{{ $charmGroup['nama_bahan'] }}</span>
+                                                </div>
                                                 <span style="background: #ffe4e6; color: #e11d48; font-weight: 800; font-size: 12px; padding: 3px 10px; border-radius: 12px;">{{ $charmGroup['total_qty'] }}x</span>
                                             </div>
                                         @endforeach

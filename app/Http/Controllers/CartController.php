@@ -101,7 +101,8 @@ class CartController extends Controller
 
         // Validasi stok tali gelang (hanya jika memilih strap)
         if ($request->warna !== 'tanpa_strap') {
-            $strapBahan = Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first();
+            $color = strtolower(trim($request->warna));
+            $strapBahan = Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $color . '%'])->first();
             if ($strapBahan && $strapBahan->dynamic_stock <= 0) {
                 return redirect()->back()->withErrors(['warna' => 'Stok tali gelang warna ' . $request->warna . ' sedang habis.'])->withInput();
             }
@@ -155,7 +156,16 @@ class CartController extends Controller
             }
         }
 
-        $strapBahan = ($request->warna !== 'tanpa_strap') ? Bahan::where('nama_bahan', 'Tali Gelang ' . ucfirst($request->warna))->first() : null;
+        $strapBahan = null;
+        if ($request->warna !== 'tanpa_strap') {
+            $color = strtolower(trim($request->warna));
+            $strapBahan = Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $color . '%'])->first();
+        }
+
+        $itemImage = $strapBahan?->image;
+        if (!$itemImage && !empty($charmsDetails)) {
+            $itemImage = $charmsDetails[0]['image'] ?? null;
+        }
 
         $cart = Session::get('cart', []);
         
@@ -171,7 +181,7 @@ class CartController extends Controller
             'charms_quantities' => $selectedCharmsInput, // Key-value array of [bahan_id => qty]
             'charms_details' => $charmsDetails,
             'name' => $itemName,
-            'image' => $strapBahan?->image,
+            'image' => $itemImage,
             'price' => $charmsPrice,
             'request_note' => $request->request_note,
             'quantity' => 1,
@@ -203,15 +213,8 @@ class CartController extends Controller
                 $warna = $cart[$id]['warna'] ?? '';
                 // Validasi stok tali gelang (hanya jika memakai strap)
                 if ($warna !== 'tanpa_strap') {
-                    $strapBahan = Bahan::where(function ($q) use ($warna) {
-                        $q->where('nama_bahan', 'like', '%' . strtolower($warna) . '%')
-                          ->orWhere('nama_bahan', 'like', '%' . ucfirst($warna) . '%');
-                    })->where(function ($q) {
-                        $q->where('nama_bahan', 'like', '%strap%')
-                          ->orWhere('nama_bahan', 'like', '%Strap%')
-                          ->orWhere('nama_bahan', 'like', '%tali%')
-                          ->orWhere('nama_bahan', 'like', '%Tali%');
-                    })->first();
+                    $color = strtolower(trim($warna));
+                    $strapBahan = Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $color . '%'])->first();
 
                     if ($strapBahan && $quantity > $strapBahan->dynamic_stock) {
                         $errMsg = 'Stok tali gelang warna ' . $warna . ' tidak mencukupi. Tersisa: ' . $strapBahan->dynamic_stock . ' pcs.';

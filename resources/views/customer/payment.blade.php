@@ -57,14 +57,15 @@
                                 @php
                                     $isNoStrap = ($order->customBahanOrder->warna ?? '') === 'tanpa_strap';
                                     $strapColor = $isNoStrap ? 'Tanpa Strap' : ucfirst(trim($order->customBahanOrder->warna ?? ''));
-                                    $strapBahan = !$isNoStrap ? \App\Models\Bahan::where('nama_bahan', 'Tali Gelang ' . $strapColor)->first() : null;
+                                    $colorSearch = strtolower(trim($order->customBahanOrder->warna ?? ''));
+                                    $strapBahan = !$isNoStrap ? \App\Models\Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $colorSearch . '%'])->first() : null;
+                                    $firstCharmItem = $order->customBahanOrder->customBahanOrderItems->first();
+                                    $displayImage = $strapBahan?->image ?? $firstCharmItem?->bahan?->image;
                                 @endphp
-                                @if($strapBahan && $strapBahan->image)
-                                    <img src="{{ Storage::url($strapBahan->image) }}" alt="Tali Gelang {{ $strapColor }}" class="w-full h-full object-cover rounded-2xl">
-                                @elseif($isNoStrap)
-                                    <span class="text-2xl text-rose-400">💎</span>
+                                @if($displayImage)
+                                    <img src="{{ Storage::url($displayImage) }}" alt="{{ $isNoStrap ? 'Charm Custom' : 'Tali Gelang ' . $strapColor }}" class="w-full h-full object-cover rounded-2xl">
                                 @else
-                                    <span class="text-2xl text-rose-400">✨</span>
+                                    <span class="text-2xl text-rose-400">💎</span>
                                 @endif
                             @elseif($item->product->image)
                                 <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->product_name }}" class="w-full h-full object-cover rounded-2xl">

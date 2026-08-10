@@ -109,7 +109,16 @@ class ShippingsTable
                                     return [$user->id => "{$name} - {$role}"];
                                 });
                             })
-                            ->default(fn ($record) => $record?->order?->staff_id ?? auth()->id())
+                            ->default(function ($record) {
+                                if ($record?->order?->staff_id && $record->order->staff?->profile?->role !== 'customer') {
+                                    return $record->order->staff_id;
+                                }
+                                $user = auth()->user();
+                                if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
+                                    return $user->id;
+                                }
+                                return null;
+                            })
                             ->nullable(),
                     ])
                     ->action(function ($record, array $data) {
@@ -133,7 +142,10 @@ class ShippingsTable
                             if (isset($data['staff_id']) && $data['staff_id']) {
                                 $order->staff_id = $data['staff_id'];
                             } elseif (auth()->check()) {
-                                $order->staff_id = auth()->id();
+                                $user = auth()->user();
+                                if (in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
+                                    $order->staff_id = $user->id;
+                                }
                             }
                             $order->saveQuietly();
                         }

@@ -60,13 +60,13 @@
                         {{-- Star Rating --}}
                         <div class="mb-6">
                             <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Beri Rating:</label>
-                            <div class="flex items-center gap-2.5 star-rating-container" data-product-id="{{ $item['id'] }}">
-                                <input type="hidden" name="ratings[{{ $item['id'] }}]" id="rating-input-{{ $item['id'] }}" value="5">
+                            <div class="flex items-center gap-2.5 star-rating-container" data-key="{{ $item['key'] }}">
+                                <input type="hidden" name="ratings[{{ $item['key'] }}]" id="rating-input-{{ $item['key'] }}" value="5">
                                 @for($i = 1; $i <= 5; $i++)
                                     <button type="button" 
                                             class="text-4xl star-btn text-yellow-400 hover:scale-110 transition duration-150 transform drop-shadow-xs" 
                                             data-value="{{ $i }}" 
-                                            data-product-id="{{ $item['id'] }}">
+                                            data-key="{{ $item['key'] }}">
                                         ★
                                     </button>
                                 @endfor
@@ -75,9 +75,9 @@
 
                         {{-- Comment Box --}}
                         <div>
-                            <label for="comment-{{ $item['id'] }}" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Ulasan Anda (Opsional):</label>
-                            <textarea name="comments[{{ $item['id'] }}]" 
-                                      id="comment-{{ $item['id'] }}" 
+                            <label for="comment-{{ $item['key'] }}" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Ulasan Anda (Opsional):</label>
+                            <textarea name="comments[{{ $item['key'] }}]" 
+                                      id="comment-{{ $item['key'] }}" 
                                       rows="3" 
                                       placeholder="Tulis pendapatmu tentang gelang cantik ini..." 
                                       class="w-full bg-white/70 border border-rose-100 rounded-2xl p-4 text-sm text-gray-700 font-light focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 placeholder-gray-400 transition shadow-sm"></textarea>
@@ -106,11 +106,12 @@
 
             starButtons.forEach(button => {
                 button.addEventListener('click', function () {
-                    const productId = this.dataset.productId;
+                    const key = this.dataset.key || this.dataset.productId;
                     const ratingValue = parseInt(this.dataset.value);
                     
                     // Update input hidden
-                    document.getElementById(`rating-input-${productId}`).value = ratingValue;
+                    const inputEl = document.getElementById(`rating-input-${key}`);
+                    if (inputEl) inputEl.value = ratingValue;
 
                     // Update star colors
                     const container = this.closest('.star-rating-container');

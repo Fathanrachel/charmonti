@@ -16,46 +16,47 @@ class OrderObserver
         DB::transaction(function () use ($order) {
             // 1. Stock Deduction when order changes to diproses (paid)
             if ($order->wasChanged('status') && $order->status === 'diproses') {
+                $customerName = $order->profile?->name ?? 'Customer';
+                $deskripsi = 'Order #' . $order->id . ' (' . $customerName . ')';
+
                 // Regular Product Stock Deduction (Skip dummy 'Gelang Custom' product)
                 foreach ($order->orderItems as $item) {
                     $product = $item->product;
                     if ($product && $product->product_name !== 'Gelang Custom') {
-                        $product->deductStock($item->qty);
+                        $product->deductStock($item->qty, $order->id, $deskripsi);
                     }
                 }
 
-                // Custom Order Materials & Straps Stock Deduction for ALL custom bracelets in this order
+                // Custom Order Materials & Straps Stock Deduction grouped by bahan_id across ALL custom bracelets in this order
                 $customOrders = CustomBahanOrder::where('order_id', $order->id)
                     ->with('customBahanOrderItems.bahan')
                     ->get();
 
-                foreach ($customOrders as $customOrder) {
-                    // Potong stok Tali Gelang (strap) - hanya jika bukan tanpa_strap
-                    if (!empty($customOrder->warna) && $customOrder->warna !== 'tanpa_strap') {
-                        $taliBahan = Bahan::where(function ($q) use ($customOrder) {
-                            $q->where('nama_bahan', 'like', '%' . strtolower($customOrder->warna) . '%')
-                              ->orWhere('nama_bahan', 'like', '%' . ucfirst($customOrder->warna) . '%');
-                        })->where(function ($q) {
-                            $q->where('nama_bahan', 'like', '%strap%')
-                              ->orWhere('nama_bahan', 'like', '%Strap%')
-                              ->orWhere('nama_bahan', 'like', '%tali%')
-                              ->orWhere('nama_bahan', 'like', '%Tali%');
-                        })->first();
+                $bahanToDeduct = []; // [bahan_id => totalQty]
 
+                foreach ($customOrders as $customOrder) {
+                    // Strap
+                    if (!empty($customOrder->warna) && $customOrder->warna !== 'tanpa_strap') {
+                        $color = strtolower(trim($customOrder->warna));
+                        $taliBahan = Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $color . '%'])->first();
                         if ($taliBahan) {
-                            $taliBahan->deductStock(1);
+                            $bahanToDeduct[$taliBahan->id] = ($bahanToDeduct[$taliBahan->id] ?? 0) + 1;
                         }
                     }
 
-                    // Potong stok manik-manik/charms (dikelompokkan per bahan_id agar tercatat dalam 1 baris log Bahan Keluar)
-                    $groupedCharmItems = $customOrder->customBahanOrderItems->groupBy('bahan_id');
-                    foreach ($groupedCharmItems as $bahanId => $charmItems) {
-                        $firstItem = $charmItems->first();
-                        $bahan = $firstItem?->bahan;
-                        if ($bahan) {
-                            $totalQtyToDeduct = $charmItems->sum('qty');
-                            $bahan->deductStock($totalQtyToDeduct);
+                    // Charms
+                    foreach ($customOrder->customBahanOrderItems as $cItem) {
+                        if ($cItem->bahan_id) {
+                            $bahanToDeduct[$cItem->bahan_id] = ($bahanToDeduct[$cItem->bahan_id] ?? 0) + ($cItem->qty ?? 1);
                         }
+                    }
+                }
+
+                // Execute grouped material deductions once per unique material in this order
+                foreach ($bahanToDeduct as $bId => $totalQty) {
+                    $bModel = Bahan::find($bId);
+                    if ($bModel && $totalQty > 0) {
+                        $bModel->deductStock($totalQty, $order->id, $deskripsi);
                     }
                 }
             }

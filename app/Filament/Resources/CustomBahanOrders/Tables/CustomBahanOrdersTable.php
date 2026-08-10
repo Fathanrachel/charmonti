@@ -47,6 +47,7 @@ class CustomBahanOrdersTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([])
             ->recordActions([
                 EditAction::make(),

@@ -37,35 +37,42 @@ class LatestOrdersWidget extends BaseWidget
                     ->dateTime('d M Y')
                     ->sortable(),
 
-                TextColumn::make('payment.payment_status')
+                TextColumn::make('payment_status_display')
                     ->label('Status Bayar')
                     ->badge()
-                    ->placeholder('-')
-                    ->color(fn ($state): string => match ($state) {
+                    ->state(function (Order $record): string {
+                        $status = $record->payment?->payment_status ?? 'pending';
+                        return match ($status) {
+                            'paid' => 'paid',
+                            'failed', 'cancel', 'expire', 'deny' => 'failed',
+                            default => 'pending',
+                        };
+                    })
+                    ->color(fn (string $state): string => match ($state) {
                         'paid' => 'success',
                         'failed' => 'danger',
-                        default => 'gray',
+                        default => 'warning',
                     })
-                    ->formatStateUsing(fn ($state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'paid' => 'Lunas',
                         'failed' => 'Gagal',
-                        default => '-',
+                        default => 'Belum Bayar',
                     }),
 
                 TextColumn::make('shipping.status')
                     ->label('Status Pengiriman')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state, Order $record): string => match ($state) {
                         'sampai' => 'success',
                         'dikirim' => 'info',
-                        'pending' => 'warning',
+                        'pending' => $record->payment?->payment_status === 'paid' ? 'warning' : 'gray',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state, Order $record): string => match ($state) {
                         'sampai' => 'Diterima',
                         'dikirim' => 'Dikirim',
-                        'pending' => 'Diproses',
-                        default => 'Belum Bayar',
+                        'pending' => $record->payment?->payment_status === 'paid' ? 'Diproses' : 'Menunggu Pembayaran',
+                        default => 'Menunggu Pembayaran',
                     })
                     ->placeholder('Menunggu Pembayaran'),
 

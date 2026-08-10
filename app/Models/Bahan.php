@@ -58,7 +58,7 @@ class Bahan extends Model
         $this->update(['sisa' => $this->getDynamicStockAttribute()]);
     }
 
-    public function deductStock(int $quantity): int
+    public function deductStock(int $quantity, ?int $orderId = null, ?string $deskripsi = null): int
     {
         $needed = $quantity;
         $batches = $this->bahanMasuk()
@@ -78,8 +78,10 @@ class Bahan extends Model
                 BahanKeluar::create([
                     'idbahan_masuk'  => $batch->id,
                     'bahan_id'       => $this->id,
+                    'order_id'       => $orderId,
                     'qty_keluar'     => $deduct,
                     'tanggal_keluar' => now(),
+                    'deskripsi'      => $deskripsi,
                 ]);
                 $needed -= $deduct;
             }

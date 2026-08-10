@@ -396,30 +396,42 @@ class CustomerController extends Controller
             ]
         );
 
-        // Gather all products to review (regular orderItems products + custom items)
+        // Gather all products to review (regular orderItems products + each custom bracelet)
         $itemsToReview = [];
         foreach ($order->orderItems as $item) {
             if ($item->product?->product_name === 'Gelang Custom') {
                 continue;
             }
             $itemsToReview[] = [
+                'key' => 'reg_' . $item->product->id,
                 'id' => $item->product->id,
                 'name' => $item->product->product_name,
-                'category' => $item->product->category,
+                'category' => ucfirst($item->product->category ?? 'Produk'),
                 'image' => $item->product->image,
             ];
         }
 
-        // If this order has custom bracelets, add a single review slot for "Gelang Custom"
-        if ($order->customBahanOrder()->exists()) {
-            $strapColor = ucfirst(trim($order->customBahanOrder->warna ?? ''));
-            $strapBahan = \App\Models\Bahan::where('nama_bahan', 'Tali Gelang ' . $strapColor)->first();
+        // Loop through ALL custom bracelets for this order
+        foreach ($order->customBahanOrders as $cIndex => $customOrder) {
+            $isNoStrap = ($customOrder->warna === 'tanpa_strap');
+            $strapColor = $isNoStrap ? 'Tanpa Strap' : ucfirst(trim($customOrder->warna));
+            $color = strtolower(trim($customOrder->warna));
+            $strapBahan = !$isNoStrap ? \App\Models\Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $color . '%'])->first() : null;
+            $firstCharm = $customOrder->customBahanOrderItems->first();
+            $displayImage = $strapBahan?->image ?? $firstCharm?->bahan?->image;
+
+            $customTitle = 'Gelang Custom';
+            if ($order->customBahanOrders->count() > 1) {
+                $customTitle .= ' #' . ($cIndex + 1);
+            }
+            $customTitle .= ' (' . $strapColor . ')';
 
             $itemsToReview[] = [
+                'key' => 'custom_' . $customOrder->id,
                 'id' => $customProductDummy->id,
-                'name' => 'Gelang Custom (' . $strapColor . ')',
+                'name' => $customTitle,
                 'category' => 'Gelang Custom',
-                'image' => $strapBahan?->image,
+                'image' => $displayImage,
             ];
         }
 
@@ -440,12 +452,24 @@ class CustomerController extends Controller
 
         $customProductDummy = Product::where('product_name', 'Gelang Custom')->first();
 
-        foreach ($request->ratings as $productId => $rating) {
-            // Validate that the product was indeed in the order (or it's the dummy custom product and the order has custom bracelet)
-            $isRegularItem = $order->orderItems()->where('product_id', $productId)->exists();
-            $isCustomItem = ($customProductDummy && $productId == $customProductDummy->id && $order->customBahanOrder()->exists());
+        foreach ($request->ratings as $key => $rating) {
+            $productId = null;
+            if (str_starts_with($key, 'reg_')) {
+                $productId = (int) str_replace('reg_', '', $key);
+                $exists = $order->orderItems()->where('product_id', $productId)->exists();
+                if (!$exists) continue;
+            } elseif (str_starts_with($key, 'custom_')) {
+                $customOrderId = (int) str_replace('custom_', '', $key);
+                $exists = $order->customBahanOrders()->where('id', $customOrderId)->exists();
+                if (!$exists || !$customProductDummy) continue;
+                $productId = $customProductDummy->id;
+            } else {
+                $productId = (int) $key;
+                $exists = $order->orderItems()->where('product_id', $productId)->exists() || ($customProductDummy && $productId == $customProductDummy->id);
+                if (!$exists) continue;
+            }
 
-            if ($isRegularItem || $isCustomItem) {
+            if ($productId) {
                 Review::updateOrCreate(
                     [
                         'order_id' => $order->id,
@@ -454,7 +478,7 @@ class CustomerController extends Controller
                     ],
                     [
                         'rating' => $rating,
-                        'comment' => $request->comments[$productId] ?? null,
+                        'comment' => $request->comments[$key] ?? null,
                     ]
                 );
             }

@@ -52,6 +52,30 @@ class BahanKeluarResource extends Resource
         return BahanKeluarTable::configure($table);
     }
 
+    /**
+     * Override query: GROUP BY order_id + bahan_id so that
+     * the same bahan in the same order appears as ONE row with summed qty.
+     */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $subquery = BahanKeluar::query()
+            ->selectRaw('
+                MIN(id) as id,
+                order_id,
+                bahan_id,
+                MIN(idbahan_masuk) as idbahan_masuk,
+                SUM(qty_keluar) as qty_keluar,
+                MIN(tanggal_keluar) as tanggal_keluar,
+                MIN(deskripsi) as deskripsi,
+                MIN(created_at) as created_at,
+                MIN(updated_at) as updated_at
+            ')
+            ->groupBy('order_id', 'bahan_id');
+
+        return BahanKeluar::query()
+            ->fromSub($subquery, 'bahan_keluar');
+    }
+
     public static function canViewAny(): bool
     {
         $role = auth()->user()?->profile?->role;

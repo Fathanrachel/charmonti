@@ -59,13 +59,24 @@
             </div>
 
             <div>
-                <div class="flex justify-between items-center mb-2">
-                    <label class="text-sm font-semibold text-gray-700 block">Alamat Pengiriman</label>
-                    <a href="{{ route('customer.profile') }}" class="text-xs text-rose-500 hover:underline">Ubah alamat di Profil Saya →</a>
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                    <label class="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                        <span>📍</span> Alamat Pengiriman
+                    </label>
+                    <a href="{{ route('customer.profile') }}" 
+                       class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-400 border border-rose-200/80 px-3.5 py-1.5 rounded-full transition duration-300 shadow-2xs group">
+                        <span>✏️</span>
+                        <span>Ubah Alamat di Profil</span>
+                        <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                    </a>
                 </div>
-                <textarea name="shipping_address" rows="3" required
-                    class="w-full px-5 py-3 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition leading-relaxed"
-                    placeholder="Masukkan alamat lengkap kamu...">{{ old('shipping_address', (Auth::user()->profile?->address_line ? Auth::user()->profile->address_line . ', ' . (Auth::user()->profile->city?->city ?? '') . ', ' . (Auth::user()->profile->city?->province?->province ?? '') . ' ' . (Auth::user()->profile->postal_code ?? '') : '')) }}</textarea>
+                <textarea name="shipping_address" rows="3" readonly required
+                    class="w-full px-5 py-3 bg-gray-100/70 border border-gray-200 rounded-2xl text-sm text-gray-600 focus:outline-none cursor-not-allowed select-none leading-relaxed resize-none opacity-90"
+                    placeholder="Alamat belum diisi. Silakan atur di menu Profil Saya.">{{ old('shipping_address', (Auth::user()->profile?->address_line ? Auth::user()->profile->address_line . ', ' . (Auth::user()->profile->city?->city ?? '') . ', ' . (Auth::user()->profile->city?->province?->province ?? '') . ' ' . (Auth::user()->profile->postal_code ?? '') : '')) }}</textarea>
+                <p class="text-[11px] text-gray-400 mt-2 font-light flex items-center gap-1">
+                    <span>🔒</span>
+                    <span>Alamat pengiriman terkunci (*read-only*). Untuk mengubah alamat atau kota tujuan, silakan klik <a href="{{ route('customer.profile') }}" class="text-rose-500 font-semibold hover:underline">Ubah Alamat di Profil</a>.</span>
+                </p>
                 @error('shipping_address')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror

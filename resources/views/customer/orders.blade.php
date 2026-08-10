@@ -200,24 +200,19 @@
                                                  $customPrice += ($customItem->bahan->price ?? 0) * ($customItem->qty ?? 1);
                                              }
                                              $strapColor = $isNoStrap ? 'Tanpa Strap' : ucfirst(trim($customBahanOrder->warna));
-                                             $strapBahan = !$isNoStrap ? \App\Models\Bahan::where(function ($q) use ($strapColor) {
-                                                 $q->where('nama_bahan', 'like', '%' . strtolower($strapColor) . '%')
-                                                   ->orWhere('nama_bahan', 'like', '%' . $strapColor . '%');
-                                             })->where(function ($q) {
-                                                 $q->where('nama_bahan', 'like', '%strap%')
-                                                   ->orWhere('nama_bahan', 'like', '%tali%');
-                                             })->first() : null;
+                                             $colorSearch = strtolower(trim($customBahanOrder->warna));
+                                             $strapBahan = !$isNoStrap ? \App\Models\Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $colorSearch . '%'])->first() : null;
+                                             $firstCharmItem = $customBahanOrder->customBahanOrderItems->first();
+                                             $displayImage = $strapBahan?->image ?? $firstCharmItem?->bahan?->image;
                                         @endphp
                                         <div class="bg-rose-50/20 border border-rose-100/50 rounded-2xl p-5 mb-4 last:mb-0">
                                             <div class="flex items-center justify-between gap-4 mb-4">
                                                 <div class="flex items-center gap-4">
                                                     <div class="bg-rose-50/80 rounded-xl h-14 w-14 flex items-center justify-center shrink-0 border border-rose-100/50 overflow-hidden">
-                                                        @if($strapBahan && $strapBahan->image)
-                                                            <img src="{{ Storage::url($strapBahan->image) }}" alt="Tali Gelang {{ $strapColor }}" class="w-full h-full object-cover rounded-xl">
-                                                        @elseif($isNoStrap)
-                                                            <span class="text-2xl">💎</span>
+                                                        @if($displayImage)
+                                                            <img src="{{ Storage::url($displayImage) }}" alt="{{ $isNoStrap ? 'Charm Custom' : 'Tali Gelang ' . $strapColor }}" class="w-full h-full object-cover rounded-xl">
                                                         @else
-                                                            <span class="text-2xl">✨</span>
+                                                            <span class="text-2xl">💎</span>
                                                         @endif
                                                     </div>
                                                     <div>

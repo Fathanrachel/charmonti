@@ -11,8 +11,10 @@ class BahanKeluar extends Model
     protected $fillable = [
         'idbahan_masuk',
         'bahan_id',
+        'order_id',
         'qty_keluar',
         'tanggal_keluar',
+        'deskripsi',
     ];
 
     protected $casts = [
@@ -38,5 +40,10 @@ class BahanKeluar extends Model
     public function bahan()
     {
         return $this->belongsTo(Bahan::class, 'bahan_id');
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id');
     }
 }

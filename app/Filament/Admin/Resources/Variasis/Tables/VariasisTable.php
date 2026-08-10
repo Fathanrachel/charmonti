@@ -29,11 +29,6 @@ class VariasisTable
                     ->limit(60)
                     ->default('-'),
 
-                TextColumn::make('bahans_count')
-                    ->label('Jumlah Item Bahan')
-                    ->counts('bahans')
-                    ->sortable(),
-
                 TextColumn::make('created_at')
                     ->label('Tanggal Dibuat')
                     ->dateTime('d M Y, H:i')

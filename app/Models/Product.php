@@ -57,7 +57,7 @@ class Product extends Model
         ]);
     }
 
-    public function deductStock(int $quantity): int
+    public function deductStock(int $quantity, ?int $orderId = null, ?string $deskripsi = null): int
     {
         $needed = $quantity;
         $batches = $this->productMasuk()
@@ -76,8 +76,10 @@ class Product extends Model
                 $deduct = min($needed, $batchStock);
                 $batch->productKeluar()->create([
                     'product_id'     => $this->id,
+                    'order_id'       => $orderId,
                     'qty_keluar'     => $deduct,
                     'tanggal_keluar' => now(),
+                    'deskripsi'      => $deskripsi,
                 ]);
                 $needed -= $deduct;
             }

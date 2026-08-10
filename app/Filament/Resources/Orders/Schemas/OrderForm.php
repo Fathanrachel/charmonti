@@ -74,6 +74,13 @@ class OrderForm
                         });
                     })
                     ->searchable()
+                    ->default(function () {
+                        $user = auth()->user();
+                        if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
+                            return $user->id;
+                        }
+                        return null;
+                    })
                     ->nullable()
                     ->placeholder('Pilih Staff / Pegawai Penanggung Jawab'),
             ]);

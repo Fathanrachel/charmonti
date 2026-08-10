@@ -31,10 +31,16 @@ class ShippingObserver
             $shouldSave = true;
         }
 
-        // Auto sync staff responsible to whoever updated the shipping if staff_id is empty or auth user is available
-        if (Auth::check() && (!$order->staff_id || $shipping->wasChanged('status'))) {
-            $order->staff_id = Auth::id();
-            $shouldSave = true;
+        // Auto sync staff responsible ONLY IF authenticated user is a staff member (not customer)
+        if (Auth::check()) {
+            $user = Auth::user();
+            $role = $user->profile?->role ?? '';
+            $isStaff = in_array($role, ['admin', 'kasir', 'stok', 'store', 'owner']);
+
+            if ($isStaff && (!$order->staff_id || $shipping->wasChanged('status'))) {
+                $order->staff_id = $user->id;
+                $shouldSave = true;
+            }
         }
 
         if ($shouldSave) {

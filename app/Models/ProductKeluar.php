@@ -11,8 +11,10 @@ class ProductKeluar extends Model
     protected $fillable = [
         'idproduct_masuk',
         'product_id',
+        'order_id',
         'qty_keluar',
         'tanggal_keluar',
+        'deskripsi',
     ];
 
     protected $casts = [
@@ -38,5 +40,10 @@ class ProductKeluar extends Model
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id');
     }
 }

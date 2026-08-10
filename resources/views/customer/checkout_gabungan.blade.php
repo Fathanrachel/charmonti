@@ -35,14 +35,44 @@
             <div class="lg:col-span-2 space-y-6">
                 {{-- Alamat --}}
                 <div class="bg-white border border-gray-100/50 rounded-3xl p-6 shadow-sm">
-                    <h3 class="font-bold text-gray-800 text-lg mb-2">📍 Alamat Pengiriman</h3>
-                    @if(Auth::user()->profile?->city)
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 border border-rose-100 rounded-full text-xs font-semibold text-rose-600 mb-3">
-                            <span>Kota Tujuan:</span>
-                            <span class="font-bold">{{ Auth::user()->profile->city->city }}, {{ Auth::user()->profile->city->province?->province }}</span>
-                        </div>
-                    @endif
-                    <textarea name="shipping_address" rows="3" required class="w-full border border-gray-200 rounded-2xl p-4 focus:border-rose-400 focus:outline-none" placeholder="Masukkan alamat lengkap pengiriman paket">{{ Auth::user()->profile?->address_line }}</textarea>
+                    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                        <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                            <span>📍</span> Alamat Pengiriman
+                        </h3>
+                        <a href="{{ route('customer.profile') }}" 
+                           class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-400 border border-rose-200/80 px-3.5 py-1.5 rounded-full transition duration-300 shadow-2xs group">
+                            <span>✏️</span>
+                            <span>Ubah Alamat di Profil</span>
+                            <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                        </a>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
+                        @if(Auth::user()->profile?->name)
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-xs font-semibold text-gray-700">
+                                👤 {{ Auth::user()->profile->name }} @if(Auth::user()->profile->phone) ({{ Auth::user()->profile->phone }}) @endif
+                            </span>
+                        @endif
+
+                        @if(Auth::user()->profile?->city)
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 border border-rose-100 rounded-full text-xs font-semibold text-rose-600">
+                                🏙️ Kota Tujuan: <span class="font-bold">{{ Auth::user()->profile->city->city }}, {{ Auth::user()->profile->city->province?->province }}</span>
+                            </span>
+                        @else
+                            <a href="{{ route('customer.profile') }}" class="inline-flex items-center gap-1 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-semibold text-amber-600 hover:bg-amber-100 transition">
+                                ⚠️ Kota tujuan belum diatur — Klik untuk atur di Profil
+                            </a>
+                        @endif
+                    </div>
+
+                    <textarea name="shipping_address" rows="3" readonly required 
+                              class="w-full bg-gray-100/70 border border-gray-200 rounded-2xl p-4 text-sm text-gray-600 focus:outline-none cursor-not-allowed select-none leading-relaxed placeholder-gray-400 shadow-2xs resize-none opacity-90" 
+                              placeholder="Alamat belum diisi. Silakan atur di menu Profil Saya.">{{ Auth::user()->profile?->address_line ? Auth::user()->profile->address_line . ', ' . (Auth::user()->profile->city?->city ?? '') . ', ' . (Auth::user()->profile->city?->province?->province ?? '') . ' ' . (Auth::user()->profile->postal_code ?? '') : '' }}</textarea>
+                    
+                    <p class="text-[11px] text-gray-400 mt-2 font-light flex items-center gap-1">
+                        <span>🔒</span>
+                        <span>Alamat pengiriman terkunci (*read-only*). Untuk mengubah alamat atau kota tujuan, silakan klik <a href="{{ route('customer.profile') }}" class="text-rose-500 font-semibold hover:underline">Ubah Alamat di Profil</a>.</span>
+                    </p>
                 </div>
 
                 {{-- Pilih Kurir --}}
@@ -68,22 +98,42 @@
                         <span>🛍️</span> Rincian Pembelian
                     </h3>
                     @foreach($cart as $item)
+                        @php
+                            $itemImage = null;
+                            if ($item['type'] === 'custom') {
+                                if (isset($item['warna']) && $item['warna'] !== 'tanpa_strap') {
+                                    $color = strtolower(trim($item['warna']));
+                                    $strap = \App\Models\Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $color . '%'])->first();
+                                    $itemImage = $strap?->image;
+                                }
+                                if (!$itemImage) {
+                                    $itemImage = $item['image'] ?? ($item['charms_details'][0]['image'] ?? null);
+                                }
+                            } else {
+                                $itemImage = $item['image'] ?? null;
+                            }
+                        @endphp
                         <div class="flex items-center justify-between border-b border-gray-50 pb-4 last:border-0 last:pb-0 gap-4">
                             <div class="flex items-center gap-3.5 min-w-0">
                                 <div class="bg-rose-50/50 rounded-xl h-14 w-14 flex items-center justify-center shrink-0 border border-rose-50 overflow-hidden">
-                                    @if(isset($item['image']) && $item['image'])
-                                        <img src="{{ Storage::url($item['image']) }}" alt="{{ $item['name'] }}" class="w-full h-full object-cover rounded-xl">
+                                    @if($itemImage)
+                                        <img src="{{ Storage::url($itemImage) }}" alt="{{ $item['name'] }}" class="w-full h-full object-cover rounded-xl">
                                     @else
-                                        <span class="text-2xl">📿</span>
+                                        <span class="text-2xl">💎</span>
                                     @endif
                                 </div>
                                 <div class="min-w-0">
                                     <span class="font-bold text-sm text-gray-800 block truncate">{{ $item['name'] }}</span>
                                     <span class="text-xs text-rose-500 font-medium mt-0.5 block">Rp {{ number_format($item['price'], 0, ',', '.') }} <span class="text-gray-400 font-normal">× {{ $item['quantity'] }}</span></span>
                                     @if($item['type'] === 'custom' && isset($item['charms_details']))
-                                        <div class="mt-1 text-[10px] text-gray-400 font-light flex flex-col gap-0.5">
+                                        <div class="mt-1 flex flex-wrap gap-1.5">
                                             @foreach($item['charms_details'] as $charm)
-                                                <span class="text-gray-500">• {{ $charm['name'] }} (×{{ $charm['quantity'] }}) @if(!empty($charm['note'])) <span class="text-rose-400 italic">"{{ $charm['note'] }}"</span> @endif</span>
+                                                <div class="inline-flex items-center gap-1 bg-rose-50/80 px-2 py-0.5 rounded border border-rose-100/60 text-[10px]">
+                                                    @if(!empty($charm['image']))
+                                                        <img src="{{ Storage::url($charm['image']) }}" alt="{{ $charm['name'] }}" class="h-3.5 w-3.5 object-cover rounded shrink-0">
+                                                    @endif
+                                                    <span class="text-gray-600 font-medium">{{ $charm['name'] }} (×{{ $charm['quantity'] }})</span>
+                                                </div>
                                             @endforeach
                                         </div>
                                     @endif

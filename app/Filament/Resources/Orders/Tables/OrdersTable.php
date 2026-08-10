@@ -58,16 +58,16 @@ class OrdersTable
                 TextColumn::make('staff.profile.name')
                     ->label('Staff Penanggung Jawab')
                     ->state(function ($record) {
-                        if (!$record->staff) return 'Belum Ada';
+                        if (!$record->staff || $record->staff->profile?->role === 'customer') return 'Belum Ada';
                         $name = $record->staff->profile?->name ?? $record->staff->name ?? $record->staff->email;
                         $role = match($record->staff->profile?->role) {
                             'admin' => 'Admin',
                             'kasir' => 'Kasir',
                             'stok', 'store' => 'Stok',
                             'owner' => 'Owner',
-                            default => ucfirst($record->staff->profile?->role ?? 'Staff'),
+                            default => null,
                         };
-                        return "{$name} - {$role}";
+                        return $role ? "{$name} - {$role}" : 'Belum Ada';
                     })
                     ->default('Belum Ada')
                     ->searchable()
@@ -152,7 +152,16 @@ class OrdersTable
                                     return [$user->id => "{$name} - {$role}"];
                                 });
                             })
-                            ->default(fn ($record) => $record?->staff_id ?? auth()->id())
+                            ->default(function ($record) {
+                                if ($record?->staff_id && $record->staff?->profile?->role !== 'customer') {
+                                    return $record->staff_id;
+                                }
+                                $user = auth()->user();
+                                if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
+                                    return $user->id;
+                                }
+                                return null;
+                            })
                             ->nullable(),
                     ])
                     ->action(function ($record, array $data) {
@@ -160,7 +169,10 @@ class OrdersTable
                         if (isset($data['staff_id']) && $data['staff_id']) {
                             $updateData['staff_id'] = $data['staff_id'];
                         } elseif (!$record->staff_id && auth()->check()) {
-                            $updateData['staff_id'] = auth()->id();
+                            $user = auth()->user();
+                            if (in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
+                                $updateData['staff_id'] = $user->id;
+                            }
                         }
 
                         $record->update($updateData);

@@ -53,14 +53,29 @@
                 {{-- Cart Items Column --}}
                 <div class="lg:col-span-2 space-y-6">
                     @foreach($cart as $id => $item)
-                        @php $totalPrice += $item['price'] * $item['quantity']; @endphp
+                        @php
+                            $totalPrice += $item['price'] * $item['quantity'];
+                            $itemImage = null;
+                            if ($item['type'] === 'custom') {
+                                if (isset($item['warna']) && $item['warna'] !== 'tanpa_strap') {
+                                    $color = strtolower(trim($item['warna']));
+                                    $strap = \App\Models\Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $color . '%'])->first();
+                                    $itemImage = $strap?->image;
+                                }
+                                if (!$itemImage) {
+                                    $itemImage = $item['image'] ?? ($item['charms_details'][0]['image'] ?? null);
+                                }
+                            } else {
+                                $itemImage = $item['image'] ?? null;
+                            }
+                        @endphp
                         <div class="bg-white border border-gray-100/50 rounded-2xl p-6 shadow-sm flex gap-5 items-center relative hover:shadow-md transition">
                             {{-- Item Image --}}
-                            <div class="bg-rose-50/50 rounded-xl h-20 w-20 flex items-center justify-center shrink-0 border border-rose-50">
-                                @if(isset($item['image']) && $item['image'])
-                                    <img src="{{ Storage::url($item['image']) }}" alt="{{ $item['name'] }}" class="w-full h-full object-cover rounded-xl">
+                            <div class="bg-rose-50/50 rounded-xl h-20 w-20 flex items-center justify-center shrink-0 border border-rose-50 overflow-hidden">
+                                @if($itemImage)
+                                    <img src="{{ Storage::url($itemImage) }}" alt="{{ $item['name'] }}" class="w-full h-full object-cover rounded-xl">
                                 @else
-                                    <span class="text-3xl">📿</span>
+                                    <span class="text-3xl">💎</span>
                                 @endif
                             </div>
 
@@ -70,16 +85,21 @@
                                 <p class="text-xs text-rose-400 font-semibold mt-1">Rp {{ number_format($item['price'], 0, ',', '.') }}</p>
 
                                 @if($item['type'] === 'custom' && isset($item['charms_details']))
-                                    <div class="mt-2 text-[10px] text-gray-400 font-light flex flex-col gap-1">
+                                    <div class="mt-2.5 flex flex-wrap gap-2">
                                         @foreach($item['charms_details'] as $charm)
-                                            <div class="flex items-start gap-1.5">
-                                                <span class="bg-rose-50 px-2 py-0.5 rounded border border-rose-100 shrink-0 charm-qty-badge-{{ $id }}"
+                                            <div class="flex items-center gap-1.5 bg-rose-50/60 px-2.5 py-1 rounded-lg border border-rose-100/60 text-xs">
+                                                @if(!empty($charm['image']))
+                                                    <img src="{{ Storage::url($charm['image']) }}" alt="{{ $charm['name'] }}" class="h-5 w-5 object-cover rounded shrink-0 border border-rose-100/50">
+                                                @else
+                                                    <span class="text-xs">💎</span>
+                                                @endif
+                                                <span class="font-medium text-gray-700 charm-qty-badge-{{ $id }}"
                                                       data-charm-name="{{ $charm['name'] }}"
                                                       data-base-qty="{{ $charm['quantity'] }}">
                                                     {{ $charm['name'] }} ×{{ $charm['quantity'] * $item['quantity'] }}
                                                 </span>
                                                 @if(!empty($charm['note']))
-                                                    <span class="text-rose-400 italic">→ "{{ $charm['note'] }}"</span>
+                                                    <span class="text-rose-400 italic text-[10px]">→ "{{ $charm['note'] }}"</span>
                                                 @endif
                                             </div>
                                         @endforeach

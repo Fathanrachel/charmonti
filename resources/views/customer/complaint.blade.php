@@ -41,9 +41,62 @@
                 @csrf
 
                 {{-- Order Summary --}}
-                <div class="bg-rose-50/50 border border-rose-100 rounded-2xl p-5 flex justify-between items-center text-sm text-rose-800">
-                    <span class="font-light">Tanggal Pesanan:</span>
-                    <span class="font-semibold">{{ \Carbon\Carbon::parse($order->order_date)->translatedFormat('d M Y, H:i') }} WIB</span>
+                <div class="bg-rose-50/50 border border-rose-100 rounded-2xl p-5 text-sm text-rose-800 space-y-3">
+                    <div class="flex justify-between items-center border-b border-rose-100/60 pb-3">
+                        <span class="font-light">Tanggal Pesanan:</span>
+                        <span class="font-semibold">{{ \Carbon\Carbon::parse($order->order_date)->translatedFormat('d M Y, H:i') }} WIB</span>
+                    </div>
+
+                    {{-- List All Items --}}
+                    <div class="space-y-2 pt-1">
+                        <span class="block text-xs font-bold text-rose-500 uppercase tracking-wider">Item Dalam Pesanan Ini:</span>
+                        @foreach($order->orderItems as $item)
+                            @if($item->product?->product_name !== 'Gelang Custom')
+                                <div class="flex items-center gap-3 bg-white/70 p-2.5 rounded-xl border border-rose-100/50">
+                                    <div class="h-10 w-10 rounded-lg bg-rose-50 flex items-center justify-center shrink-0 overflow-hidden border border-rose-100">
+                                        @if($item->product?->image)
+                                            <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->product_name }}" class="h-full w-full object-cover">
+                                        @else
+                                            <span class="text-sm">📿</span>
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0 flex-1 text-xs">
+                                        <p class="font-bold text-gray-800 truncate">{{ $item->product?->product_name }}</p>
+                                        <p class="text-gray-500">Jumlah: {{ $item->quantity }}x</p>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+
+                        @foreach($order->customBahanOrders as $cIndex => $customOrder)
+                            @php
+                                $isNoStrap = ($customOrder->warna === 'tanpa_strap');
+                                $strapColor = $isNoStrap ? 'Tanpa Strap' : ucfirst(trim($customOrder->warna));
+                                $color = strtolower(trim($customOrder->warna));
+                                $strapBahan = !$isNoStrap ? \App\Models\Bahan::whereRaw('LOWER(nama_bahan) LIKE ?', ['%' . $color . '%'])->first() : null;
+                                $firstCharm = $customOrder->customBahanOrderItems->first();
+                                $displayImage = $strapBahan?->image ?? $firstCharm?->bahan?->image;
+                                $customTitle = 'Gelang Custom';
+                                if ($order->customBahanOrders->count() > 1) {
+                                    $customTitle .= ' #' . ($cIndex + 1);
+                                }
+                                $customTitle .= ' (' . $strapColor . ')';
+                            @endphp
+                            <div class="flex items-center gap-3 bg-white/70 p-2.5 rounded-xl border border-rose-100/50">
+                                <div class="h-10 w-10 rounded-lg bg-rose-50 flex items-center justify-center shrink-0 overflow-hidden border border-rose-100">
+                                    @if($displayImage)
+                                        <img src="{{ Storage::url($displayImage) }}" alt="{{ $customTitle }}" class="h-full w-full object-cover">
+                                    @else
+                                        <span class="text-sm">💎</span>
+                                    @endif
+                                </div>
+                                <div class="min-w-0 flex-1 text-xs">
+                                    <p class="font-bold text-gray-800 truncate">{{ $customTitle }}</p>
+                                    <p class="text-gray-500">Gelang Custom Rakitan</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
 
                 {{-- Category Select --}}
