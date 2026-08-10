@@ -11,6 +11,7 @@ use App\Models\CustomBahanOrderItem;
 use App\Models\Expedition;
 use App\Models\Shipping;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -283,7 +284,7 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Barang dihapus dari keranjang.');
     }
 
-    private function isProfileComplete($user): bool
+    private function isProfileComplete(?User $user): bool
     {
         $profile = $user?->profile;
         if (!$profile) {

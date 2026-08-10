@@ -10,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class ShippingsTable
 {
@@ -113,7 +114,8 @@ class ShippingsTable
                                 if ($record?->order?->staff_id && $record->order->staff?->profile?->role !== 'customer') {
                                     return $record->order->staff_id;
                                 }
-                                $user = auth()->user();
+                                /** @var \App\Models\User|null $user */
+                                $user = Auth::user();
                                 if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
                                     return $user->id;
                                 }
@@ -141,9 +143,10 @@ class ShippingsTable
                             $order->status = $orderStatus;
                             if (isset($data['staff_id']) && $data['staff_id']) {
                                 $order->staff_id = $data['staff_id'];
-                            } elseif (auth()->check()) {
-                                $user = auth()->user();
-                                if (in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
+                            } elseif (Auth::check()) {
+                                /** @var \App\Models\User|null $user */
+                                $user = Auth::user();
+                                if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
                                     $order->staff_id = $user->id;
                                 }
                             }

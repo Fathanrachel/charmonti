@@ -7,6 +7,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class OrderForm
 {
@@ -75,7 +76,8 @@ class OrderForm
                     })
                     ->searchable()
                     ->default(function () {
-                        $user = auth()->user();
+                        /** @var \App\Models\User|null $user */
+                        $user = Auth::user();
                         if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
                             return $user->id;
                         }

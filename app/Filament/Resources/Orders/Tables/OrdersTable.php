@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\Auth;
 
 class OrdersTable
 {
@@ -156,7 +157,8 @@ class OrdersTable
                                 if ($record?->staff_id && $record->staff?->profile?->role !== 'customer') {
                                     return $record->staff_id;
                                 }
-                                $user = auth()->user();
+                                /** @var \App\Models\User|null $user */
+                                $user = Auth::user();
                                 if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
                                     return $user->id;
                                 }
@@ -168,9 +170,10 @@ class OrdersTable
                         $updateData = ['status' => $data['status']];
                         if (isset($data['staff_id']) && $data['staff_id']) {
                             $updateData['staff_id'] = $data['staff_id'];
-                        } elseif (!$record->staff_id && auth()->check()) {
-                            $user = auth()->user();
-                            if (in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
+                        } elseif (!$record->staff_id && Auth::check()) {
+                            /** @var \App\Models\User|null $user */
+                            $user = Auth::user();
+                            if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
                                 $updateData['staff_id'] = $user->id;
                             }
                         }

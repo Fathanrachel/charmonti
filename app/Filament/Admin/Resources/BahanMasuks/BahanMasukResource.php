@@ -16,6 +16,8 @@ use Filament\Tables\Table;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Support\Facades\Auth;
+
 class BahanMasukResource extends Resource
 {
     protected static ?string $model = BahanMasuk::class;
@@ -54,7 +56,9 @@ class BahanMasukResource extends Resource
 
     public static function canViewAny(): bool
     {
-        $role = auth()->user()?->profile?->role;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        $role = $user?->profile?->role;
         return in_array($role, ['admin', 'stok', 'store']);
     }
 

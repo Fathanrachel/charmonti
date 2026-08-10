@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Models\Complaint;
 use App\Models\Expedition;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,7 +34,7 @@ class CustomerController extends Controller
         return view('customer.products.show', compact('product'));
     }
 
-    private function isProfileComplete($user): bool
+    private function isProfileComplete(?User $user): bool
     {
         $profile = $user?->profile;
         if (!$profile) {
@@ -563,6 +564,7 @@ class CustomerController extends Controller
 
     public function updateProfile(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
         $profile = $user->profile;
 
@@ -610,13 +612,13 @@ class CustomerController extends Controller
         return redirect()->route('customer.profile')->with('success', 'Profil Anda berhasil diperbarui! ✨');
     }
 
-    public function getCities($provinceId)
+    public function getCities(int|string $provinceId)
     {
         $cities = \App\Models\City::where('province_id', $provinceId)->orderBy('city')->get(['id', 'city']);
         return response()->json($cities);
     }
 
-    public function getExpeditionCosts($cityId)
+    public function getExpeditionCosts(int|string $cityId)
     {
         $expeditions = Expedition::all()->map(function ($exp) use ($cityId) {
             $cityExp = \App\Models\CityExpedition::where('city_id', $cityId)
@@ -658,6 +660,7 @@ class CustomerController extends Controller
 
     public function ajaxUpdateProfile(Request $request)
     {
+        /** @var User|null $user */
         $user = Auth::user();
         if (!$user) {
             return response()->json(['success' => false, 'message' => 'Silakan login terlebih dahulu.'], 401);

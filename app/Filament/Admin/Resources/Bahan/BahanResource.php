@@ -13,14 +13,15 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class BahanResource extends Resource
 {
     protected static ?string $model = Bahan::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquare3Stack3d;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
 
-    protected static ?string $navigationLabel = 'Kelola Bahan';
+    protected static ?string $navigationLabel = 'Master Bahan';
 
     protected static ?string $modelLabel = 'Bahan';
 
@@ -40,7 +41,9 @@ class BahanResource extends Resource
 
     public static function canViewAny(): bool
     {
-        $role = auth()->user()?->profile?->role;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        $role = $user?->profile?->role;
         return in_array($role, ['admin', 'stok', 'store']);
     }
 
