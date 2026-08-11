@@ -65,6 +65,7 @@ class ShippingsTable
                         default             => ucfirst($state ?? '-'),
                     }),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([])
             ->recordActions([
                 Action::make('ubahStatusPengiriman')

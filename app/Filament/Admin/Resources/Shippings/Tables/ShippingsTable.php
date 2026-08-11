@@ -53,6 +53,7 @@ class ShippingsTable
                         'batal'    => 'danger',
                     }),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([])
             ->recordActions([
                 EditAction::make(),

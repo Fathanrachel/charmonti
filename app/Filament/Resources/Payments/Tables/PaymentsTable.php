@@ -58,6 +58,7 @@ class PaymentsTable
                     ->dateTime('d M Y, H:i')
                     ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([])
             ->recordActions([
                 \Filament\Actions\Action::make('cekStatus')
