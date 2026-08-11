@@ -14,10 +14,10 @@ class SalesReportsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order.id')
+                TextColumn::make('orders_list')
                     ->label('Pesanan #')
                     ->default('-')
-                    ->sortable(),
+                    ->wrap(),
                 TextColumn::make('date')
                     ->label('Tanggal')
                     ->date('d M Y')

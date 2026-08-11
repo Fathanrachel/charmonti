@@ -14,7 +14,8 @@ class SalesReportForm
         return $schema
             ->components([
                 Select::make('order_id')
-                    ->relationship('order', 'id')
+                    ->relationship('order', 'id', fn ($query) => $query->with('profile'))
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "#{$record->id} - " . ($record->profile?->name ?? 'Pelanggan'))
                     ->label('Pesanan # (Order ID)')
                     ->nullable()
                     ->searchable(),
