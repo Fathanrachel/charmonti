@@ -1,6 +1,6 @@
-# 🍪 BROWSTIME E-Commerce — Dokumentasi Instalasi
+# 🌸 CharmOnTi E-Commerce — Dokumentasi Instalasi
 
-> **Panduan lengkap untuk menjalankan aplikasi BROWSTIME dari awal hingga berjalan sempurna.**
+> **Panduan lengkap untuk menjalankan aplikasi CharmOnTi E-Commerce Gelang Custom dari awal hingga berjalan sempurna.**
 
 ---
 
@@ -20,32 +20,35 @@
 
 ## 📖 Spesifikasi Aplikasi
 
-BROWSTIME adalah sistem e-commerce berbasis **Make-to-Order** untuk UMKM yang memproduksi makanan sesuai pesanan. Fitur utama:
+CharmOnTi adalah sistem e-commerce inovatif yang memungkinkan pelanggan membeli produk perhiasan jadi atau merakit **Gelang Custom** mereka sendiri secara interaktif (maksimal 15 charm/manik per gelang).
 
 ### Customer Frontend
-- 🏪 Katalog Produk dengan filter kategori dan pencarian
-- 🛒 Keranjang Belanja (session-based)
-- 📦 Checkout (Guest & Member)
-- 💳 Multi Payment: Transfer Bank, QRIS Static, Midtrans
-- 🚚 Kalkulasi Ongkir via RajaOngkir API
-- 📍 Tracking Pesanan via kode booking
-- ⭐ Review & Rating
+- 🏪 Katalog Produk Jadi & Bahan Gelang Custom
+- 🛠️ Fitur Rakit Gelang Kustom Interaktif
+- 🛒 Keranjang Belanja & Checkout Terintegrasi
+- 💳 Pembayaran Otomatis via Midtrans (Transfer Bank, QRIS, E-Wallet)
+- 🚚 Manajemen Pengiriman dengan Ekspedisi
+- 📍 Tracking Status Pesanan
 
 ### Admin Panel (Filament)
-- 📊 Dashboard Analytics
-- 📦 Manajemen Produk & Kategori
-- 📝 Bill of Material (BOM) / Resep
-- 📉 Mutasi Stok (pemakaian, masuk, rusak, penyesuaian)
-- 🧾 Manajemen Pesanan
-- 📈 Laporan dengan Export Excel
+- 📊 Dashboard Penjualan & Stok
+- 📦 Manajemen Produk Jadi & Bahan Kustom
+- 📉 Mutasi Stok FIFO Terpusat (Bahan Masuk/Keluar, Produk Masuk/Keluar)
+- 🧾 Manajemen Pesanan & Verifikasi Status
+- 🚚 Manajemen Kota & Ekspedisi (Ongkir)
+
+### Owner Panel (Filament)
+- 📈 Dashboard Statistik Bisnis
+- 📊 Laporan Penjualan (Otomatis Tersinkron)
+- 💰 Laporan Keuangan (Revenue, Expense, Profit)
+- 📄 Export Laporan ke format PDF (via DOMPDF)
 
 ### Multi-Role & Panel Access
 | Role | URL Panel | Akses |
 |------|-----------|-------|
-| **Admin** | `/admin` | Full access: Produk, Kategori, Bahan Baku, BOM, Satuan, Mutasi Stok, Pesanan, Akun Bank, Wilayah Pengiriman, Pengaturan Midtrans & QRIS |
-| **Produksi** | `/produksi` | Pesanan siap produksi (status: paid/produksi/dikirim/selesai), Mutasi Stok, Dashboard statistik |
-| **Keuangan** | `/keuangan` | Laporan Keuangan, Laporan Penjualan, Laporan Stok (dengan Export Excel), Dashboard statistik |
-| **Pelanggan** | `/` | Customer frontend (katalog, keranjang, checkout, tracking) |
+| **Admin** | `/admin` | Mengelola operasional harian: Produk, Bahan, Mutasi Stok, Pesanan, Ekspedisi. |
+| **Owner** | `/owner` | Memantau performa bisnis dan mengunduh Laporan Keuangan/Penjualan (PDF). |
+| **Pelanggan** | `/` | Mengakses katalog, merakit gelang, keranjang, dan checkout. |
 
 ---
 
@@ -53,270 +56,162 @@ BROWSTIME adalah sistem e-commerce berbasis **Make-to-Order** untuk UMKM yang me
 
 | Kategori | Teknologi |
 |----------|-----------|
-| **Framework** | Laravel 12 |
-| **PHP Version** | 8.2+ |
-| **Admin Panel** | Filament 4.2 |
-| **Frontend** | Livewire 3.7, Alpine.js 3.4 |
-| **Styling** | TailwindCSS 4.0 |
-| **Build Tool** | Vite 7.0 |
-| **Database** | MySQL |
-| **Authentication** | Laravel Breeze |
-| **Authorization** | Spatie Laravel Permission 6.23 |
-| **Media Library** | Spatie Media Library (Filament Plugin) |
+| **Framework** | Laravel 13.x |
+| **PHP Version** | 8.3 / 8.4 |
+| **Admin Panel** | Filament 5.0 |
+| **Frontend** | TailwindCSS 4.0, Blade Templates |
+| **Build Tool** | Vite 8.0 |
+| **Database** | PostgreSQL 16 (via Docker) / SQLite (Lokal) |
+| **Web Server** | FrankenPHP (via Docker) |
 | **Payment Gateway** | Midtrans PHP SDK 2.6 |
-| **Shipping API** | RajaOngkir API |
-| **Export** | Maatwebsite Excel 3.1 |
+| **PDF Generator** | DOMPDF (barryvdh/laravel-dompdf) |
 
 ---
 
 ## 💻 Persyaratan Sistem
 
-- **PHP** >= 8.2 dengan extensions: BCMath, Ctype, cURL, DOM, Fileinfo, JSON, Mbstring, OpenSSL, PCRE, PDO, Tokenizer, XML, GD/Imagick
+### Opsi 1: Menggunakan Docker (Sangat Direkomendasikan ⭐)
+- **Docker Desktop** (untuk Windows/Mac) atau Docker Engine (Linux)
+- WSL2 (khusus pengguna Windows)
+
+### Opsi 2: Manual Tanpa Docker
+- **PHP** >= 8.3 dengan extensions: PDO, Mbstring, PCNTL, GD, Zip, Intl, PostgreSQL/SQLite
 - **Composer** >= 2.0
 - **Node.js** >= 18.x
-- **NPM** >= 9.x
-- **MySQL** >= 8.0 atau **MariaDB** >= 10.6
+- **PostgreSQL** atau **SQLite**
 - **Git**
-
-### Rekomendasi:
-- **Laragon** (Windows)
-- **Laravel Valet** (macOS)
-- **Docker** dengan Laravel Sail
 
 ---
 
-## 🚀 Instalasi
+## 🚀 Instalasi (Menggunakan Docker)
+
+Cara ini paling mudah karena **tidak perlu install PHP/Node/Database** di laptop kamu.
 
 ### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/Faathir81/E-Commerce-Browstime.git
-cd E-Commerce-Browstime
+git clone <url-repo-charmonti>
+cd charmonti
 ```
 
-### 2️⃣ Install Dependency PHP
-
-```bash
-composer install
-```
-
-### 3️⃣ Install Dependency JavaScript
-
-```bash
-npm install
-```
-
-### 4️⃣ Konfigurasi Environment
+### 2️⃣ Konfigurasi Environment
 
 ```bash
 cp .env.example .env
-php artisan key:generate
 ```
+*(Lihat bagian [Konfigurasi Environment](#-konfigurasi-environment) di bawah untuk penyesuaian `.env`)*
 
-### 5️⃣ Setup Database
-
-Buat database MySQL:
-
-```sql
-CREATE DATABASE browstime_ecommerce;
-```
-
-Edit `.env`:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=browstime_ecommerce
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-### 6️⃣ Jalankan Migration & Seeder
+### 3️⃣ Jalankan Docker Services
 
 ```bash
-php artisan migrate
-php artisan db:seed
+docker compose up -d --build
 ```
+*Proses ini akan mengunduh dependencies, melakukan build frontend, dan menyalakan Database.*
 
-Atau sekaligus:
+### 4️⃣ Generate Key & Setup Database
+
+Jalankan perintah ini di dalam container:
 
 ```bash
-php artisan migrate:fresh --seed
-```
+# Generate APP_KEY
+docker compose exec app php artisan key:generate
 
-### 7️⃣ Setup Storage Link
+# Storage Link (Opsional, sudah dihandle entrypoint)
+docker compose exec app php artisan storage:link
 
-```bash
-php artisan storage:link
-```
-
-### 8️⃣ Build Asset Frontend
-
-```bash
-npm run build
+# Jalankan seeder (jika butuh data dummy awal)
+docker compose exec app php artisan db:seed
 ```
 
 ---
 
 ## ⚙️ Konfigurasi Environment
 
-Edit `.env` sesuai kebutuhan:
+Pastikan file `.env` kamu diatur seperti ini jika menggunakan Docker:
 
 ```env
-# Aplikasi
-APP_NAME=BROWSTIME
-APP_URL=http://127.0.0.1:8000
+APP_NAME=CharmOnTi
+APP_ENV=local
+APP_URL=http://localhost:8080
 
-# Database
-DB_DATABASE=browstime_ecommerce
-DB_USERNAME=root
-DB_PASSWORD=
+# Konfigurasi Database (Arahkan ke service docker 'db')
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=charmonti_db
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
 
-# RajaOngkir API
-RAJAONGKIR_API_KEY=your_api_key_here
-RAJAONGKIR_BASE_URL=https://rajaongkir.komerce.id/api/v1
-RAJAONGKIR_ORIGIN_SUBDISTRICT_ID=763
-RAJAONGKIR_COURIER=jne
+# Integrasi Midtrans
+MIDTRANS_SERVER_KEY=Mid-server-YOUR_SERVER_KEY
+MIDTRANS_CLIENT_KEY=Mid-client-YOUR_CLIENT_KEY
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_IS_SANITIZED=true
+MIDTRANS_IS_3DS=true
 ```
 
 ---
 
 ## ▶️ Menjalankan Aplikasi
 
-### Quick Start (Rekomendasi)
-
-```bash
-composer dev
-```
-
-Ini menjalankan secara paralel:
-- PHP Server (`php artisan serve`)
-- Queue Worker (`php artisan queue:listen`)
-- Log Viewer (`php artisan pail`)
-- Vite Dev Server (`npm run dev`)
-
-### Manual
-
-```bash
-# Terminal 1
-php artisan serve
-
-# Terminal 2
-npm run dev
-
-# Terminal 3 (opsional)
-php artisan queue:listen
-```
-
-### Akses URL
+Aplikasi berjalan di port `8080` jika menggunakan Docker.
 
 | URL | Deskripsi |
 |-----|-----------|
-| http://127.0.0.1:8000 | Landing Page / Customer Frontend |
-| http://127.0.0.1:8000/login | **Login (semua role)** |
-| http://127.0.0.1:8000/register | Register Customer baru |
-| http://127.0.0.1:8000/admin | Panel Admin |
-| http://127.0.0.1:8000/produksi | Panel Staf Produksi |
-| http://127.0.0.1:8000/keuangan | Panel Bagian Keuangan |
+| http://localhost:8080 | Landing Page / Customer Frontend |
+| http://localhost:8080/login | Halaman Login Customer |
+| http://localhost:8080/admin | Panel Staff Admin |
+| http://localhost:8080/owner | Panel Pemilik Bisnis (Owner) |
 
 ---
 
 ## 🌱 Data Seeder
 
-### Menjalankan Semua Seeder
+Untuk mengisi database dengan data wilayah awal (Kota & Ekspedisi) atau akun contoh:
 
 ```bash
+# Via Docker
+docker compose exec app php artisan db:seed
+
+# Manual (jika tidak pakai Docker)
 php artisan db:seed
 ```
 
-### Seeder Spesifik
-
+Jika kamu memiliki seeder lokasi spesifik untuk ongkos kirim:
 ```bash
-# Main seeder (roles, users, produk, bahan baku, BOM)
-php artisan db:seed --class=BrowstimeSeeder
-
-# Pesanan dummy untuk testing
-php artisan db:seed --class=DummyOrderSeeder
+docker compose exec app php artisan db:seed --class=LocationSeeder
 ```
-
-### Reset Database + Seeder
-
-```bash
-php artisan migrate:fresh --seed
-```
-
-### Data yang Di-seed
-
-| Data | Jumlah | Keterangan |
-|------|--------|------------|
-| Roles | 4 | admin, produksi, keuangan, pelanggan |
-| Users | 4 | 1 per role |
-| Kategori | 2 | Cookies, Brownies |
-| Satuan | 3 | Gram, Pcs, Milligram |
-| Bahan Baku | 14 | Matcha, Butter, Telur, dll |
-| Produk | 10 | 8 Cookies + 2 Brownies |
-| BOM/Resep | 10 | 1 resep per produk |
-| Metode Pembayaran | 3 | Transfer, QRIS, Midtrans |
-| Akun Bank | 1 | BCA - Browstime |
 
 ---
 
 ## 🔑 Login & Akun Demo
 
-### Sistem Login
+Akses panel didasarkan pada guard dan tabel `profiles`. Setiap pengguna yang terdaftar di Panel harus memiliki profil dengan role yang sesuai.
 
-> **Semua user login di satu tempat yang sama:** `/login`
+*Jika kamu sudah menjalankan seeder (dan seeder memuat akun dummy), kamu bisa login dengan akun yang disediakan seeder.*
 
-Setelah login berhasil, sistem akan **otomatis redirect** ke panel sesuai role:
-
-```
-Login (/login) → Cek Role → Redirect ke Dashboard sesuai role
-```
-
-| Role | Redirect setelah Login |
-|------|------------------------|
-| Admin | `/admin` |
-| Produksi | `/produksi` |
-| Keuangan | `/keuangan` |
-| Pelanggan | `/` (Landing Page) |
-
-### Akun Demo
-
-Setelah menjalankan seeder, gunakan akun berikut untuk testing:
-
-| Role | Email | Password | Redirect ke |
-|------|-------|----------|-------------|
-| **Admin** | admin@demo.com | password | `/admin` |
-| **Produksi** | produksi@demo.com | password | `/produksi` |
-| **Keuangan** | keuangan@demo.com | password | `/keuangan` |
-| **Pelanggan** | pelanggan1@demo.com | password | `/` (landing) |
+Jika belum, kamu bisa membuat user pertama melalui command line atau register di halaman web, lalu secara manual mengubah nilai `role` di tabel `profiles` menjadi `admin` atau `owner`.
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Database tidak ditemukan
-```bash
-mysql -u root -e "CREATE DATABASE browstime_ecommerce"
-```
+### Database Error saat start Docker
+Pastikan `DB_HOST=db` di file `.env`. Jangan gunakan `127.0.0.1`.
 
-### Class not found
+### KeyGenerateCommand Read-Only file system
+Jika `php artisan key:generate` gagal karena file read-only, jalankan:
 ```bash
-composer dump-autoload
-php artisan optimize:clear
+docker compose exec app php artisan key:generate --show
 ```
+Lalu copy hasilnya (dimulai dengan `base64:...`) dan paste secara manual ke file `.env` lokal kamu.
 
-### Vite manifest not found
+### Gambar/Foto Tidak Muncul
+Pastikan storage link sudah dibuat:
 ```bash
-npm run build
-```
-
-### Storage images tidak tampil
-```bash
-php artisan storage:link
+docker compose exec app php artisan storage:link
 ```
 
 ---
 
-**Developed by Silver Capybara**
+**Developed for CharmOnTi E-Commerce**
