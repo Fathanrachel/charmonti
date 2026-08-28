@@ -1,58 +1,322 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🍪 BROWSTIME E-Commerce — Dokumentasi Instalasi
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> **Panduan lengkap untuk menjalankan aplikasi BROWSTIME dari awal hingga berjalan sempurna.**
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Daftar Isi
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Spesifikasi Aplikasi](#-spesifikasi-aplikasi)
+- [Tech Stack](#-tech-stack)
+- [Persyaratan Sistem](#-persyaratan-sistem)
+- [Instalasi](#-instalasi)
+- [Konfigurasi Environment](#-konfigurasi-environment)
+- [Menjalankan Aplikasi](#-menjalankan-aplikasi)
+- [Data Seeder](#-data-seeder)
+- [Akun Demo](#-akun-demo)
+- [Troubleshooting](#-troubleshooting)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 📖 Spesifikasi Aplikasi
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+BROWSTIME adalah sistem e-commerce berbasis **Make-to-Order** untuk UMKM yang memproduksi makanan sesuai pesanan. Fitur utama:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Customer Frontend
+- 🏪 Katalog Produk dengan filter kategori dan pencarian
+- 🛒 Keranjang Belanja (session-based)
+- 📦 Checkout (Guest & Member)
+- 💳 Multi Payment: Transfer Bank, QRIS Static, Midtrans
+- 🚚 Kalkulasi Ongkir via RajaOngkir API
+- 📍 Tracking Pesanan via kode booking
+- ⭐ Review & Rating
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Admin Panel (Filament)
+- 📊 Dashboard Analytics
+- 📦 Manajemen Produk & Kategori
+- 📝 Bill of Material (BOM) / Resep
+- 📉 Mutasi Stok (pemakaian, masuk, rusak, penyesuaian)
+- 🧾 Manajemen Pesanan
+- 📈 Laporan dengan Export Excel
 
-## Agentic Development
+### Multi-Role & Panel Access
+| Role | URL Panel | Akses |
+|------|-----------|-------|
+| **Admin** | `/admin` | Full access: Produk, Kategori, Bahan Baku, BOM, Satuan, Mutasi Stok, Pesanan, Akun Bank, Wilayah Pengiriman, Pengaturan Midtrans & QRIS |
+| **Produksi** | `/produksi` | Pesanan siap produksi (status: paid/produksi/dikirim/selesai), Mutasi Stok, Dashboard statistik |
+| **Keuangan** | `/keuangan` | Laporan Keuangan, Laporan Penjualan, Laporan Stok (dengan Export Excel), Dashboard statistik |
+| **Pelanggan** | `/` | Customer frontend (katalog, keranjang, checkout, tracking) |
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
+
+## 🛠 Tech Stack
+
+| Kategori | Teknologi |
+|----------|-----------|
+| **Framework** | Laravel 12 |
+| **PHP Version** | 8.2+ |
+| **Admin Panel** | Filament 4.2 |
+| **Frontend** | Livewire 3.7, Alpine.js 3.4 |
+| **Styling** | TailwindCSS 4.0 |
+| **Build Tool** | Vite 7.0 |
+| **Database** | MySQL |
+| **Authentication** | Laravel Breeze |
+| **Authorization** | Spatie Laravel Permission 6.23 |
+| **Media Library** | Spatie Media Library (Filament Plugin) |
+| **Payment Gateway** | Midtrans PHP SDK 2.6 |
+| **Shipping API** | RajaOngkir API |
+| **Export** | Maatwebsite Excel 3.1 |
+
+---
+
+## 💻 Persyaratan Sistem
+
+- **PHP** >= 8.2 dengan extensions: BCMath, Ctype, cURL, DOM, Fileinfo, JSON, Mbstring, OpenSSL, PCRE, PDO, Tokenizer, XML, GD/Imagick
+- **Composer** >= 2.0
+- **Node.js** >= 18.x
+- **NPM** >= 9.x
+- **MySQL** >= 8.0 atau **MariaDB** >= 10.6
+- **Git**
+
+### Rekomendasi:
+- **Laragon** (Windows)
+- **Laravel Valet** (macOS)
+- **Docker** dengan Laravel Sail
+
+---
+
+## 🚀 Instalasi
+
+### 1️⃣ Clone Repository
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/Faathir81/E-Commerce-Browstime.git
+cd E-Commerce-Browstime
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2️⃣ Install Dependency PHP
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3️⃣ Install Dependency JavaScript
 
-## Code of Conduct
+```bash
+npm install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4️⃣ Konfigurasi Environment
 
-## Security Vulnerabilities
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 5️⃣ Setup Database
 
-## License
+Buat database MySQL:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```sql
+CREATE DATABASE browstime_ecommerce;
+```
+
+Edit `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=browstime_ecommerce
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 6️⃣ Jalankan Migration & Seeder
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+Atau sekaligus:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+### 7️⃣ Setup Storage Link
+
+```bash
+php artisan storage:link
+```
+
+### 8️⃣ Build Asset Frontend
+
+```bash
+npm run build
+```
+
+---
+
+## ⚙️ Konfigurasi Environment
+
+Edit `.env` sesuai kebutuhan:
+
+```env
+# Aplikasi
+APP_NAME=BROWSTIME
+APP_URL=http://127.0.0.1:8000
+
+# Database
+DB_DATABASE=browstime_ecommerce
+DB_USERNAME=root
+DB_PASSWORD=
+
+# RajaOngkir API
+RAJAONGKIR_API_KEY=your_api_key_here
+RAJAONGKIR_BASE_URL=https://rajaongkir.komerce.id/api/v1
+RAJAONGKIR_ORIGIN_SUBDISTRICT_ID=763
+RAJAONGKIR_COURIER=jne
+```
+
+---
+
+## ▶️ Menjalankan Aplikasi
+
+### Quick Start (Rekomendasi)
+
+```bash
+composer dev
+```
+
+Ini menjalankan secara paralel:
+- PHP Server (`php artisan serve`)
+- Queue Worker (`php artisan queue:listen`)
+- Log Viewer (`php artisan pail`)
+- Vite Dev Server (`npm run dev`)
+
+### Manual
+
+```bash
+# Terminal 1
+php artisan serve
+
+# Terminal 2
+npm run dev
+
+# Terminal 3 (opsional)
+php artisan queue:listen
+```
+
+### Akses URL
+
+| URL | Deskripsi |
+|-----|-----------|
+| http://127.0.0.1:8000 | Landing Page / Customer Frontend |
+| http://127.0.0.1:8000/login | **Login (semua role)** |
+| http://127.0.0.1:8000/register | Register Customer baru |
+| http://127.0.0.1:8000/admin | Panel Admin |
+| http://127.0.0.1:8000/produksi | Panel Staf Produksi |
+| http://127.0.0.1:8000/keuangan | Panel Bagian Keuangan |
+
+---
+
+## 🌱 Data Seeder
+
+### Menjalankan Semua Seeder
+
+```bash
+php artisan db:seed
+```
+
+### Seeder Spesifik
+
+```bash
+# Main seeder (roles, users, produk, bahan baku, BOM)
+php artisan db:seed --class=BrowstimeSeeder
+
+# Pesanan dummy untuk testing
+php artisan db:seed --class=DummyOrderSeeder
+```
+
+### Reset Database + Seeder
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+### Data yang Di-seed
+
+| Data | Jumlah | Keterangan |
+|------|--------|------------|
+| Roles | 4 | admin, produksi, keuangan, pelanggan |
+| Users | 4 | 1 per role |
+| Kategori | 2 | Cookies, Brownies |
+| Satuan | 3 | Gram, Pcs, Milligram |
+| Bahan Baku | 14 | Matcha, Butter, Telur, dll |
+| Produk | 10 | 8 Cookies + 2 Brownies |
+| BOM/Resep | 10 | 1 resep per produk |
+| Metode Pembayaran | 3 | Transfer, QRIS, Midtrans |
+| Akun Bank | 1 | BCA - Browstime |
+
+---
+
+## 🔑 Login & Akun Demo
+
+### Sistem Login
+
+> **Semua user login di satu tempat yang sama:** `/login`
+
+Setelah login berhasil, sistem akan **otomatis redirect** ke panel sesuai role:
+
+```
+Login (/login) → Cek Role → Redirect ke Dashboard sesuai role
+```
+
+| Role | Redirect setelah Login |
+|------|------------------------|
+| Admin | `/admin` |
+| Produksi | `/produksi` |
+| Keuangan | `/keuangan` |
+| Pelanggan | `/` (Landing Page) |
+
+### Akun Demo
+
+Setelah menjalankan seeder, gunakan akun berikut untuk testing:
+
+| Role | Email | Password | Redirect ke |
+|------|-------|----------|-------------|
+| **Admin** | admin@demo.com | password | `/admin` |
+| **Produksi** | produksi@demo.com | password | `/produksi` |
+| **Keuangan** | keuangan@demo.com | password | `/keuangan` |
+| **Pelanggan** | pelanggan1@demo.com | password | `/` (landing) |
+
+---
+
+## 🐛 Troubleshooting
+
+### Database tidak ditemukan
+```bash
+mysql -u root -e "CREATE DATABASE browstime_ecommerce"
+```
+
+### Class not found
+```bash
+composer dump-autoload
+php artisan optimize:clear
+```
+
+### Vite manifest not found
+```bash
+npm run build
+```
+
+### Storage images tidak tampil
+```bash
+php artisan storage:link
+```
+
+---
+
+**Developed by Silver Capybara**
