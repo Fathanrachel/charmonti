@@ -2,23 +2,50 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Models\FinancialReport;
+use App\Models\Order;
+use App\Models\Payment;
+use App\Models\Product;
+use App\Models\SalesReport;
+use App\Observers\OrderObserver;
+use App\Policies\FinancialReportPolicy;
+use App\Policies\OrderPolicy;
+use App\Policies\PaymentPolicy;
+use App\Policies\ProductPolicy;
+use App\Policies\SalesReportPolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends AuthServiceProvider
 {
-    /**
-     * Register any application services.
-     */
+    protected $policies = [
+        Product::class        => ProductPolicy::class,
+        Order::class          => OrderPolicy::class,
+        Payment::class        => PaymentPolicy::class,
+        FinancialReport::class => FinancialReportPolicy::class,
+        SalesReport::class    => SalesReportPolicy::class,
+    ];
+
     public function register(): void
     {
-        //
+        parent::register();
+
+        if (str_starts_with(PHP_OS, 'WIN')) {
+            $this->app->singleton('files', function () {
+                return new \App\Services\SafeFilesystem;
+            });
+        }
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        $this->registerPolicies();
+        Order::observe(OrderObserver::class);
+        \App\Models\Shipping::observe(\App\Observers\ShippingObserver::class);
+
+        // Konfigurasi Global Format Tanggal di Tabel Filament (Admin & Owner)
+        \Filament\Tables\Table::configureUsing(function (\Filament\Tables\Table $table): void {
+            $table->defaultDateTimeDisplayFormat('d M Y');
+            $table->defaultDateDisplayFormat('d M Y');
+        });
     }
 }

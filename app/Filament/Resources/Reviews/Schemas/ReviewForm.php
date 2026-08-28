@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources\Reviews\Schemas;
 
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class ReviewForm
@@ -12,19 +13,33 @@ class ReviewForm
     {
         return $schema
             ->components([
-                TextInput::make('order_id')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('user_id')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('product_id')
-                    ->required()
-                    ->numeric(),
+                Select::make('order_id')
+                    ->relationship('order', 'id')
+                    ->label('Pesanan #')
+                    ->disabled()
+                    ->required(),
+
+                Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->label('Pelanggan')
+                    ->disabled()
+                    ->required(),
+
+                Select::make('product_id')
+                    ->relationship('product', 'name')
+                    ->label('Produk')
+                    ->disabled()
+                    ->required(),
+
                 TextInput::make('rating')
-                    ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->label('Rating (Bintang)')
+                    ->disabled()
+                    ->required(),
+
                 Textarea::make('comment')
+                    ->label('Komentar Ulasan')
+                    ->disabled()
                     ->columnSpanFull(),
             ]);
     }

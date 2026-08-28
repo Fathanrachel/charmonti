@@ -24,23 +24,32 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
             ->id('admin')
             ->path('admin')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
+            ->authGuard('admin')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Rose,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->font('Outfit')
+            ->brandName('CharmOnTi')
+            ->brandLogo('/charmonti.png')
+            ->brandLogoHeight('2.5rem')
+            ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
+            ->resources([
+                \App\Filament\Admin\Resources\CityExpeditions\CityExpeditionResource::class,
+                \App\Filament\Admin\Resources\Expeditions\ExpeditionResource::class,
+            ])
+            ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
-                Dashboard::class,
+                \App\Filament\Admin\Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                \App\Filament\Admin\Widgets\AdminAccountWidget::class,
             ])
+            ->globalSearch(false)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

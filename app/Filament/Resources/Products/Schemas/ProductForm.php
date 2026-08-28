@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class ProductForm
@@ -13,7 +14,14 @@ class ProductForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
+                FileUpload::make('image')
+                    ->label('Foto Produk')
+                    ->image()
+                    ->directory('products')
+                    ->imagePreviewHeight('200')
+                    ->columnSpanFull(),
+
+                TextInput::make('product_name')
                     ->label('Nama Produk')
                     ->required()
                     ->maxLength(255),
@@ -30,9 +38,22 @@ class ProductForm
                     ->numeric()
                     ->prefix('Rp'),
 
-                Toggle::make('is_custom')
-                    ->label('Produk Custom?')
-                    ->default(false),
+                Select::make('category')
+                    ->label('Kategori Produk')
+                    ->options([
+                        'gelang_jadi' => 'Gelang Jadi',
+                        'cincin'      => 'Cincin',
+                    ])
+                    ->required()
+                    ->native(false)
+                    ->default('gelang_jadi'),
+
+                TextInput::make('min_stock')
+                    ->label('Batas Minimum Stok (Warning)')
+                    ->helperText('Batas stok terendah sebelum muncul peringatan warning')
+                    ->required()
+                    ->numeric()
+                    ->default(1),
             ]);
     }
 }

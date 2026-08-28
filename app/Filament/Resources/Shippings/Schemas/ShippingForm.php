@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Shippings\Schemas;
 
+use App\Models\Order;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -12,20 +14,47 @@ class ShippingForm
     {
         return $schema
             ->components([
-                TextInput::make('order_id')
+                Select::make('order_id')
+                    ->label('Pesanan (Pelanggan)')
+                    ->options(fn () => Order::with('profile')->get()->mapWithKeys(function ($order) {
+                        $name = $order->profile?->name ?? 'Pelanggan';
+                        return [$order->id => "Pesanan #{$order->id} - {$name}"];
+                    }))
                     ->required()
-                    ->numeric(),
-                TextInput::make('courier')
-                    ->required(),
+                    ->searchable(),
+
+                Select::make('expedition_id')
+                    ->label('Ekspedisi / Kurir')
+                    ->options(\App\Models\Expedition::all()->pluck('name_expedition', 'id'))
+                    ->nullable()
+                    ->searchable(),
+
                 TextInput::make('shipping_cost')
+                    ->label('Ongkos Kirim')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
-                TextInput::make('tracking_number'),
-                DateTimePicker::make('estimated_arrival'),
-                TextInput::make('status')
+                    ->prefix('Rp'),
+
+                TextInput::make('tracking_number')
+                    ->label('Nomor Resi')
+                    ->required(fn ($get) => in_array($get('status'), ['dikirim', 'sampai']))
+                    ->placeholder('Wajib diisi saat status Dalam Pengiriman / Sampai'),
+
+                DateTimePicker::make('estimated_arrival')
+                    ->label('Estimasi Tiba')
+                    ->nullable(),
+
+                Select::make('status')
+                    ->label('Status Pengiriman')
+                    ->options([
+                        'pending' => 'Menunggu Pengiriman (Sedang Disiapkan)',
+                        'dikirim' => 'Dalam Pengiriman (Di Kurir)',
+                        'sampai'  => 'Sudah Terkirim / Sampai',
+                        'batal'   => 'Batal Dikirim',
+                    ])
+                    ->default('pending')
                     ->required()
-                    ->default('pending'),
+                    ->live(),
             ]);
     }
 }

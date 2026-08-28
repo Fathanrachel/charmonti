@@ -1,0 +1,30 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# FrankenPHP Caddyfile — CharmOnTi
+# Dokumentasi: https://frankenphp.dev/docs/config/
+# ─────────────────────────────────────────────────────────────────────────────
+
+{
+    # Aktifkan mode FrankenPHP
+    frankenphp
+
+    # Matikan admin API (keamanan)
+    admin off
+
+    # Matikan HTTPS otomatis (karena kita pakai port 8080, bukan 443)
+    auto_https off
+}
+
+# Dengarkan di port 80 dalam container
+:80 {
+
+    # Document root Laravel adalah folder /public
+    root * /app/public
+
+    # Aktifkan kompresi untuk performa lebih baik
+    encode zstd br gzip
+
+    # Handle PHP files via FrankenPHP
+    # php_server = shorthand untuk php_fastcgi + file_server
+    php_server
+
+}

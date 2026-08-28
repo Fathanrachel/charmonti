@@ -10,6 +10,11 @@ class ListProducts extends ListRecords
 {
     protected static string $resource = ProductResource::class;
 
+    protected function getTableQuery(): ?\Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getTableQuery()->where('product_name', '!=', 'Gelang Custom');
+    }
+
     protected function getHeaderActions(): array
     {
         return [

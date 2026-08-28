@@ -15,18 +15,21 @@ class OrderItemForm
         return $schema
             ->components([
                 Select::make('order_id')
-                    ->label('Order')
-                    ->options(Order::all()->pluck('id', 'id')->map(fn($id) => 'Order #' . $id))
+                    ->label('Pesanan (Pelanggan)')
+                    ->options(fn () => Order::with('profile')->get()->mapWithKeys(function ($order) {
+                        $name = $order->profile?->name ?? 'Pelanggan';
+                        return [$order->id => "Pesanan #{$order->id} - {$name}"];
+                    }))
                     ->required()
                     ->searchable(),
 
                 Select::make('product_id')
                     ->label('Produk')
-                    ->options(Product::all()->pluck('name', 'id'))
+                    ->options(Product::all()->pluck('product_name', 'id'))
                     ->required()
                     ->searchable(),
 
-                TextInput::make('quantity')
+                TextInput::make('qty')
                     ->label('Jumlah')
                     ->required()
                     ->numeric()

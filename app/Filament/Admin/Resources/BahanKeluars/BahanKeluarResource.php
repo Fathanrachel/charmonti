@@ -1,0 +1,104 @@
+<?php
+
+namespace App\Filament\Admin\Resources\BahanKeluars;
+
+use App\Filament\Admin\Resources\BahanKeluars\Pages\CreateBahanKeluar;
+use App\Filament\Admin\Resources\BahanKeluars\Pages\EditBahanKeluar;
+use App\Filament\Admin\Resources\BahanKeluars\Pages\ListBahanKeluars;
+use App\Filament\Resources\BahanKeluar\Schemas\BahanKeluarForm;
+use App\Filament\Resources\BahanKeluar\Tables\BahanKeluarTable;
+use App\Models\BahanKeluar;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+
+use Illuminate\Database\Eloquent\Model;
+
+use Illuminate\Support\Facades\Auth;
+
+class BahanKeluarResource extends Resource
+{
+    protected static ?string $model = BahanKeluar::class;
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-inbox-arrow-down';
+
+    protected static ?string $navigationLabel = 'Bahan Keluar';
+
+    protected static ?string $modelLabel = 'Bahan Keluar';
+
+    protected static ?string $pluralModelLabel = 'Bahan Keluar';
+
+    protected static ?string $recordTitleAttribute = 'id';
+
+    public static function getRecordTitle(?Model $record): ?string
+    {
+        if (! $record) {
+            return null;
+        }
+
+        /** @var \App\Models\BahanKeluar $record */
+        $nama = $record->bahan?->nama_bahan ?? $record->bahanMasuk?->nama_bahan;
+
+        return $nama ? "Bahan Keluar #{$record->id} ({$nama})" : "Bahan Keluar #{$record->id}";
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return BahanKeluarForm::configure($schema);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return BahanKeluarTable::configure($table);
+    }
+
+    /**
+     * Override query: GROUP BY order_id + bahan_id so that
+     * the same bahan in the same order appears as ONE row with summed qty.
+     */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $subquery = BahanKeluar::query()
+            ->selectRaw('
+                MIN(id) as id,
+                order_id,
+                bahan_id,
+                MIN(idbahan_masuk) as idbahan_masuk,
+                SUM(qty_keluar) as qty_keluar,
+                MIN(tanggal_keluar) as tanggal_keluar,
+                MIN(deskripsi) as deskripsi,
+                MIN(created_at) as created_at,
+                MIN(updated_at) as updated_at
+            ')
+            ->groupBy('order_id', 'bahan_id');
+
+        return BahanKeluar::query()
+            ->fromSub($subquery, 'bahan_keluar');
+    }
+
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        $role = $user?->profile?->role;
+        return in_array($role, ['admin', 'stok', 'store']);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListBahanKeluars::route('/'),
+            'create' => CreateBahanKeluar::route('/create'),
+            'edit' => EditBahanKeluar::route('/{record}/edit'),
+        ];
+    }
+}

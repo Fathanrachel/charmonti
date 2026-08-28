@@ -5,30 +5,40 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Profile;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@charmonti.com',
+        $admin = User::create([
+            'email'    => 'admin@charmonti.com',
             'password' => Hash::make('password'),
-            'role' => 'admin',
+        ]);
+        Profile::create([
+            'users_id' => $admin->id,
+            'name'     => 'Super Admin',
+            'role'     => 'admin',
         ]);
 
-        User::create([
-            'name' => 'Business Owner',
-            'email' => 'owner@charmonti.com',
-            'password' => Hash::make('password'),
-            'role' => 'owner',
+        $owner = User::create([
+            'email'    => 'owner@charmonti.com',
+            'password' => Hash::make('Owner123!'),
+        ]);
+        Profile::create([
+            'users_id' => $owner->id,
+            'name'     => 'Owner Charm Onti',
+            'role'     => 'owner',
         ]);
 
-        User::create([
-            'name' => 'Customer Test',
-            'email' => 'customer@charmonti.com',
+        $customer = User::create([
+            'email'    => 'customer@charmonti.com',
             'password' => Hash::make('password'),
-            'role' => 'customer',
+        ]);
+        Profile::create([
+            'users_id' => $customer->id,
+            'name'     => 'Customer Test',
+            'role'     => 'customer',
         ]);
     }
 }

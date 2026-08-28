@@ -15,8 +15,11 @@ class PaymentForm
         return $schema
             ->components([
                 Select::make('order_id')
-                    ->label('Order')
-                    ->options(Order::all()->pluck('id', 'id')->map(fn($id) => 'Order #' . $id))
+                    ->label('Pesanan (Pelanggan)')
+                    ->options(fn () => Order::with('profile')->get()->mapWithKeys(function ($order) {
+                        $name = $order->profile?->name ?? 'Pelanggan';
+                        return [$order->id => "Pesanan #{$order->id} - {$name}"];
+                    }))
                     ->required()
                     ->searchable(),
 
@@ -32,9 +35,10 @@ class PaymentForm
                 Select::make('payment_status')
                     ->label('Status Pembayaran')
                     ->options([
-                        'pending' => 'Pending',
-                        'paid'    => 'Paid',
-                        'failed'  => 'Failed',
+                        'pending' => 'Menunggu Pembayaran',
+                        'paid'    => 'Pembayaran Lunas',
+                        'failed'  => 'Gagal / Dibatalkan',
+                        'expired' => 'Kadaluwarsa',
                     ])
                     ->default('pending')
                     ->required(),

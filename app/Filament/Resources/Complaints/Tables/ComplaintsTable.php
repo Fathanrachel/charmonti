@@ -14,28 +14,50 @@ class ComplaintsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order_id')
-                    ->numeric()
+                TextColumn::make('order.id')
+                    ->label('Pesanan #')
                     ->sortable(),
-                TextColumn::make('user_id')
-                    ->numeric()
+
+                TextColumn::make('user.profile.name')
+                    ->label('Pelanggan')
+                    ->searchable()
                     ->sortable(),
+
                 TextColumn::make('category')
-                    ->searchable(),
+                    ->label('Kategori Masalah')
+                    ->state(fn ($record) => $record->complaintCategory?->name ?? $record->category ?? '-')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('message')
+                    ->label('Detail Aduan')
+                    ->searchable()
+                    ->limit(50),
+
                 TextColumn::make('status')
-                    ->searchable(),
+                    ->label('Status Tindak Lanjut')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'open', 'pending'   => 'danger',
+                        'diproses'          => 'info',
+                        'selesai', 'closed' => 'success',
+                        default             => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'open', 'pending'   => 'Komplain Baru',
+                        'diproses'          => 'Sedang Ditangani',
+                        'selesai', 'closed' => 'Selesai Ditangani',
+                        default             => ucfirst($state ?? '-'),
+                    })
+                    ->sortable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Tanggal Pengaduan')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable(),
             ])
-            ->filters([
-                //
-            ])
+            ->defaultSort('created_at', 'desc')
+            ->filters([])
             ->recordActions([
                 EditAction::make(),
             ])

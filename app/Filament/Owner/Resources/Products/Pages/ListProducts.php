@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Filament\Owner\Resources\Products\Pages;
+
+use App\Filament\Owner\Resources\Products\ProductResource;
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
+
+class ListProducts extends ListRecords
+{
+    protected static string $resource = ProductResource::class;
+
+    protected function getTableQuery(): ?\Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getTableQuery()->where('product_name', '!=', 'Gelang Custom');
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            CreateAction::make(),
+        ];
+    }
+}

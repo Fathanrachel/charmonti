@@ -7,22 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
-        'name',
+        'product_name',
         'description',
         'price',
-        'is_custom',
+        'category',
+        'image',
+        'sisa',
+        'min_stock',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'is_custom' => 'boolean',
+        'sisa'  => 'integer',
     ];
-
-    public function materials()
-    {
-        return $this->belongsToMany(Material::class, 'product_material')
-                    ->withPivot('quantity_needed');
-    }
 
     public function orderItems()
     {
@@ -32,5 +29,64 @@ class Product extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function productMasuk()
+    {
+        return $this->hasMany(ProductMasuk::class, 'product_id');
+    }
+
+    public function productKeluar()
+    {
+        return $this->hasMany(ProductKeluar::class, 'product_id');
+    }
+
+    public function getDynamicStockAttribute()
+    {
+        $masuk = $this->productMasuk()->sum('qty_masuk');
+        $keluar = $this->productKeluar()->sum('qty_keluar');
+        $calculated = (int) ($masuk - $keluar);
+        return max(0, $calculated);
+    }
+
+    public function syncSisa(): void
+    {
+        $newStock = $this->getDynamicStockAttribute();
+        $this->update([
+            'sisa' => $newStock,
+        ]);
+    }
+
+    public function deductStock(int $quantity, ?int $orderId = null, ?string $deskripsi = null): int
+    {
+        $needed = $quantity;
+        $batches = $this->productMasuk()
+            ->orderBy('tanggal_masuk', 'asc')
+            ->get();
+
+        foreach ($batches as $batch) {
+            if ($needed <= 0) {
+                break;
+            }
+
+            $alreadyOut = $batch->productKeluar()->sum('qty_keluar');
+            $batchStock = $batch->qty_masuk - $alreadyOut;
+
+            if ($batchStock > 0) {
+                $deduct = min($needed, $batchStock);
+                $batch->productKeluar()->create([
+                    'product_id'     => $this->id,
+                    'order_id'       => $orderId,
+                    'qty_keluar'     => $deduct,
+                    'tanggal_keluar' => now(),
+                    'deskripsi'      => $deskripsi,
+                ]);
+                $needed -= $deduct;
+            }
+        }
+
+        $this->syncSisa();
+
+        return $quantity - $needed;
     }
 }

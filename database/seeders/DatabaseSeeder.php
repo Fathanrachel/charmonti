@@ -8,6 +8,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(UserSeeder::class);
+        $this->call([
+            UserSeeder::class,
+            LocationSeeder::class,
+            ExpeditionSeeder::class,
+            CityExpeditionSeeder::class,
+        ]);
     }
 }

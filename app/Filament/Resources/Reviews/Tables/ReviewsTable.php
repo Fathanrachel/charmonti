@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Reviews\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -14,32 +14,37 @@ class ReviewsTable
     {
         return $table
             ->columns([
-                TextColumn::make('order_id')
-                    ->numeric()
+                TextColumn::make('user.profile.name')
+                    ->label('Pelanggan')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('user_id')
-                    ->numeric()
+
+                TextColumn::make('product.product_name')
+                    ->label('Produk')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('product_id')
-                    ->numeric()
-                    ->sortable(),
+
                 TextColumn::make('rating')
-                    ->numeric()
+                    ->label('Penilaian')
+                    ->badge()
+                    ->color('amber')
+                    ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state) . " ($state)")
                     ->sortable(),
+
+                TextColumn::make('comment')
+                    ->label('Komentar')
+                    ->searchable()
+                    ->limit(50),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Tanggal')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable(),
             ])
-            ->filters([
-                //
-            ])
+            ->defaultSort('created_at', 'desc')
+            ->filters([])
             ->recordActions([
-                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

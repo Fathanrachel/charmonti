@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
-use App\Models\User;
+use App\Models\Profile;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class OrderForm
 {
@@ -15,9 +15,13 @@ class OrderForm
     {
         return $schema
             ->components([
-                Select::make('user_id')
+                Select::make('profile_id')
                     ->label('Customer')
-                    ->options(User::where('role', 'customer')->pluck('name', 'id'))
+                    ->options(
+                        Profile::where('role', 'customer')
+                            ->get()
+                            ->pluck('name', 'id')
+                    )
                     ->required()
                     ->searchable(),
 
@@ -27,12 +31,13 @@ class OrderForm
                     ->default(now()),
 
                 Select::make('status')
-                    ->label('Status')
+                    ->label('Status Pesanan')
                     ->options([
-                        'pending'   => 'Pending',
-                        'diproses'  => 'Diproses',
-                        'selesai'   => 'Selesai',
-                        'batal'     => 'Batal',
+                        'pending'   => 'Menunggu Pembayaran',
+                        'diproses'  => 'Sedang Diproses (Stok Dipotong)',
+                        'dikirim'   => 'Dalam Pengiriman (Sudah Di Kurir)',
+                        'selesai'   => 'Pesanan Selesai (Diterima Customer)',
+                        'batal'     => 'Dibatalkan (Pengembalian Stok)',
                     ])
                     ->default('pending')
                     ->required(),
@@ -52,11 +57,34 @@ class OrderForm
                     ])
                     ->nullable(),
 
-                Textarea::make('shipping_address')
-                    ->label('Alamat Pengiriman')
-                    ->required()
-                    ->rows(3)
-                    ->columnSpanFull(),
+                Select::make('staff_id')
+                    ->label('Staff Penanggung Jawab (Pegawai)')
+                    ->options(function () {
+                        return \App\Models\User::whereHas('profile', function ($q) {
+                            $q->whereIn('role', ['admin', 'kasir', 'stok', 'store', 'owner']);
+                        })->get()->mapWithKeys(function ($user) {
+                            $name = $user->profile?->name ?? $user->name ?? $user->email;
+                            $role = match($user->profile?->role) {
+                                'admin' => 'Admin',
+                                'kasir' => 'Kasir',
+                                'stok', 'store' => 'Stok',
+                                'owner' => 'Owner',
+                                default => ucfirst($user->profile?->role ?? 'Staff'),
+                            };
+                            return [$user->id => "{$name} - {$role}"];
+                        });
+                    })
+                    ->searchable()
+                    ->default(function () {
+                        /** @var \App\Models\User|null $user */
+                        $user = Auth::user();
+                        if ($user && in_array($user->profile?->role, ['admin', 'kasir', 'stok', 'store', 'owner'])) {
+                            return $user->id;
+                        }
+                        return null;
+                    })
+                    ->nullable()
+                    ->placeholder('Pilih Staff / Pegawai Penanggung Jawab'),
             ]);
     }
 }

@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Filament\Owner\Resources\Reviews;
+
+use App\Filament\Owner\Resources\Reviews\Pages\EditReview;
+use App\Filament\Owner\Resources\Reviews\Pages\ListReviews;
+use App\Filament\Resources\Reviews\Schemas\ReviewForm;
+use App\Filament\Resources\Reviews\Tables\ReviewsTable;
+use App\Models\Review;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+
+class ReviewResource extends Resource
+{
+    protected static ?string $model = Review::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedStar;
+
+    protected static ?string $navigationLabel = 'Ulasan';
+    protected static ?string $modelLabel = 'Ulasan';
+    protected static ?string $pluralModelLabel = 'Ulasan';
+
+    protected static ?int $navigationSort = 6;
+
+    public static function form(Schema $schema): Schema
+    {
+        return ReviewForm::configure($schema);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return ReviewsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListReviews::route('/'),
+            'edit' => EditReview::route('/{record}/edit'),
+        ];
+    }
+}
