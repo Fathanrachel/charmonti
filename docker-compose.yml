@@ -1,0 +1,84 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CharmOnTi — Docker Compose
+# Menjalankan: docker compose up -d --build
+# Akses: http://localhost:8080
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── 1. Aplikasi Laravel (FrankenPHP) ────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: charmonti-app:latest
+    container_name: charmonti_app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      # Mount .env dari host (jangan di-bake ke image!)
+      - ./.env:/app/.env:ro
+      # Mount storage agar file upload persistent
+      - ./storage:/app/storage
+      # Mount Caddyfile config
+      - ./docker/frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
+    networks:
+      - charmonti-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── 2. Database PostgreSQL ───────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: charmonti_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-charmonti_db}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      # Expose port 5432 agar bisa diakses dari host (opsional)
+      - "5432:5432"
+    volumes:
+      # Data PostgreSQL disimpan di named volume (persisten)
+      - charmonti_pgdata:/var/lib/postgresql/data
+    networks:
+      - charmonti-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-charmonti_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── 3. Queue Worker ──────────────────────────────────────────────────────────
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: charmonti-app:latest
+    container_name: charmonti_queue
+    restart: unless-stopped
+    # Override CMD: jalankan queue worker, bukan web server
+    command: php artisan queue:listen --tries=3 --sleep=3 --timeout=60
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./storage:/app/storage
+    networks:
+      - charmonti-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+# ─────────────────────────────────────────────────────────────────────────────
+networks:
+  charmonti-network:
+    driver: bridge
+
+volumes:
+  # Named volume untuk data PostgreSQL (data tidak hilang saat container restart)
+  charmonti_pgdata:
+    name: charmonti_pgdata

@@ -1,0 +1,56 @@
+# ─── Dependencies ──────────────────────────────────────────────────────────────
+# Tidak perlu, akan di-install ulang di dalam container
+node_modules/
+vendor/
+
+# ─── Environment & Secrets ─────────────────────────────────────────────────────
+# JANGAN masukkan .env ke image! Di-mount sebagai volume
+.env
+.env.backup
+.env.production
+
+# ─── Version Control ───────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+
+# ─── IDE / Editor ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.cursor/
+.zed/
+.nova/
+.phpactor.json
+
+# ─── Testing ───────────────────────────────────────────────────────────────────
+.phpunit.cache/
+.phpunit.result.cache
+phpunit.xml
+
+# ─── Storage (di-mount sebagai volume) ─────────────────────────────────────────
+storage/framework/cache/data/
+storage/framework/sessions/
+storage/framework/testing/
+storage/framework/views/
+storage/logs/
+storage/app/public/
+storage/pail/
+
+# ─── Built Assets (akan di-build ulang di dalam container) ─────────────────────
+public/hot
+public/storage
+
+# ─── Temporary & Debug ─────────────────────────────────────────────────────────
+npm-debug.log
+yarn-error.log
+*.log
+Thumbs.db
+.DS_Store
+temp.txt
+fix_favicon.php
+
+# ─── Docker files sendiri tidak perlu di-copy ──────────────────────────────────
+docker-compose.yml
+docker-compose.*.yml
+README.Docker.md
+BLACK_BOX_TESTING.md
